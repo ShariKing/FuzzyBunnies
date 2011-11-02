@@ -1,0 +1,8 @@
+Primitives
+send_console_chars,get_console_chars Peter/Shari
+send, rec, dealloc, alloc - yasser
+I-proc -kbd, crt Peter/Shari
+UART -kbd,crt Peter/Shari
+User test function (proc p) -whoever done first
+Initialization
+(stage 1,3) -kal /yasser
