@@ -1,11 +1,12 @@
+#define TOTAL_NUM_PROC 12 //total number of processes, will change
+#define TOTAL_NUM_IPROC 3 //total number of i-processes, will change
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <setjmp.h>
 #include "kbcrt.h"
 #include "rtx.h"
-
-#define TOTAL_NUM_PROC 12 //total number of processes, will change
-#define TOTAL_NUM_IPROC 12 // TOTAL_NUM_PROC+1 //total number of i-processes, will change
+#include <signal.h>
 
 PCB_Q* create_Q( )
 {
@@ -17,12 +18,11 @@ PCB_Q* create_Q( )
 
 env_Q* create_env_Q( )
 {
-        env_Q *envQ;
-        envQ->head = NULL;
-        envQ->tail = NULL;
-        return envQ;
-}
-        
+        env_Q eq = struct envQ bob;
+        bob->head = NULL;
+        bob->tail = NULL;
+        return eq;
+}        
 
 void init_queues( )
 {
@@ -96,63 +96,69 @@ void init_queues( )
 void init_processes ( )
 {
     //read in file for itable
-    ifstream fin("itable");
-	  if(!fin)
+    FILE* itablefile;
+    itablefile = fopen ("itable.txt","r");
+    //ifstream fin("itable");
+	  /*if(!fin)
 	  {
 	  	printf << "Error, failed to open initialization table.\n";
 		return -1;
-	  }    
+	  } */   
 	  
-	  int itable[TOTAL_NUM_PROC][3], pid, priority, PC;
-      for(int i = 0; i < TOTAL_NUM_PROC; i++) 
+	  int itable[TOTAL_NUM_PROC][2], pid, priority, i;
+      for(i = 0; i < TOTAL_NUM_PROC; i++) 
       {
-      	  if(fin >> pid)
+      	  if(fscanf(itablefile, "%d", &pid))
           	  itable[i][0] = pid;
       	  else
       	  {
-          	  printf << "Error, initialization table missing pid for process " << i << ".\n";
-          	  return -1;
+          	  printf("Error, initialization table missing pid for process ", i, ".\n");
+          	  break;
           }
-      	  if(fin >> priority)
-          	  itable[i][1] = priority;
+      	  if(fscanf(itablefile, "%d", &priority))
+          	  itable[i][1] = priority; //ALL PRIORITIES ARE SET TO ZERO FOR NOW. FIX THIS.
       	  else
       	  {
-          	  printf << "Error, initialization table missing priority for process " << i << ".\n";
-          	  return -1;
+          	  printf("Error, initialization table missing priority for process ", i, ".\n");
+          	  break;
           }
-      	  if(fin >> PC)
+      	  /*if(fin >> PC)
           	  itable[i][2] = PC;
       	  else
       	  {
           	  printf << "Error, initialization table missing Program Counter for process " << i << ".\n";
           	  return -1;
-         }
+         }*/
       }
+      fclose (itablefile);
       //finish reading in file for itable
-	
-    for (int j = 0; j < TOTAL_NUM_PROC, j++)
+
+    int j;
+    for (j = 0; j < TOTAL_NUM_PROC; j++)
     {
-          PCB new_pcb = (struct PCB *) malloc (sizeof (struct PCB));
+          struct pcb* new_pcb = (struct pcb *) malloc (sizeof (struct pcb));
           new_pcb->pid = itable[i][0];
           new_pcb->priority = itable[i][1];
-          initialize pointer stack //TALK TO PETER ABOUT THIS.
-          new_pcb->PC = itable[i][2]; // TALK TO PETER ABOUT THIS.
+          new_pcb->SP = NULL; //FOR CONTEXT SWITCHING. TO BE CHANGED LATER.
+          //new_pcb->PC = itable[i][2]; // WHAT IS THIS?!
           strcopy(new_pcb->state,"READY"); //This is how you set the state
           new_pcb->p = NULL;
-          new_pcb->receive_msg_Q = create_env_Q();
-          pointer_2_PCB[j] = new_pcb;             //This code creates a pointer to the pcb, based on its pid
+          //new_pcb->receive_msg_Q = create_env_Q();
+          new_pcb->receive_msg_Q->head = NULL;
+          new_pcb->receive_msg_Q->tail = NULL;
+          pointer_2_PCB[TOTAL_NUM_IPROC + j] = new_pcb;             //This code creates a pointer to the pcb, based on its pid
           if(new_pcb->priority == 0)
-              PCB_ENQ(new_pcb,ready_q_priority0) //CHECK TO SEE IF I CAN DO THIS WITH READY_Q_PRIORITY#
+              PCB_ENQ(*new_pcb,ready_q_priority0);
           else if(new_pcb->priority == 1)
-              PCB_ENQ(new_pcb,ready_q_priority1) //CHECK TO SEE IF I CAN DO THIS WITH READY_Q_PRIORITY#
+              PCB_ENQ(*new_pcb,ready_q_priority1);
           else if(new_pcb->priority == 2)
-              PCB_ENQ(new_pcb,ready_q_priority2) //CHECK TO SEE IF I CAN DO THIS WITH READY_Q_PRIORITY#
+              PCB_ENQ(*new_pcb,ready_q_priority2);
           else if(new_pcb->priority == 3)
-              PCB_ENQ(new_pcb,ready_q_priority3) //CHECK TO SEE IF I CAN DO THIS WITH READY_Q_PRIORITY#
+              PCB_ENQ(*new_pcb,ready_q_priority3);
           else
           {
-          	  printf << "Error, invalid priority for process " << j << ".\n";
-          	  return -1;
+          	  printf("Error, invalid priority for process ", j, ".\n");
+          	  break;
           }
     }
 
@@ -182,7 +188,8 @@ tmp_fn (); // process starts for the first time here
 
 void init_env()
 {
-     for(int i = 0; i < 128; i++)
+     int i;
+     for(i = 0; i < 128; i++)
      {
         msg_env new_env = (struct msg_env *) malloc (sizeof (struct msg_env));
         new_env->p = NULL;
@@ -190,26 +197,26 @@ void init_env()
         new_env->target_id = NULL;
         new_env->msg_type = NULL;
         new_env->msg_text = NULL;
-		env_ENQ(new_env, envelope_q);
-	}
-	return 0;
+		env_ENQ(*new_env, envelope_q);
+      }
 }
 
 void init_i_processes()
 {
-     ifstream fin("iproctable");
+     /*ifstream fin("iproctable");
 	  if(!fin)
 	  {
 	  	printf << "Error, failed to open iprocess initialization table.\n";
 		return -1;
 	  }    
 	  
+	  
 	  int iproctable[TOTAL_NUM_IPROC][2], pid, PC;
       for(int i = 0; i < TOTAL_NUM_IPROC; i++) 
       {
-      	  if(fin >> pid)
-          	  iproctable[i][0] = pid;
-      	  else
+      	  //if(fin >> pid)
+      	  iproctable[i][0] = pid;
+      	  /*else
       	  {
           	  printf << "Error, initialization table missing pid for iprocess " << i << ".\n";
           	  return -1;
@@ -221,28 +228,29 @@ void init_i_processes()
           	  printf << "Error, initialization table missing Program Counter for iprocess " << i << ".\n";
           	  return -1;
           }
-      }
+      }*/
+      //Not needed, Iprocess only counts up for pids.
       //finish reading in file for iproctable
-      
-     for (int k=0; k < TOTAL_NUM_IPROC; k++)
+     int k; 
+     for (k = 0; k < TOTAL_NUM_IPROC; k++)
      {
          PCB new_pcb = (struct PCB *) malloc (sizeof (struct PCB));
          new_pcb->priority = -1;
-         initialize pointer stack //TALK TO PETER ABOUT THIS.
-         new_pcb->proc_pid = iproctable[i][0];
-         new_pcb->PC = itable[i][1]; // TALK TO PETER ABOUT THIS.
+         new_pcb->SP = NULL; //FOR CONTEXT SWITCHING. TO BE CHANGED LATER.
+         new_pcb->proc_pid = k;
+         //new_pcb->PC = itable[k][1];
          strcopy(new_pcb->state,"READY"); //This is how you set the state
          new_pcb->p = NULL;
          new_pcb->receive_msg_Q = create_env_Q();
-         pointer_2_PCB[TOTAL_NUM_PROC + k] = new_pcb;             //This code creates a pointer to the pcb, based on its pid
+         pointer_2_PCB[k] = new_pcb;             //This code creates a pointer to the pcb, based on its pid
      }
-	 int procnum = fork();
+	 PCB procnum = fork();
 	 if(procnum == 0)
-         execve("crt");
+         execve("crt_iproc");
      else
      procnum = fork();
      if(procnum == 0)
-         execve("keyboard");
+         execve("kbd_iproc");
      else
      //DO I FORK THESE?!
      return(0);         
@@ -253,30 +261,30 @@ void begin_RTX( )
 	if(init_queues())
 	else
     {
-         printf << "Error, queue initialization failed!!!\n";
-         return -1;
+         printf("Error, queue initialization failed!!!\n");
+         break;
     }
     if(init_env())
 	else
     {
-         printf << "Error, envelope initialization failed!!!\n";
-         return -1;
+         printf("Error, envelope initialization failed!!!\n");
+         break;
     }
     if(init_processes( ))
 	else 
 	{
-         printf << "Error, process initialization failed!!!\n";
-         return -1;
+         printf("Error, process initialization failed!!!\n");
+         break;
     }
 	if (init_i_processes( ))
     else
     {
-         printf << "Error, i-process initialization failed!!!\n";
-         return -1;
+         printf("Error, i-process initialization failed!!!\n");
+         break;
     }
     curr_process = convert_PID(0);
     strcopy(curr_process->state,"NEVER_BLK_PROC");
-    INITIALIZE SIGNAL SYSTEM HERE
+    //INITIALIZE SIGNAL SYSTEM HERE
     PCB procnum = fork();
 	if(procnum == 0)
         execve("crt_child");
