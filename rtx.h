@@ -13,10 +13,11 @@ struct msgenv {
 };
 typedef struct msgenv msg_env;	//use msg_env
 
-typedef struct{
-	msg_env *head;
-	msg_env *tail;
-} env_Q;
+struct envQ{
+ msg_env *head;
+ msg_env *tail;
+};
+typedef struct envQ *env_Q;
 
 struct pcb {
 	struct pcb *p;		//kernel pointer
@@ -46,6 +47,8 @@ int send_message ( int dest_id, msg_env *e);
 msg_env *receive_message();
 PCB *convert_PID(int PID);
 PCB_Q *convert_priority(int pri);	
+
+
 PCB_Q* create_Q( );
 env_Q* create_env_Q( );
 void init_queues( );
@@ -53,5 +56,12 @@ void init_processes( );
 void init_env( );
 void init_i_processes( );
 void begin_RTX( );
+
+PCB_Q *ready_q_priority0;
+PCB_Q *ready_q_priority1;
+PCB_Q *ready_q_priority2;
+PCB_Q *ready_q_priority3;
+env_Q *envelope_q;
+env_Q *blocked_on_envelope;
 
 #endif
