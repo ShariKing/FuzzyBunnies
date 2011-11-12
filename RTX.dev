@@ -1,7 +1,7 @@
 [Project]
 FileName=RTX.dev
 Name=RTX
-UnitCount=10
+UnitCount=8
 Type=0
 Ver=1
 ObjFiles=
@@ -109,16 +109,6 @@ AutoIncBuildNr=0
 
 [Unit8]
 FileName=rtx.h
-CompileCpp=0
-Folder=
-Compile=1
-Link=1
-Priority=1000
-OverrideBuildCmd=0
-BuildCmd=
-
-[Unit9]
-FileName=demo.c
 CompileCpp=0
 Folder=
 Compile=1

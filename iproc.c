@@ -3,7 +3,6 @@
 #include <setjmp.h>
 
 #include "kbcrt.h"
-#include "rtx.h"
 
 	void kbd_iproc() {
          msg_env *temp_k = NULL;

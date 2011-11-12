@@ -10,7 +10,6 @@
 #include <stdio.h>
 #include <signal.h>
 #include "kbcrt.h"
-#include "rtx.h"
 #include <fcntl.h>
 
 // do any necessary cleanup before exitting
@@ -20,7 +19,6 @@ void in_die(int signal)
 {
 	exit(0);
 }
-
 
 int main (int argc, char * argv[])
 {

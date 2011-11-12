@@ -17,7 +17,7 @@ struct envQ{
  msg_env *head;
  msg_env *tail;
 };
-typedef struct envQ *env_Q;
+typedef struct envQ env_Q;
 
 struct pcb {
 	struct pcb *p;		//kernel pointer
@@ -26,23 +26,24 @@ struct pcb {
 	int priority;
 	int PC;			//I'm guessing since it's a counter
 	char *SP;		//checked the pointer type with Saad and Kraemer
-	env_Q receive_msg_Q;
+	env_Q *receive_msg_Q;
 };
 typedef struct pcb PCB;	//use PCB
 
-typedef struct{
+struct pcbq{
 	PCB *head;
 	PCB *tail;
-} PCB_Q;
+};
+typedef struct pcbq PCB_Q;
 
 PCB *pointer_2_PCB[NO_PROC];	//array of pointers to processes
 PCB_Q *pointer_2_RPQ[4];	//array of pointers to ready process queues
 PCB *curr_process;		//I'm guessing we need this to track the current process
 
-int PCB_ENQ(PCB *r, PCB_Q queue);
-PCB *PCB_DEQ(PCB_Q queue);
-int env_ENQ(msg_env *e, env_Q queue);
-msg_env *env_DEQ(env_Q queue);
+int PCB_ENQ(PCB *r, PCB_Q *queue);
+PCB *PCB_DEQ(PCB_Q *queue);
+int env_ENQ(msg_env *e, env_Q *queue);
+msg_env *env_DEQ(env_Q *queue);
 int send_message ( int dest_id, msg_env *e);
 msg_env *receive_message();
 PCB *convert_PID(int PID);
@@ -51,17 +52,17 @@ PCB_Q *convert_priority(int pri);
 
 PCB_Q* create_Q( );
 env_Q* create_env_Q( );
-void init_queues( );
-void init_processes( );
-void init_env( );
-void init_i_processes( );
+int init_queues( );
+int init_processes( );
+int init_env( );
+int init_i_processes( );
 void begin_RTX( );
 
-PCB_Q *ready_q_priority0;
-PCB_Q *ready_q_priority1;
-PCB_Q *ready_q_priority2;
-PCB_Q *ready_q_priority3;
-env_Q *envelope_q;
-env_Q *blocked_on_envelope;
+PCB_Q* ready_q_priority0;
+PCB_Q* ready_q_priority1;
+PCB_Q* ready_q_priority2;
+PCB_Q* ready_q_priority3;
+env_Q* envelope_q;
+env_Q* blocked_on_envelope;
 
 #endif

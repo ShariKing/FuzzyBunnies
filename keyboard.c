@@ -11,7 +11,6 @@
 #include <stdio.h>
 #include <signal.h>
 #include "kbcrt.h"
-#include "rtx.h"
 #include <fcntl.h>
 
 //#include <sys/mman.h>

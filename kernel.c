@@ -1,11 +1,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <setjmp.h>
-#include "kbcrt.h"
 #include "rtx.h"
 #define CRT_iproc_pid
 
-int PCB_ENQ(PCB *r, PCB_Q queue){
+int PCB_ENQ(PCB *r, PCB_Q *queue){
 	if (queue->head==NULL){								//if queue is empty
 		queue->head = queue->tail = r;
 		return 0;
@@ -16,7 +15,7 @@ int PCB_ENQ(PCB *r, PCB_Q queue){
 	return 0;
 }
 
-PCB *PCB_DEQ(PCB_Q queue){
+PCB *PCB_DEQ(PCB_Q *queue){
 	if (queue->head==NULL){								//if queue is empty
 		printf("Queue is empty");
 		return NULL;
@@ -29,7 +28,7 @@ PCB *PCB_DEQ(PCB_Q queue){
 	return t;
 }
 
-int env_ENQ(msg_env *e, env_Q queue){
+int env_ENQ(msg_env *e, env_Q *queue){
 	if (queue->head==NULL){								//if queue is empty
 		queue->head = queue->tail = e;
 		return 0;
@@ -40,7 +39,7 @@ int env_ENQ(msg_env *e, env_Q queue){
 	return 0;
 }
 
-msg_env *env_DEQ(env_Q queue){
+msg_env *env_DEQ(env_Q *queue){
 	if (queue->head==NULL){								//if queue is empty
 		printf("Queue is empty");
 		return NULL;
@@ -58,20 +57,22 @@ int send_message ( int dest_id, msg_env *e){
 		printf("Invalid ID");
 		return 0;
 	}
-	e->target_id = dest->id;
+	e->target_id = dest_id;
 	PCB *target = convert_PID(dest_id);
 	if(target->receive_msg_Q->head==NULL && target->priority !=-1){			//if queue is empty and not an i-process
 		PCB_ENQ(target, convert_priority(target->priority));			//not sure if need to put & before convert_priority
 		strcopy(target->state,"READY");						//apparently strcopy is how you write into an array of chars
-	env_ENQ(e,target->receive_msg_Q);
+	}
+    env_ENQ(e,target->receive_msg_Q);
 	return 0;
 }
 
+
 msg_env *receive_message(){								//Doesn't take the PCB as a parameter. Dealt with using curr_process
 	if(curr_process->receive_msg_Q->head==NULL){					//if receive_msg_Q is empty{
-		if(curr_prcoess->priority==-1 || curr_process->state=="NO_BLK_RCV")	//if it's i-process or has the wierd state
+		if(curr_process->priority==-1 || curr_process->state=="NO_BLK_RCV")	//if it's i-process or has the wierd state
 			return NULL;
-		strcopy(curr_process->state,"BLK_ON_RCV")				//Doesn't need to be put in a queue, and don't care about process switch now
+		strcopy(curr_process->state,"BLK_ON_RCV");				//Doesn't need to be put in a queue, and don't care about process switch now
 	}
 	return env_DEQ(curr_process->receive_msg_Q);
 }
@@ -81,8 +82,8 @@ int send_console_chars(msg_env *env) {
 	int Z;
 	Z = send_message(env->target_id, env);						//write string to env
 	if(Z=1)										// incorrect return from send_msg
-		printf('Error with sending');
-	kill(0,SIGUSR2);
+		printf("Error with sending");
+//	kill(0,SIGUSR2);
 	return 0;
 }
 

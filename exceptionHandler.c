@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <setjmp.h>
-#include "kbcrt.h"
 #include "rtx.h"
 #include <signal.h>
 
@@ -15,12 +14,12 @@ void exception_handler_process(int result)
     	switch(result) {
     		case SIGINT: die();
     		break;
-    		case SIGALRM: printf("Not Done Yet");//RTX.current_process = RTX.pid_to_PCBptr(TIMER_I_PROC);
+    //		case SIGALRM: printf("Not Done Yet");//RTX.current_process = RTX.pid_to_PCBptr(TIMER_I_PROC);
     		//tick_handler( );
     		break;
-    		case SIGUSR1: kbd_iproc();
+    //		case SIGUSR1: kbd_iproc();
     		break;
-    		case SIGUSR2: crt_iproc();
+    //		case SIGUSR2: crt_iproc();
     		break;
     	default: printf("Unknown signal!\n");
     	die();

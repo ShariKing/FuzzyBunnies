@@ -1,13 +1,10 @@
 #ifndef KBCRT_H
 #define KBCRT_H
 
-// demo.h
-
 //#include <sys/types.h>
 //#include <sys/ipc.h>
 //#include <sys/shm.h>
 //#include <errno.h>
-#include "kbcrt.h"
 #include "rtx.h"
 
 #include <string.h>
