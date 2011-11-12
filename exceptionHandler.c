@@ -3,14 +3,15 @@
 #include <setjmp.h>
 #include "kbcrt.h"
 #include "rtx.h"
+#include <signal.h>
 
 void exception_handler_process(int result)
 {
     // any pre-handling code
     	int setjmp(jmp_buf msg_env);
     	void longjmp (jmp_buf msg_env, int val);
-    	pcb* temp;
-    	pcb* savePCB = RTX.current_process;
+    	PCB* temp;
+    	PCB* savePCB = curr_process;
     	switch(result) {
     		case SIGINT: die();
     		break;

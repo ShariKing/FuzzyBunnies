@@ -14,10 +14,8 @@
 #include "rtx.h"
 #include <fcntl.h>
 
-#include <sys/mman.h>
-#include <sys/wait.h>
-
-
+//#include <sys/mman.h>
+//#include <sys/wait.h>
 
 // do any necessary cleanup before exitting
 // ( in this case, there is no cleanup to do)
@@ -30,10 +28,7 @@ void in_die(int signal)
 
 int main (int argc, char * argv[])
 {
-
-
-
-	// if parent tells us to terminate, then clean up first
+    // if parent tells us to terminate, then clean up first
 	sigset(SIGINT,in_die);
 
 	// get id of process to signal when we have input
@@ -41,11 +36,8 @@ int main (int argc, char * argv[])
 	// i.e. process input arguments 
 	sscanf(argv[1], "%d", &parent_pid );
 	sscanf(argv[2], "%d", &fid );  // get the file id
-
 	// attach to shared memory so we can pass input to 
-	// keyboard interrupt handler
-	
-	
+	// keyboard interrupt handler	
 	/*
 	mmap_ptr = mmap(0,   // Memory Location, 0 lets O/S choose 
 		    bufsize,// How many bytes to mmap 
@@ -60,7 +52,6 @@ int main (int argc, char * argv[])
     */
 	
 	in_mem_p = (inputbuf *) mmap_ptr; // now we have a shared memory pointer
-
 	// read keyboard
 	buf_index = 0;
 	in_mem_p->ok_flag = 0; //0 is empty
@@ -71,12 +62,12 @@ int main (int argc, char * argv[])
 		c[n] = getchar();
 		if ( c != '\0' ) {
 					if( buf_index < MAXCHAR-1 ) {
-						in_mem_p->indata[buf_index++] = c;
+						in_mem_p->indata[buf_index++] = c[n];
 					} 
 				} else {
 					in_mem_p->indata[buf_index] = '\0';
 					in_mem_p->ok_flag = 1;  //set ready status bit
-					kill(parent_pid,SIGUSR1); //send a signal to parent	to start handler to start kbd_iproc
+			//		kill(parent_pid,SIGUSR1); //send a signal to parent	to start handler to start kbd_iproc
 					buf_index = 0;  // for now, just restart
 					while( in_mem_p->ok_flag == 1)
 						usleep(100000);
