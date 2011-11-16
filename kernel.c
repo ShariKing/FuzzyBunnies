@@ -14,9 +14,14 @@
 #include <errno.h>
 #include "rtx.h"
 
+
 // *** PCB ENQUEUE ***
 int PCB_ENQ(PCB *r, PCB_Q *queue) {
 
+    /// if either the PCB pointer or the queue pointer are NULL don't do anything
+    if (!r || !queue)
+        return 0;
+    
     // if queue is empty
     if (queue->head == NULL) {
 
@@ -29,7 +34,7 @@ int PCB_ENQ(PCB *r, PCB_Q *queue) {
         return 1;
     }
 
-    /* If the queue is NOT empty */
+    // If the queue is NOT empty
     // set the 'next' pointer of the PCB at the queue-tail to the newly enqueued PCB
     queue->tail->p = r;
 
@@ -48,13 +53,13 @@ PCB *PCB_DEQ(PCB_Q *queue) {
 
     // if queue is empty
     if (queue->head == NULL) {
-        printf("Queue is empty");
+        //printf("Queue is empty");
         
         // return a NULL pointer
         return NULL;
     }
 
-    /*if the queue is NOT empty*/
+    // if the queue is NOT empty
     // create a temp pointer to a PCB
     PCB *t;
 
@@ -75,23 +80,26 @@ PCB *PCB_DEQ(PCB_Q *queue) {
 
 // ***ENVELOPE ENQUEUE***
 int env_ENQ(msg_env *e, env_Q *queue) {
+   
+    if (!e || !queue)
+        return 0;
     
     //if queue is empty
     if (queue->head == NULL) {
-        
+
         // set head of queue to e
         queue->head = e;
-        
+
         // set tail of queue to e
         queue->tail = e;
-        
+
         return 1;
     }
-    
-    /* if the queue is NOT empty*/
+      
+    // if the queue is NOT empty
     // set the 'next' pointer of the env at the queue-tail to the newly enqueued env
     queue->tail->p = e;
-    
+   
     // set the 'next' pointer of the new env to NULL
     e->p = NULL;
     
@@ -105,26 +113,28 @@ int env_ENQ(msg_env *e, env_Q *queue) {
 // *** ENVELOPE DEQUEUE ***
 msg_env *env_DEQ(env_Q *queue) {
     
-    // if queue is empty
-    if (queue->head == NULL) { 
-        printf("Queue is empty");
+    // if the queue doesn't exist
+    if (!queue)
+        return NULL;
+    
+    // create a temp env pointer
+    msg_env *t = NULL;
         
+    // if queue is empty    
+    if (queue->head == NULL) { 
         // return a NULL pointer
         return NULL;
     }
-    
-    /*if the queue is NOT empty*/
-    // create a temp env pointer
-    msg_env *t;
-    
+
+    // if the queue is NOT empty
     // point the temp to the head of the queue
     t = queue->head;
-    
+
     // point the new head of the queue to the 'next' pointer of the old head
     queue->head = queue->head->p;
-    
+
     // if the queue now only has one env, set the tail = head = sole env
-    if (queue->head->p == NULL) 
+    if (queue->head == NULL) 
         queue->tail = queue->head;
     
     return t;
@@ -134,34 +144,48 @@ msg_env *env_DEQ(env_Q *queue) {
 // *** SEND MESSAGE ***
 int send_message(int dest_id, msg_env *e) {
     
+    // if the env is NULL
+    if (!e)
+        return 0;
+    
     // if the PCB ID is not valid
     if (dest_id > (NUM_PROC - 1) )  { 
-        printf("Invalid ID");
+        //printf("Invalid 'Send To' ID, %i, ", dest_id);
         return 0;
     }
     
-    /*if the PCD ID is valid*/    
+    // if the PCD ID is valid
     // set the target_id parameter of the env to dest_id
     e->target_id = dest_id;
-    
+    e->sender_id = curr_process->pid;
+
     // create a pointer to the target PCB using the target_id
     PCB *target = convert_PID(dest_id);
+
+    // if the PID converts correctly to a pointer
+    if (target){
+
+        /*unblock the target process if necessary*/
+        // if the target's receive message queue is empty or the target is not an i-process
+        /*if (target->receive_msg_Q->head == NULL || target->priority != -1) { 
+
+            // enqueue the PCB of the process on the appropriate ready queue
+            PCB_ENQ(target, convert_priority(target->priority)); //*****not sure if need to put a '&' before convert_priority
+            // set the target state to 'ready'
+            strcpy(target->state, "READY"); //apparently strcpy is how you write into an array of chars
+        }*/
+
+        // enqueue the env on the target's receive queue
+        env_ENQ(e, target->receive_msg_Q);
+
+    return 1;
     
-    /*unblock the target process if necessary*/
-    // if the target's receive message queue is empty and the target is not an i-process
-    if (target->receive_msg_Q->head == NULL && target->priority != -1) { 
-        
-        // enqueue the PCB of the process on the appropriate ready queue
-        PCB_ENQ(target, convert_priority(target->priority)); //*****not sure if need to put a '&' before convert_priority
-        
-        // set the target state to 'ready'
-        strcpy(target->state, "READY"); //apparently strcpy is how you write into an array of chars
     }
     
-    // enqueue the env on the target's receive queue
-    env_ENQ(e, target->receive_msg_Q);
-    
-    return 1;
+    // if the PID doesn't convert successfully
+    else
+        return 0;
+     
 }
 
 
@@ -171,12 +195,12 @@ msg_env *receive_message() { //Doesn't take the PCB as a parameter. Dealt with u
     // if the receive message queue is empty
     if (curr_process->receive_msg_Q->head == NULL) {
         
-        // if the process is an iprocess or already blocked on receive, return a NULL pointer (ie. no env)
-        if (curr_process->priority == -1 || curr_process->state == "NEVER_BLK_PROC") // **WHAT IS NO BLK RCV??
+        // if the process is an iprocess or should never be blocked, return a NULL pointer (ie. no env)
+        if (curr_process->priority == -1 || curr_process->state == "NEVER_BLK_PROC")
             return NULL;
         
         // if it's a normal process, block it on receive
-        strcpy(curr_process->state, "BLK_ON_RCV"); //Doesn't need to be put in a queue, and don't care about process switch now
+        strcpy(curr_process->state, "BLK_ON_RCV"); //*********Doesn't need to be put in a queue, and don't care about process switch now********* FIX THIS
     
         return NULL; // *****TO BE FIXED WITH CONTEXT SWITCHING
     }
@@ -189,32 +213,45 @@ msg_env *receive_message() { //Doesn't take the PCB as a parameter. Dealt with u
 
 // *** SEND CONSOLE CHARS***
 int send_console_chars(msg_env *env) {
+    
+    // if the env is NULL
+    if (!env)
+        return 0;
+    
     int Z;
     
     // relay the env to the crt i-process using send_message
-    Z = send_message(env->target_id, env);
+    Z = send_message(1, env);
     
     // if sending fails
-    if (Z = 1)
-        printf("Error with sending");
-    
-    // signal the crt i-process to start doing it's thing
-    kill(0,SIGUSR2);
-    
+    if (Z == 0){
+        //printf("Error with sending");
+        return 0;
+    }
+
     return 1;
 }
 
 
 // ***GET CONSOLE CHARS***
 int get_console_chars(msg_env * env) {
-        int Z;
     
-        // relay the env to the kb i-process using send_message
-        Z = send_message(env->sender_id, env);
-        
-        // incorrect return from send_message
-	if(Z == 0) 
-		printf('Error with sending');
+    // if the env is NULL
+    if (!env)
+        return 0;
+    
+    int Z;
+
+    // relay the env to the kb i-process using send_message
+    Z = send_message(0, env);
+
+    // incorrect return from send_message
+    if(Z == 0) {
+            //printf("Error with sending");
+            return 0;
+    }
+    
+    return 1;
 }
 
 
@@ -223,22 +260,23 @@ PCB *convert_PID(int PID) {
     
     // if the process ID is invalid
     if (PID > (NUM_PROC - 1) || PID < 0) {
-        printf("invalid ID");
-        return 0;
+        // printf("invalid ID");
+        return NULL;
         }
     
-    // if the ID is valid, return the pointer in the PCB array at the 
+    // if the ID is valid, return the pointer in the PCB array at the value of ID
     return pointer_2_PCB[PID];
 }
 
 // ***CHANGE THE PRIORITY OF A PROCESS***
 PCB_Q *convert_priority(int newPri) {
     
-    // if the new priority is not valid
+    // if the new priority is not valid (1-3)
     if (newPri > 3 || newPri < 0) {
-        printf("Invalid priority");
+        //printf("Invalid priority!!!!!");
         return NULL;
     }
     
+    // if the priority is valid, return the pointer to the priority queue from the array
     return pointer_2_RPQ[newPri];
 }

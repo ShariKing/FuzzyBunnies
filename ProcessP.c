@@ -16,28 +16,34 @@
 
 // pseudocode for kbd input -> crt output passing process 
 void processP() 
-{ 
-      int tWait = 500000;          //rcv loop wait time in usec, approx value 
+{   
       struct msgenv* env = (struct msgenv *) malloc (sizeof (struct msgenv));
-      
-      printf("IT'S ALIIIIIIIVEEEEE!!!! MWAHAHAHAHA!\n");
-          
-      //now enter infinite loop 
-      while (1) { 
+      env->msg_type = (char*)malloc (sizeof (SIZE));
+      env->msg_text = (char*)malloc (sizeof (SIZE));
+
+      if (env){
+
+          //now enter infinite loop 
+          while (1) { 
+
                 get_console_chars(env);   //keyboard input 
+
+                env = receive_message(); //***STOPS HERE TO WAIT FOR INPUT
+
+                while (env == NULL) {
+                        usleep(100000);
+                        env = receive_message();  
+                }
+
+                send_console_chars(env);   //CRT output, wait for ack 
+
                 env = receive_message(); 
-      
-                while (env == NULL) {    
-                        usleep(tWait); 
+
+                while (env == NULL) { 
+                        usleep (100000); 
                         env = receive_message(); 
                 }
                 
-                send_console_chars(env);   //CRT output, wait for ack 
-                env = receive_message(); 
-      
-                while (env == NULL) { 
-                        usleep (tWait); 
-                        env = receive_message(); 
-                }   
-     } 
+        } 
+      }
 }

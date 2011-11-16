@@ -14,18 +14,20 @@
 #include <sys/ipc.h>
 #include <sys/shm.h>
 #include <errno.h>
+#include "kbcrt.h"
 
-//*** CONSTANTS ***
-#define SIZE 20
-#define NUM_PROC 12		//Number of processes we have. Will change when I know how many.
+
+// *** CONSTANTS ***
+#define SIZE 128
+#define NUM_PROC 12 //Number of processes we have. Will change when I know how many.
 
 // *** STRUCTS ***
 struct msgenv {
 	struct msgenv *p;	//pointer to the next env in the queue this env resides in
 	int sender_id;
 	int target_id;
-	char msg_type[SIZE];
-	char msg_text[SIZE];
+	char* msg_type;         //type and text are char pointers, which are essentially arrays
+	char* msg_text;         //we can call a location of the pointer and it will work like an array
 };
 typedef struct msgenv msg_env;
 
@@ -55,6 +57,13 @@ typedef struct pcbq PCB_Q;
 
 // *** FUNCTION DECLARATIONS ***
 
+void parent_die(int signal);
+void cleanup();
+
+// PROCESSES
+void kbd_iproc(int sigval);
+void crt_iproc(int sigval);
+
 // PRIMITIVES
 int PCB_ENQ(PCB *r, PCB_Q *queue);
 PCB *PCB_DEQ(PCB_Q *queue);
@@ -62,7 +71,7 @@ PCB *PCB_DEQ(PCB_Q *queue);
 int env_ENQ(msg_env *e, env_Q *queue);
 msg_env *env_DEQ(env_Q *queue);
 
-int send_message ( int dest_id, msg_env *e);
+int send_message (int dest_id, msg_env *e);
 msg_env *receive_message();
 
 int send_console_chars(msg_env *env);
@@ -83,6 +92,8 @@ int init_env( );
 int init_processes( );
 int init_i_processes( );
 
+void kb_crt_start();
+
 void begin_RTX( );
 
 
@@ -90,7 +101,7 @@ void begin_RTX( );
 PCB *pointer_2_PCB[NUM_PROC];	//array of pointers to processes
 PCB_Q *pointer_2_RPQ[4];	//array of pointers to ready process queues
 
-PCB *curr_process;		//I'm guessing we need this to track the current process
+PCB *curr_process;		
 
 // QUEUES
 PCB_Q* ready_q_priority0;
