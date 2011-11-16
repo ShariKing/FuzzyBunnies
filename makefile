@@ -12,7 +12,7 @@ crt.out : crt.c kbcrt.h rtx.h
 exceptionHandler.out : exceptionHandler.o kernel.o
 	gcc $^ -o exceptionHandler.out
 
-kernel.o : kernel.c rtx.h
+kernel.o : fdsfkernel.c rtx.h
 	gcc kernel.c -c
 
 exceptionHandler.o : exceptionHandler.c
