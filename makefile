@@ -1,32 +1,21 @@
-RTX: init.o iproc.o kernel.o ProcessP.o
-	gcc init.o iproc.o kernel.o ProcessP.o -o RTX
+all : keyboard.out crt.out exceptionHandler.out
 
-crt_child: crt.o
-	gcc crt.o -o crt_child
+fuzzyBunnies.out : init.c kbcrt.h rtx.h 
+	gcc init.c -o fuzzyBunnies.out
 	
-kbd_child: keyboard.o
-	gcc kbd.o -o kbd_child
+keyboard.out : keyboard.c kbcrt.h rtx.h
+	gcc keyboard.c -o keyboard.out
 
-init.o: init.c rtx.h kbcrt.h
-	gcc -c init.c
+crt.out : crt.c kbcrt.h rtx.h
+	gcc crt.c -o crt.out
 
-crt.o: crt.c kbcrt.h
-	gcc -c crt.c
+exceptionHandler.out : exceptionHandler.o kernel.o
+	gcc $^ -o exceptionHandler.out
 
-keyboard.o: keyboard.c kbcrt.h
-	gcc -c keyboard.c
+kernel.o : kernel.c rtx.h
+	gcc kernel.c -c
 
-iproc.o: iproc.c kbcrt.h
-	gcc -c iproc.c
+exceptionHandler.o : exceptionHandler.c
+	gcc exceptionHandler.c -c
 
-kernel.o: kernel.c rtx.h
-	gcc -c kernel.c
 
-ProcessP.o: ProcessP.c rtx.h kbcrt.h
-	gcc -c ProcessP.c
-
-clean:
-	rm *.o 
-	rm RTX 
-	rm crt_child 
-	rm kbd_child
