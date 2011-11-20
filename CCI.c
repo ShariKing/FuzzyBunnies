@@ -11,6 +11,7 @@
 #include <sys/ipc.h>
 #include <sys/shm.h>
 #include <errno.h>
+#include "rtx.h"
 
 void CCI() 
 {   
