@@ -268,7 +268,7 @@ PCB *convert_PID(int PID) {
     return pointer_2_PCB[PID];
 }
 
-// ***CHANGE THE PRIORITY OF A PROCESS***
+// ***GET A PROIRITY AND RETURN A POINTER TO THE RPQ***
 PCB_Q *convert_priority(int newPri) {
     
     // if the new priority is not valid (1-3)
