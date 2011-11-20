@@ -20,6 +20,7 @@
 // *** CONSTANTS ***
 #define SIZE 128
 #define NUM_PROC 12 //Number of processes we have. Will change when I know how many.
+#define _JBLEN  9
 
 // *** STRUCTS ***
 struct msgenv {
@@ -53,7 +54,6 @@ struct pcbq{
 	PCB *tail;
 };
 typedef struct pcbq PCB_Q;
-
 
 // *** FUNCTION DECLARATIONS ***
 
@@ -108,6 +108,7 @@ PCB_Q* ready_q_priority0;
 PCB_Q* ready_q_priority1;
 PCB_Q* ready_q_priority2;
 PCB_Q* ready_q_priority3;
+PCB_Q* ready_q_priority4; // for null proc only!
 
 env_Q* envelope_q;
 

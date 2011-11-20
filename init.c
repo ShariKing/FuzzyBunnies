@@ -245,7 +245,7 @@ int init_processes ( )
             new_pcb->SP = NULL; //FOR CONTEXT SWITCHING. TO BE CHANGED LATER.
             
             // set process counter for the appropriate process from the table
-            //new_pcb->PC = itable[i][2]; // WHAT IS THIS?!
+            new_pcb->PC = itable[i][2]; // WHAT IS THIS?!
             
             // set all processes to the READY state
             strcpy(new_pcb->state, "READY");
@@ -271,7 +271,9 @@ int init_processes ( )
             
             else if (new_pcb->priority == 3)
                 PCB_ENQ(new_pcb, ready_q_priority3);
-            
+                
+            else if (new_pcb->priority == 4) // ONLY FOR NULL PROCESS!!!!!!!!!!
+                 PCB_ENQ(new_pcb, ready_q_priority4);            
             else {
                 printf("Error, invalid priority for process ", j, "\n");
                 return 0;

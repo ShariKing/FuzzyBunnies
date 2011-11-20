@@ -48,7 +48,7 @@ int PCB_ENQ(PCB *r, PCB_Q *queue) {
 }
 
 
-// *** PCB ENQUEUE ***
+// *** PCB Dequeue ***
 PCB *PCB_DEQ(PCB_Q *queue) {
 
     // if queue is empty
