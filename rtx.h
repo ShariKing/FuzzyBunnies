@@ -20,7 +20,6 @@
 // *** CONSTANTS ***
 #define SIZE 128
 #define NUM_PROC 12 //Number of processes we have. Will change when I know how many.
-#define _JBLEN  9
 
 // *** STRUCTS ***
 struct msgenv {
@@ -40,7 +39,7 @@ typedef struct envQ env_Q;
 
 struct pcb {
 	struct pcb *p;		// pointer to next PCB in the queue that this PCB resides in
-	char *state;       //ASK KORNEL!! SHOULD BE A POINTER TO ARRAY OF CHARS??
+	char state[SIZE];
 	int pid;
 	int priority;
 	int PC;			//I'm guessing since it's a counter
@@ -54,6 +53,15 @@ struct pcbq{
 	PCB *tail;
 };
 typedef struct pcbq PCB_Q;
+
+struct clock{
+		int ss;
+		int mm;
+		int hh;
+};
+typedef struct clock clk;
+
+
 
 // *** FUNCTION DECLARATIONS ***
 
@@ -71,8 +79,6 @@ PCB *PCB_DEQ(PCB_Q *queue);
 int env_ENQ(msg_env *e, env_Q *queue);
 msg_env *env_DEQ(env_Q *queue);
 
-int k_send_message (int dest_id, msg_env *e);
-msg_env *k_receive_message();
 int send_message (int dest_id, msg_env *e);
 msg_env *receive_message();
 
@@ -101,7 +107,7 @@ void begin_RTX( );
 
 // *** VARIABLES ***
 PCB *pointer_2_PCB[NUM_PROC];	//array of pointers to processes
-PCB_Q *pointer_2_RPQ[5];	//array of pointers to ready process queues
+PCB_Q *pointer_2_RPQ[4];	//array of pointers to ready process queues
 
 PCB *curr_process;		
 
@@ -110,7 +116,6 @@ PCB_Q* ready_q_priority0;
 PCB_Q* ready_q_priority1;
 PCB_Q* ready_q_priority2;
 PCB_Q* ready_q_priority3;
-PCB_Q* ready_q_priority4; // for null proc only!
 
 env_Q* envelope_q;
 
