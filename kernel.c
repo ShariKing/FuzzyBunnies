@@ -141,8 +141,8 @@ msg_env *env_DEQ(env_Q *queue) {
 }
 
 
-// *** SEND MESSAGE ***
-int send_message(int dest_id, msg_env *e) {
+// *** KERNEL SEND MESSAGE ***
+int k_send_message(int dest_id, msg_env *e) {
     
     // if the env is NULL
     if (!e)
@@ -188,15 +188,30 @@ int send_message(int dest_id, msg_env *e) {
      
 }
 
+// ***USER SEND MESSAGE***
+int send_message(int dest_id, msg_env *e) {
+    
+    // turn atomicity on
+    atomic (on);
+    
+    // call the kernel send message primitive
+    int z = k_send_message(dest_id, e);
+    
+    // turn atomicity off
+    atomic (off);
+    
+    // return the return value from the k primitive
+    return z;
+}
 
-// ***RECEIVE MESSAGE***
-msg_env *receive_message() { //Doesn't take the PCB as a parameter. Dealt with using curr_process
+// ***KERNEL RECEIVE MESSAGE***
+msg_env *k_receive_message() { //Doesn't take the PCB as a parameter. Dealt with using curr_process
     
     // if the receive message queue is empty
     if (curr_process->receive_msg_Q->head == NULL) {
         
         // if the process is an iprocess or should never be blocked, return a NULL pointer (ie. no env)
-        if (curr_process->priority == -1 || curr_process->state == "NEVER_BLK_PROC")
+        if (curr_process->priority == -1)
             return NULL;
         
         // if it's a normal process, block it on receive
@@ -210,6 +225,20 @@ msg_env *receive_message() { //Doesn't take the PCB as a parameter. Dealt with u
         return env_DEQ(curr_process->receive_msg_Q);
 }
 
+// ***USER RECEIVE MESSAGE***
+msg_env *receive_message() {
+        // turn atomicity on
+        atomic (on);
+        
+        // call the kernel receive message
+        msg_env *temp = k_receive_message();
+        
+        // turn atomicity off
+        atomic (off);
+        
+        // return the pointer to the message envelope
+        return temp;
+}
 
 // *** SEND CONSOLE CHARS***
 int send_console_chars(msg_env *env) {
@@ -272,7 +301,7 @@ PCB *convert_PID(int PID) {
 PCB_Q *convert_priority(int newPri) {
     
     // if the new priority is not valid (1-3)
-    if (newPri > 3 || newPri < 0) {
+    if (newPri > 4 || newPri < 0) {           //changed to 5 due to NULL process
         //printf("Invalid priority!!!!!");
         return NULL;
     }
@@ -280,3 +309,7 @@ PCB_Q *convert_priority(int newPri) {
     // if the priority is valid, return the pointer to the priority queue from the array
     return pointer_2_RPQ[newPri];
 }
+
+// ***RELEASE PROCESSOR***
+int k_release_processor() {
+    strcpy (curr_process->state, "READY");  //Change current process state to "ready"

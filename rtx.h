@@ -40,7 +40,7 @@ typedef struct envQ env_Q;
 
 struct pcb {
 	struct pcb *p;		// pointer to next PCB in the queue that this PCB resides in
-	char state[SIZE];
+	char *state;       //ASK KORNEL!! SHOULD BE A POINTER TO ARRAY OF CHARS??
 	int pid;
 	int priority;
 	int PC;			//I'm guessing since it's a counter
@@ -71,6 +71,8 @@ PCB *PCB_DEQ(PCB_Q *queue);
 int env_ENQ(msg_env *e, env_Q *queue);
 msg_env *env_DEQ(env_Q *queue);
 
+int k_send_message (int dest_id, msg_env *e);
+msg_env *k_receive_message();
 int send_message (int dest_id, msg_env *e);
 msg_env *receive_message();
 
@@ -99,7 +101,7 @@ void begin_RTX( );
 
 // *** VARIABLES ***
 PCB *pointer_2_PCB[NUM_PROC];	//array of pointers to processes
-PCB_Q *pointer_2_RPQ[4];	//array of pointers to ready process queues
+PCB_Q *pointer_2_RPQ[5];	//array of pointers to ready process queues
 
 PCB *curr_process;		
 
