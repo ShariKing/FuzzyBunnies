@@ -310,6 +310,34 @@ PCB_Q *convert_priority(int newPri) {
     return pointer_2_RPQ[newPri];
 }
 
-// ***RELEASE PROCESSOR***
-int k_release_processor() {
+// ***KERNEL RELEASE PROCESSOR***
+void k_release_processor() {
     strcpy (curr_process->state, "READY");  //Change current process state to "ready"
+    PCB_ENQ(curr_process, convert_priority(curr_process->priority));       //Enqueue PCB into a rpq
+    process_switch();                       //Shari is taking care of process switch.
+}    
+
+// ***USER RELEASE PROCESSOR***
+void release processor() {
+     atomic (on);                //turn atomicity on
+     k_release_processor();     //call the kernel function
+     atomic (off);              //turn atomic off
+}
+
+// ***KERNEL GET ENVELOPE***
+msg_env *k_allocate_enevlope() {
+        while (envelope_q->head == NULL){        //while envelope q is empty
+              PCB_ENQ(curr_process, blocked_on_env);     //enqueue on blocked_on_env q
+              strcpy(curr_process->state,"BLOCED_ON_ENV");         // change state to blocked on env
+              process_switch();
+        }
+        msg env *temp = env_DEQ(envelope_q);            //make a temp pointer that points to the dequeued envelope from the free env q
+        return temp;
+}
+
+//***USER GET ENVELOPE***
+msg_env *allocate_envelope(){
+        atomic (on);
+        msg_env *tep = k_allocate_envelope();
+        atomic (off);
+}
