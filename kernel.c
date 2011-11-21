@@ -192,13 +192,13 @@ int k_send_message(int dest_id, msg_env *e) {
 int send_message(int dest_id, msg_env *e) {
     
     // turn atomicity on
-    atomic (on);
+    atomic(on);
     
     // call the kernel send message primitive
     int z = k_send_message(dest_id, e);
     
     // turn atomicity off
-    atomic (off);
+    atomic(off);
     
     // return the return value from the k primitive
     return z;

@@ -163,7 +163,7 @@ int init_queues( )
      else {
           printf("Error Creating Blocked on Envelope Queue\n");
           return 0;
-     }*/*/
+     }*/
           
      // Blocked On Envelope queue
      blocked_on_envelope = create_env_Q();
@@ -190,7 +190,7 @@ int init_queues( )
      return 1;
 }
 
-
+jmp_buf kernel_buf;
 // *** INITIALIZE Non-I PROCESSES ****
 int init_processes ( )
 {
@@ -199,7 +199,10 @@ int init_processes ( )
     itablefile = fopen("itable.txt", "r");
 
     // initialize variables used for reading from table
-    int itable[TOTAL_NUM_PROC][2] = 0, pid = 3, priority = 3, i = 0;
+    int itable[TOTAL_NUM_PROC][2] = {0};
+    int pid = 3;
+    int priority = 3;
+    int i = 0;
     
     // setting up PIDs and Prioritys
     for (i = 0; i < TOTAL_NUM_PROC; i++) {
@@ -261,21 +264,22 @@ int init_processes ( )
             
             //-------- From initialization pdf on Ace-----
             //-------- Initializing context of pcbs---------
+            
              do{
                 if (setjmp(kernel_buf)==0){ // used for first time of initializing context
-                   _set_sp((char *) next_pcb->SP + SIZE); 
-                   if (setjmp(next_pcb->jbContext)==0){ // if first time
+                   _set_sp((char *) new_pcb->SP + SIZE); 
+                   if (setjmp(new_pcb->PC)==0){ // if first time
                       longjmp(kernel_buf,1);            // restore constext
                    }
                    else{                                  
-                     curr_proc = next_pcb; 
-                     strcpy(curr_proc->state,"EXECUTING"); 
+                     curr_process = new_pcb; // sets the new pcb to be the current process
+                     strcpy(curr_process->state,"EXECUTING"); //sets state to executing
                      void (*fpTmp)();
-                     (void *)(fpTmp) = (void *)(curr_proc->GetAddress()); 
+                     (fpTmp) = (void *)(curr_process->PC); //gets address of process code
                      fpTmp(); 
                      }
                 }
-             }while(index <= NUMPCB);
+             }while(j <= TOTAL_NUM_PROC);
              
             // enqueue the process on the appropriate ready queue
             if (new_pcb->priority == 0)
@@ -326,12 +330,12 @@ int init_env()
         new_env->sender_id = -1; //setting the id to an int of -1 just for initialize
         new_env->target_id = -1; //setting the id to an int of -1 just for initialize
         
-        struct msgenv* new_env->msg_type = (char *) malloc (sizeof (SIZE)); //initialize the character array pointer
+        new_env->msg_type = (char *) malloc (sizeof (SIZE)); //initialize the character array pointer
         // if the msg_type pointer is not created properly
         if (!new_env->msg_type)
             return 0;
         
-        struct msgenv* new_env->msg_text = (char *) malloc (sizeof (SIZE)); //initialize the character array pointer
+        new_env->msg_text = (char *) malloc (sizeof (SIZE)); //initialize the character array pointer
         // if the msg_text pointer is not created properly
         if (!new_env->msg_text)
             return 0;
