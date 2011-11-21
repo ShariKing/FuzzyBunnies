@@ -16,24 +16,16 @@
 
 // *** PROCESS A *** PID 3
 void ProcessA(){
+    // initialize return int, count
+    int num = 0;
     
-     // initialize return int, count and temporary envelopes
-    int result, num = 0;
-    struct msgenv* envA = (struct msgenv *) malloc (sizeof (struct msgenv));
-    struct msgenv* tempEnv = (struct msgenv *) malloc (sizeof (struct msgenv));
-   
     // receive the message from the CCI
     envA = receive_message();
 
-    // deallocate the message
-    deallocate_message(envA);
-    
-    // if the temp is NULL
-    if (!tempEnv)
-        return;
+    // deallocate the message from Proc A's queue in its PCB
+    // FIX       deallocate_message(envA);
     
     while(1){
-        
         // request an envelope
         tempEnv = request_msg_env();
         
@@ -42,7 +34,7 @@ void ProcessA(){
         tempEnv->msg_text[1] = num;
         
         // send to ProcessB
-        result = send_message(4, tempEnv);
+        int result = send_message(4, tempEnv);
         
         num++;
         
@@ -53,23 +45,15 @@ void ProcessA(){
 
 // *** PROCESS B *** PID 4
 void ProcessB(){
-    
-    // create an env to use
-    struct msgenv* envB = (struct msgenv *) malloc (sizeof (struct msgenv));
-    
-    // if the env is NULL
-    if (!envB)
-        return;
-    
     while(1){
-
         // receive the message from Process A
         envB = receive_message();
         
         // send to ProcessB
-        envB = send_message(5, envB);
- 
-    }    
+        int Z = send_message(5, envB);
+        if (Z ==0)
+           printf("Sending Failed from Proc B");
+     }    
 }
 
 
@@ -77,9 +61,11 @@ void ProcessB(){
 void ProcessC(){
 
     // init the local queue
-    envQ localQ = (envQ) malloc (sizeof envQ);
-    if (!localQ)
-        return
+    struct envQ* localQ = (struct envQ *) malloc (sizeof (struct envQ));
+    if (!localQ) {
+        printf("localQ in Proc C not created properly");
+        return;
+    } // can we use the queue on the proc pcb instead?
             
     // init a PCB and a couple env
     struct pcb* CPCB = (struct pcb *) malloc(sizeof (struct pcb));
@@ -93,9 +79,11 @@ void ProcessC(){
     while (1){
         
         // if theres nothing the localQ, receive a message and enqueue it
-        if (!localQ->head){
-            envC = receive_message;     
-            envC = env_ENQ(localQ);
+        if (localQ->head == NULL){
+            envC = receive_message();     
+            int H = env_ENQ(envC,localQ);
+            if (H ==0)
+               printf("Cannot enqueue on localQ");
         }
         
         // if there is something on the localQ, dequeue it
@@ -103,41 +91,35 @@ void ProcessC(){
             envC = env_DEQ(localQ);
             
         // if the message type is count report, and the value in msg_text is evenly divisible by 20, display "Process C"
-        if (envC->msg_type == "count_report" && envC->msg_type % 20 == 0){
+        if (envC->msg_type == "count_report" && envC->msg_text % 20 == 0){
   
             // send the display message
-            strcpy(envSend->msg_text, "Process C");
-            send_console_chars(envSend);
-
-            // wait for the ack message
-            envC = receive_message();
-
-            // if it's not the ack message, put it on the local Q
-            while (envC->msg_type != "display_ack"){
+            strcpy(envC->msg_text, "Process C");
+            int W = send_console_chars(envSend); // Returns confirmation of sending
+            if (W==1) {
+                // if it is the ack message request a delay of 10s, with wakeup code "wakeup10"
+                int R = request_delay(10, "wakeup10", envC); // request_delay returns an int
+                if (R==0)
+                   printf("Error with request_delay");
+                   
+                // wait for wakeup message
                 envC = receive_message();
-                envC = env_ENQ(localQ);
+    
+                // if its not the wakeup message put it on the local Q
+                while (envC->msg_type != "wakeup10"){
+                    envC = receive_message();
+                    envC = env_ENQ(localQ);
+                }   
             }
-
-            // if it is the ack message request a delay of 10s, with wakeup code "wakeup10"
-            request_delay(10, "wakeup10");
-
-            // wait for wakeup message
-            envC = receive_message();
-
-            // if its not the wakeup message put it on the local Q
-            while (envC->msg_type != "wakeup10"){
-                envC = receive_message();
-                envC = env_ENQ(localQ);
-            }
-
+            else
+               printf("Error sending 'Process C' to screen in Proc C");
+            
         }  
-        
         // deallocate envelopes
         deallocate_message(envC);
-        deallocate_message(envSend);
         
         // release processor
-        release_processor();
+        int R =release_processor();
             
     }// end of infinite loop
 }

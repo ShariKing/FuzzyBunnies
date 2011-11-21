@@ -14,6 +14,26 @@
 #include <errno.h>
 #include "rtx.h"
 
+// ******ATOMIC FUNCTION*********
+
+// check the logic on these, as to whether the static variable holds between the two like this
+void atomic_on() { 
+    static sigset_t oldmask;
+    sigset_t newmask;
+    sigemptyset(&newmask);
+    sigaddset(&newmask, SIGALRM); //the alarm signal
+    sigaddset(&newmask, SIGINT); // the CNTRL-C
+    sigaddset(&newmask, SIGUSR1); // the CRT signal
+    sigaddset(&newmask, SIGUSR2); // the KB signal
+    sigprocmask(SIG_BLOCK, &newmask, &oldmask);
+}
+
+void atomic_off() {
+     static sigset_t oldmask;
+     sigset_t newmask;
+     //unblock the signals
+     sigprocmask(SIG_SETMASK, &oldmask, NULL);
+     }
 
 // *** PCB ENQUEUE ***
 int PCB_ENQ(PCB *r, PCB_Q *queue) {
@@ -192,13 +212,13 @@ int k_send_message(int dest_id, msg_env *e) {
 int send_message(int dest_id, msg_env *e) {
     
     // turn atomicity on
-    atomic(on);
+    atomic_on();
     
     // call the kernel send message primitive
     int z = k_send_message(dest_id, e);
     
     // turn atomicity off
-    atomic(off);
+    atomic_off();
     
     // return the return value from the k primitive
     return z;
@@ -228,13 +248,13 @@ msg_env *k_receive_message() { //Doesn't take the PCB as a parameter. Dealt with
 // ***USER RECEIVE MESSAGE***
 msg_env *receive_message() {
         // turn atomicity on
-        atomic (on);
+        atomic_on();
         
         // call the kernel receive message
         msg_env *temp = k_receive_message();
         
         // turn atomicity off
-        atomic (off);
+        atomic_off();
         
         // return the pointer to the message envelope
         return temp;
@@ -310,6 +330,8 @@ PCB_Q *convert_priority(int newPri) {
     return pointer_2_RPQ[newPri];
 }
 
+// -----------------------------Finish this function---------------------
 // ***RELEASE PROCESSOR***
 int k_release_processor() {
     strcpy (curr_process->state, "READY");  //Change current process state to "ready"
+}
