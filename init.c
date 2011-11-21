@@ -259,6 +259,24 @@ int init_processes ( )
             // create a pointer to the pcb, based on its PID, and save it in the array
             pointer_2_PCB[TOTAL_NUM_IPROC + j] = new_pcb;
             
+            //-------- From initialization pdf on Ace-----
+            //-------- Initializing context of pcbs---------
+             do{
+                if (setjmp(kernel_buf)==0){ // used for first time of initializing context
+                   _set_sp((char *) next_pcb->SP + SIZE); 
+                   if (setjmp(next_pcb->jbContext)==0){ // if first time
+                      longjmp(kernel_buf,1);            // restore constext
+                   }
+                   else{                                  
+                     curr_proc = next_pcb; 
+                     strcpy(curr_proc->state,"EXECUTING"); 
+                     void (*fpTmp)();
+                     (void *)(fpTmp) = (void *)(curr_proc->GetAddress()); 
+                     fpTmp(); 
+                     }
+                }
+             }while(index <= NUMPCB);
+             
             // enqueue the process on the appropriate ready queue
             if (new_pcb->priority == 0)
                 PCB_ENQ(new_pcb, ready_q_priority0);
@@ -571,7 +589,8 @@ int main ()
         // set the current process to whatever comes first
         // ***** should be the first process in the first ready queue? does that mean we can just hardcode this since it will be the same every time?
         curr_process = convert_PID(4);
-
+        
+        
         // ***** why are we doing this???
         strcpy(curr_process->state,"NEVER_BLK_PROC");
 
