@@ -304,7 +304,7 @@ int get_console_chars(msg_env * env) {
 }
 
 
-// ***GET A PROCESS ID AND RETURN IT'S PCB POINTER***
+// ***GIVE A PROCESS ID AND RETURN IT'S PCB POINTER***
 PCB *convert_PID(int PID) {
     
     // if the process ID is invalid
