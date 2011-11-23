@@ -163,7 +163,7 @@ int init_queues( )
      else {
           printf("Error Creating Blocked on Envelope Queue\n");
           return 0;
-     }*/*/
+     }*/
           
      // Blocked On Envelope queue
      blocked_on_envelope = create_env_Q();
@@ -190,7 +190,7 @@ int init_queues( )
      return 1;
 }
 
-
+jmp_buf kernel_buf;
 // *** INITIALIZE Non-I PROCESSES ****
 int init_processes ( )
 {
@@ -199,7 +199,11 @@ int init_processes ( )
     itablefile = fopen("itable.txt", "r");
 
     // initialize variables used for reading from table
-    int itable[TOTAL_NUM_PROC][2] = 0, pid = 3, priority = 3, i = 0;
+    int itable[TOTAL_NUM_PROC][2] = {0};
+    int pid = 3;
+    int priority = 3;
+    int i = 0;
+
     
     // setting up PIDs and Prioritys
     for (i = 0; i < TOTAL_NUM_PROC; i++) {
@@ -245,7 +249,7 @@ int init_processes ( )
             new_pcb->SP = NULL; //FOR CONTEXT SWITCHING. TO BE CHANGED LATER.
             
             // set process counter for the appropriate process from the table
-            new_pcb->PC = itable[i][2]; // WHAT IS THIS?!
+            //new_pcb->PC = itable[i][2]; // WHAT IS THIS?!
             
             // set all processes to the READY state
             strcpy(new_pcb->state, "READY");
@@ -258,24 +262,25 @@ int init_processes ( )
             
             // create a pointer to the pcb, based on its PID, and save it in the array
             pointer_2_PCB[TOTAL_NUM_IPROC + j] = new_pcb;
-            
+
             //-------- From initialization pdf on Ace-----
             //-------- Initializing context of pcbs---------
+            
              do{
                 if (setjmp(kernel_buf)==0){ // used for first time of initializing context
-                   _set_sp((char *) next_pcb->SP + SIZE); 
-                   if (setjmp(next_pcb->jbContext)==0){ // if first time
+                   _set_sp((char *) new_pcb->SP + SIZE); 
+                   if (setjmp(new_pcb->PC)==0){ // if first time
                       longjmp(kernel_buf,1);            // restore constext
                    }
                    else{                                  
-                     curr_proc = next_pcb; 
-                     strcpy(curr_proc->state,"EXECUTING"); 
+                     curr_process = new_pcb; // sets the new pcb to be the current process
+                     strcpy(curr_process->state,"EXECUTING"); //sets state to executing
                      void (*fpTmp)();
-                     (void *)(fpTmp) = (void *)(curr_proc->GetAddress()); 
+                     (fpTmp) = (void *)(curr_process->PC); //gets address of process code
                      fpTmp(); 
                      }
                 }
-             }while(index <= NUMPCB);
+             }while(j <= TOTAL_NUM_PROC);
              
             // enqueue the process on the appropriate ready queue
             if (new_pcb->priority == 0)
@@ -289,9 +294,7 @@ int init_processes ( )
             
             else if (new_pcb->priority == 3)
                 PCB_ENQ(new_pcb, ready_q_priority3);
-                
-            else if (new_pcb->priority == 4) // ONLY FOR NULL PROCESS!!!!!!!!!!
-                 PCB_ENQ(new_pcb, ready_q_priority4);            
+            
             else {
                 printf("Error, invalid priority for process ", j, "\n");
                 return 0;
@@ -326,12 +329,12 @@ int init_env()
         new_env->sender_id = -1; //setting the id to an int of -1 just for initialize
         new_env->target_id = -1; //setting the id to an int of -1 just for initialize
         
-        struct msgenv* new_env->msg_type = (char *) malloc (sizeof (SIZE)); //initialize the character array pointer
+        new_env->msg_type = (char *) malloc (sizeof (SIZE)); //initialize the character array pointer
         // if the msg_type pointer is not created properly
         if (!new_env->msg_type)
             return 0;
         
-        struct msgenv* new_env->msg_text = (char *) malloc (sizeof (SIZE)); //initialize the character array pointer
+        new_env->msg_text = (char *) malloc (sizeof (SIZE)); //initialize the character array pointer
         // if the msg_text pointer is not created properly
         if (!new_env->msg_text)
             return 0;
@@ -589,8 +592,7 @@ int main ()
         // set the current process to whatever comes first
         // ***** should be the first process in the first ready queue? does that mean we can just hardcode this since it will be the same every time?
         curr_process = convert_PID(4);
-        
-        
+
         // ***** why are we doing this???
         strcpy(curr_process->state,"NEVER_BLK_PROC");
 
@@ -609,9 +611,50 @@ int main ()
         sigset(SIGSEGV,parent_die);	// catch segmentation faults
         sigset(SIGUSR1,kbd_iproc);
         sigset(SIGUSR2,crt_iproc);
+        sigset(SIGALRM,timer_iproc); //Catch clock ticks
 
         // INITIALIZE KB AND CRT
         kb_crt_start();
+        
+        
+        //Allocate memory for the wallclock structure
+        struct clock* wallclock = (struct clock *) malloc (sizeof (struct clock));
+        
+        //Initialize and set the wallclock to 0
+        if(wallclock) {
+             wallclock->ss = 0;
+             wallclock->mm = 0;
+             wallclock->hh = 0;
+        }
+        else {
+            printf("Error, wallclock initialization failed!!!\n");
+            exit;
+        }
+        
+        //Allocate memory for the systemclock structure
+        struct clock* systemclock = (struct clock *) malloc (sizeof (struct clock));
+        
+        //Initialize and set the wallclock to 0
+        if(systemclock) {
+             systemclock->ss = 0;
+             systemclock->mm = 0;
+             systemclock->hh = 0;
+        }
+        else {
+            printf("Error, system clock initialization failed!!!\n");
+            exit;
+        }
+        
+        
+        //initialize the dummy pulse counter
+        int pulse_counter = 0;
+        
+        //set a repeating alarm to send SIGALRM every 100000 usec, or 0.1sec
+        int alarmstatus = ualarm(100000, 100000);
+        //ualarm returns zero if functioning normally, otherwise return an error message
+        if(alarmstatus != 0)
+             printf("Error: Something is wrong with the system timer!\n");
+        
 
 
         //*** BACK TO MAIN RTOS STUFF ***
@@ -629,7 +672,7 @@ int main ()
        
         // code to make process P work
         printf("Type something then an end-of-line and it will be echoed by the superbly awesome Process P:\n");
-        processP();
+        ClockTest(systemclock);
         
         // should never reach here, but in case we do, clean up after ourselves
         cleanup();
