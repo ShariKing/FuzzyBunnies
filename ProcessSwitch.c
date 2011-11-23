@@ -21,20 +21,20 @@ void null process() {
 
 process_switch() { 
     if(ready_Q_priority0 != NULL) // If highest priority queue isn't empty
-        next_pcb = PCB_DEQ(ready_Q_priority0); //get ptr to highest priority ready process
+        new_pcb = PCB_DEQ(ready_Q_priority0); //get ptr to highest priority ready process
     else if (ready_Q_priority1 != NULL)
-         next_pcb = PCB_DEQ(ready_Q_priority1); //get ptr to highest priority ready process
+         new_pcb = PCB_DEQ(ready_Q_priority1); //get ptr to highest priority ready process
     else if (ready_Q_priority2 != NULL)
-         next_pcb = PCB_DEQ(ready_Q_priority2); //get ptr to highest priority ready process
+         new_pcb = PCB_DEQ(ready_Q_priority2); //get ptr to highest priority ready process
     else if (ready_Q_priority3 != NULL)
-         next_pcb = PCB_DEQ(ready_Q_priority3); //get ptr to highest priority ready process
+         new_pcb = PCB_DEQ(ready_Q_priority3); //get ptr to highest priority ready process
     else 
-         next_pcb = PCB_DEQ(ready_Q_priority4); //only for null process
+         new_pcb = PCB_DEQ(ready_Q_priority4); //only for null process
     strcpy(new_pcb->state, "RUNNING"); //set new proc state to running
     strcpy(old_pcb->state, "READY"); //set old proc state to ready
     old_pcb = curr_process;
-    curr_process = next_pcb; //make the next_pcb the current process
-    context_switch( old_pcb->jmp_buf, next_pcb->jmp_buf );
+    curr_process = new_pcb; //make the next_pcb the current process
+    context_switch( old_pcb->jmp_buf, new_pcb->jmp_buf );
 }
 
 // context_switch() - performs the context switch between two user processes

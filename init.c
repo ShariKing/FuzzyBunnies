@@ -190,7 +190,7 @@ int init_queues( )
      return 1;
 }
 
-
+jmp_buf kernel_buf;
 // *** INITIALIZE Non-I PROCESSES ****
 int init_processes ( )
 {
@@ -200,7 +200,10 @@ int init_processes ( )
 
     // initialize variables used for reading from table
     int itable[TOTAL_NUM_PROC][2] = {0};
-    int pid = 3, priority = 3, i = 0;
+    int pid = 3;
+    int priority = 3;
+    int i = 0;
+
     
     // setting up PIDs and Prioritys
     for (i = 0; i < TOTAL_NUM_PROC; i++) {
@@ -259,7 +262,26 @@ int init_processes ( )
             
             // create a pointer to the pcb, based on its PID, and save it in the array
             pointer_2_PCB[TOTAL_NUM_IPROC + j] = new_pcb;
+
+            //-------- From initialization pdf on Ace-----
+            //-------- Initializing context of pcbs---------
             
+             do{
+                if (setjmp(kernel_buf)==0){ // used for first time of initializing context
+                   _set_sp((char *) new_pcb->SP + SIZE); 
+                   if (setjmp(new_pcb->PC)==0){ // if first time
+                      longjmp(kernel_buf,1);            // restore constext
+                   }
+                   else{                                  
+                     curr_process = new_pcb; // sets the new pcb to be the current process
+                     strcpy(curr_process->state,"EXECUTING"); //sets state to executing
+                     void (*fpTmp)();
+                     (fpTmp) = (void *)(curr_process->PC); //gets address of process code
+                     fpTmp(); 
+                     }
+                }
+             }while(j <= TOTAL_NUM_PROC);
+             
             // enqueue the process on the appropriate ready queue
             if (new_pcb->priority == 0)
                 PCB_ENQ(new_pcb, ready_q_priority0);
@@ -313,9 +335,11 @@ int init_env()
         if (!tempMsgType)
             return 0;
         
+        
         new_env->msg_type = tempMsgType;
         
         char* tempMsgText = (char *) malloc (sizeof (SIZE)); //initialize the character array pointer
+
         // if the msg_text pointer is not created properly
         if (!tempMsgText)
             return 0;
