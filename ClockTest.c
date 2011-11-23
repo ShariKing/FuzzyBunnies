@@ -15,7 +15,7 @@
 #include "rtx.h"
 
 // Clock Test Process
-void ClockTest(clock *clock) 
+void ClockTest(clk *clock) 
 {   
       struct msgenv* env = (struct msgenv *) malloc (sizeof (struct msgenv));
       env->msg_type = (char*)malloc (sizeof (SIZE));

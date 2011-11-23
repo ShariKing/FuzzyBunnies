@@ -19,6 +19,7 @@
 #include "rtx.h"
 #include "kbcrt.h"
 
+
 // *** FUNCTION TO CLEAN UP PARENT PROCESSES***
 void parent_die(int signal)
 {
@@ -267,7 +268,7 @@ int init_processes ( )
             //-------- From initialization pdf on Ace-----
             //-------- Initializing context of pcbs---------
             
-             do{
+           /*  do{
                 if (setjmp(kernel_buf)==0){ // used for first time of initializing context
                    _set_sp((char *) new_pcb->SP + SIZE); 
                    if (setjmp(new_pcb->PC)==0){ // if first time
@@ -281,7 +282,7 @@ int init_processes ( )
                      fpTmp(); 
                      }
                 }
-             }while(j <= TOTAL_NUM_PROC);
+             }while(j <= TOTAL_NUM_PROC);*/
              
             // enqueue the process on the appropriate ready queue
             if (new_pcb->priority == 0)
@@ -561,6 +562,37 @@ void kb_crt_start(){
 // ***** THE MAIN MAIN MAIN RTOS FUNCTION *****
 int main ()
 {
+    
+        //Allocate memory for the systemclock structure
+        systemclock = (struct clock *) malloc (sizeof (struct clock));
+        //Allocate memory for the wallclock structure
+        wallclock = (struct clock *) malloc (sizeof (struct clock));
+        
+        //Initialize and set the wallclock to 0
+        if(wallclock) {
+             wallclock->ss = 0;
+             wallclock->mm = 0;
+             wallclock->hh = 0;
+             printf("Wall clock created at address pointer %p \n", wallclock);
+        }
+        else {
+            printf("Error, wallclock initialization failed!!!\n");
+            exit;
+        }
+        
+        //Initialize and set the wallclock to 0
+        if(systemclock) {
+             systemclock->ss = 0;
+             systemclock->mm = 0;
+             systemclock->hh = 0;
+             printf("System clock created at address pointer %p \n", systemclock);
+        }
+        else {
+            printf("Error, system clock initialization failed!!!\n");
+            exit;
+        }
+        
+        
         // if init_queues returned 1
         if (init_queues())
                 printf("Initialized queues correctly\n");        
@@ -623,33 +655,6 @@ int main ()
 
         // INITIALIZE KB AND CRT
         kb_crt_start();
-        
-        //Allocate memory for the systemclock structure
-        /*struct clock**/ systemclock = (struct clock *) malloc (sizeof (struct clock));
-        //Allocate memory for the wallclock structure
-        /*struct clock**/ wallclock = (struct clock *) malloc (sizeof (struct clock));
-                
-        //Initialize and set the wallclock to 0
-        if(wallclock) {
-             wallclock->ss = 0;
-             wallclock->mm = 0;
-             wallclock->hh = 0;
-        }
-        else {
-            printf("Error, wallclock initialization failed!!!\n");
-            exit;
-        }
-        
-        //Initialize and set the wallclock to 0
-        if(systemclock) {
-             systemclock->ss = 0;
-             systemclock->mm = 0;
-             systemclock->hh = 0;
-        }
-        else {
-            printf("Error, system clock initialization failed!!!\n");
-            exit;
-        }
 
         
         //set a repeating alarm to send SIGALRM every 100000 usec, or 0.1sec

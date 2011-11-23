@@ -13,8 +13,10 @@
 #include <errno.h>
 #include "rtx.h"
 
-void clock_increment(clock* clock, bool system_or_wall) {
+void clock_increment(clk* clock, int system_or_wall) {
 		
+        //printf("%p is the pointer %d", clock, system_or_wall);
+        printf("%d is the seconds %d is the minutes %d is the hours \n", clock->ss, clock->mm, clock->hh);
         if (clock->ss < 60)
 			clock->ss++;
 		else
@@ -30,10 +32,10 @@ void clock_increment(clock* clock, bool system_or_wall) {
 					if(clock->hh < 24 || clock->hh > 0)
                          clock->hh++;
                     else
-                         clock.hh == 0;
+                         clock->hh == 0;
                 }
                 else
-                    clock.hh++
+                    clock->hh++;
 			}
 		}
 		
@@ -42,7 +44,7 @@ void clock_increment(clock* clock, bool system_or_wall) {
              printf("YOU BROKE TIIIIIIIIIME\n");
 }
 
-int clock_set(clock* clock, int hours, int minutes, int seconds) {
+int clock_set(clk* clock, int hours, int minutes, int seconds) {
     
         if(seconds < 60 && seconds >= 0)	{
              if(minutes < 60 && minutes >= 0){
@@ -58,27 +60,34 @@ int clock_set(clock* clock, int hours, int minutes, int seconds) {
         return 0; //Return a zero if there is a problem with setting the clock
 }
 
-int clock_out(clock* clock, msg_env *e){
+int clock_out(clk* clock, msg_env *e){
      
-     char* temptime /*<----temporary holding variable*/, timewords;  //Temporary character pointer
+     char* temptime = (char *) malloc (sizeof (char)); //temporary holding variable
+     char* timewords = (char *) malloc (sizeof (char));  //Temporary character pointer
      
-     itoa(clock->hh, timewords, 10);            //convert and copy the values in hours into the timewords character pointer
+     if(!temptime || !timewords)
+          return 0; //Error with clock printing
+          
+     
+     sprintf(timewords, "%d", clock->hh);
+//     itoa(clock->hh, timewords, 10);            //convert and copy the values in hours into the timewords character pointer
      strcat(timewords, ":");
-     itoa(clock->mm, temptime, 10);        //convert the values in minutes into characters and put them in a temporary holding variable
+     sprintf(temptime, "%d", clock->mm);
+//     itoa(clock->mm, temptime, 10);        //convert the values in minutes into characters and put them in a temporary holding variable
      strcat(timewords, temptime);    //concatenate the minutes into the timewords character pointer
      strcat(timewords, ":");
-     itoa(clock->ss, temptime, 10);  //convert the values in seconds into characters and write them into the temporary holding variable
+     sprintf(temptime, "%d", clock->ss);
+//     itoa(clock->ss, temptime, 10);  //convert the values in seconds into characters and write them into the temporary holding variable
      strcat(timewords, temptime);    //concatenate the hours into timewords. Timewords should now contain the properly formatted time.
      
      //If envelope is not empty, output an error message
-     if(e->msg_text != NULL)
-          printf("Error, clock cannot output due to non-empty envelope!\n");
-          
-     else
-     {
+     //if(e->msg_text != NULL)
+          //printf("Error, clock cannot output due to non-empty envelope!\n");
+     //     printf("Message contains %s EOM\n", e->msg_text);
+     //else
+     //{
           strcpy(e->msg_text, timewords);    //put the formatted time text into the envelope
           send_console_chars(e);
           return 1; //Success!
-     }
-     return 0; //Error with clock printing
+     //}
 }
