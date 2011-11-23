@@ -71,6 +71,7 @@ void cleanup();
 // PROCESSES
 void kbd_iproc(int sigval);
 void crt_iproc(int sigval);
+void timer_iproc(int sigval);
 
 // PRIMITIVES
 int PCB_ENQ(PCB *r, PCB_Q *queue);
@@ -110,6 +111,10 @@ PCB *pointer_2_PCB[NUM_PROC];	//array of pointers to processes
 PCB_Q *pointer_2_RPQ[4];	//array of pointers to ready process queues
 
 PCB *curr_process;		
+
+int pulse_counter = 0;     //Dummy Pulse Counter
+clk* systemclock, wallclock;     //Global Clock Variables
+
 
 // QUEUES
 PCB_Q* ready_q_priority0;

@@ -329,15 +329,22 @@ int init_env()
         new_env->sender_id = -1; //setting the id to an int of -1 just for initialize
         new_env->target_id = -1; //setting the id to an int of -1 just for initialize
         
-        new_env->msg_type = (char *) malloc (sizeof (SIZE)); //initialize the character array pointer
+        char* tempMsgType = (char *) malloc (sizeof (SIZE)); //initialize the character array pointer
+        
         // if the msg_type pointer is not created properly
-        if (!new_env->msg_type)
+        if (!tempMsgType)
             return 0;
         
-        new_env->msg_text = (char *) malloc (sizeof (SIZE)); //initialize the character array pointer
+        
+        new_env->msg_type = tempMsgType;
+        
+        char* tempMsgText = (char *) malloc (sizeof (SIZE)); //initialize the character array pointer
+
         // if the msg_text pointer is not created properly
-        if (!new_env->msg_text)
+        if (!tempMsgText)
             return 0;
+            
+        new_env->msg_text = tempMsgText;
         
         //new_env->msg_type ; 
         //new_env->msg_text ;
@@ -616,10 +623,11 @@ int main ()
         // INITIALIZE KB AND CRT
         kb_crt_start();
         
-        
+        //Allocate memory for the systemclock structure
+        /*struct clock**/ systemclock = (struct clock *) malloc (sizeof (struct clock));
         //Allocate memory for the wallclock structure
-        struct clock* wallclock = (struct clock *) malloc (sizeof (struct clock));
-        
+        /*struct clock**/ wallclock = (struct clock *) malloc (sizeof (struct clock));
+                
         //Initialize and set the wallclock to 0
         if(wallclock) {
              wallclock->ss = 0;
@@ -631,9 +639,6 @@ int main ()
             exit;
         }
         
-        //Allocate memory for the systemclock structure
-        struct clock* systemclock = (struct clock *) malloc (sizeof (struct clock));
-        
         //Initialize and set the wallclock to 0
         if(systemclock) {
              systemclock->ss = 0;
@@ -644,10 +649,7 @@ int main ()
             printf("Error, system clock initialization failed!!!\n");
             exit;
         }
-        
-        
-        //initialize the dummy pulse counter
-        int pulse_counter = 0;
+
         
         //set a repeating alarm to send SIGALRM every 100000 usec, or 0.1sec
         int alarmstatus = ualarm(100000, 100000);

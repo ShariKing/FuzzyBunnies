@@ -121,8 +121,8 @@ void timer_iproc(int sigval) {
   		//when pulse counter hits ten (one second)
 		if(pulse_counter == 10)
         {
-			clock_increment(system_clock, 0);
-			clock_increment(wall_clock, 1);
+			clock_increment(systemclock, 0);
+			clock_increment(wallclock, 1);
 			pulse_counter = 0;
 		}
 }
