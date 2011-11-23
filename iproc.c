@@ -114,13 +114,15 @@ void crt_iproc(int sigval) {
 
 void timer_iproc(int sigval) {
      
-        printf("\nClock Signal Received.   Incrememting pulse counter from %i ", pulse_counter);
+        static int pulse_counter = 0;     //Dummy Pulse Counter
+        //printf("\nClock Signal Received.   Incrememting pulse counter from %i ", pulse_counter);
         //increment the pulse counter
   		pulse_counter++;
-        printf("to %i ...\n", pulse_counter);  		
+        //printf("to %i ...\n", pulse_counter);  		
   		//when pulse counter hits ten (one second)
 		if(pulse_counter == 10)
         {
+            //printf("%p wallclock pointer .... %p system clock pointer\n\n", wallclock, systemclock);
 			clock_increment(systemclock, 0);
 			clock_increment(wallclock, 1);
 			pulse_counter = 0;

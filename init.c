@@ -19,6 +19,7 @@
 #include "rtx.h"
 #include "kbcrt.h"
 
+
 // *** FUNCTION TO CLEAN UP PARENT PROCESSES***
 void parent_die(int signal)
 {
@@ -266,7 +267,7 @@ int init_processes ( )
             //-------- From initialization pdf on Ace-----
             //-------- Initializing context of pcbs---------
             
-             do{
+           /*  do{
                 if (setjmp(kernel_buf)==0){ // used for first time of initializing context
                    _set_sp((char *) new_pcb->SP + SIZE); 
                    if (setjmp(new_pcb->PC)==0){ // if first time
@@ -280,7 +281,7 @@ int init_processes ( )
                      fpTmp(); 
                      }
                 }
-             }while(j <= TOTAL_NUM_PROC);
+             }while(j <= TOTAL_NUM_PROC);*/
              
             // enqueue the process on the appropriate ready queue
             if (new_pcb->priority == 0)
@@ -624,9 +625,9 @@ int main ()
         kb_crt_start();
         
         //Allocate memory for the systemclock structure
-        /*struct clock**/ systemclock = (struct clock *) malloc (sizeof (struct clock));
+        clk* systemclock = (struct clock *) malloc (sizeof (struct clock));
         //Allocate memory for the wallclock structure
-        /*struct clock**/ wallclock = (struct clock *) malloc (sizeof (struct clock));
+        clk* wallclock = (struct clock *) malloc (sizeof (struct clock));
                 
         //Initialize and set the wallclock to 0
         if(wallclock) {
