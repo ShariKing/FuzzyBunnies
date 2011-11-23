@@ -364,7 +364,7 @@ void k_release_processor() {
 }    
 
 // ***USER RELEASE PROCESSOR***
-void release processor() {
+void release_processor() {
      atomic (on);                //turn atomicity on
      k_release_processor();     //call the kernel function
      atomic (off);              //turn atomic off
@@ -384,7 +384,7 @@ msg_env *k_request_msg_env() {
 //***USER GET ENVELOPE***
 msg_env *request_msg_env(){
         atomic (on);
-        msg_env *tep = k_allocate_envelope();
+        msg_env *tep = k_request_msg_eng();
         atomic (off);
 }
 
