@@ -39,7 +39,7 @@ typedef struct envQ env_Q;
 
 struct pcb {
 	struct pcb *p;		// pointer to next PCB in the queue that this PCB resides in
-	char *state;
+	char state[SIZE];
 	int pid;
 	int priority;
 	int PC;			//I'm guessing since it's a counter
@@ -91,6 +91,12 @@ void processP();
 PCB *convert_PID(int PID);
 PCB_Q *convert_priority(int pri);	
 
+void clock_increment(clk* clock, int system_or_wall);
+int clock_set(clk* clock, int hours, int minutes, int seconds);
+int clock_out(clk* clock, msg_env *e);
+
+void ClockTest(clk *clock);
+
 // INITIALIZATION FUNCTIONS
 PCB_Q* create_Q( );
 env_Q* create_env_Q( );
@@ -112,8 +118,8 @@ PCB_Q *pointer_2_RPQ[4];	//array of pointers to ready process queues
 
 PCB *curr_process;		
 
-int pulse_counter = 0;     //Dummy Pulse Counter
-clk* systemclock, wallclock;     //Global Clock Variables
+clk* systemclock;
+clk* wallclock;     //Global Clock Variables
 
 
 // QUEUES
@@ -121,8 +127,9 @@ PCB_Q* ready_q_priority0;
 PCB_Q* ready_q_priority1;
 PCB_Q* ready_q_priority2;
 PCB_Q* ready_q_priority3;
-PCB_Q* blocked_on_envelope;
 
 env_Q* envelope_q;
+
+env_Q* blocked_on_envelope;
 
 #endif
