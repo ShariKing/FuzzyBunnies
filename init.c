@@ -113,8 +113,9 @@ int init_queues( )
     // ready queue: Prio = 0
      ready_q_priority0 = create_Q();
      
-     if(ready_q_priority0)
+     if(ready_q_priority0){
           printf("Priority Queue 0 Created\n");
+          
      
      else {
           printf("Error Creating Priority Queue 0\n");
