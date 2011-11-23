@@ -40,7 +40,7 @@ void CCI()
                         proc_pcb = convert_PID(i); // call process number
                         list[i,1] = proc_pcb->pid;
                         list[i,2] = proc_pcb->priority;
-                        list[i,3] = proc_pcb->state
+                        list[i,3] = proc_pcb->state;
                         i++;                     
                         }
                      env_ps->msg_text = list;

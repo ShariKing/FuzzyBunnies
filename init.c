@@ -116,7 +116,8 @@ int init_queues( )
      
      if(ready_q_priority0){
           printf("Priority Queue 0 Created\n");
-          
+          pointer_2_RPQ[0] = ready_q_priority0;
+     }
      
      else {
           printf("Error Creating Priority Queue 0\n");
@@ -126,8 +127,10 @@ int init_queues( )
      // ready queue: Prio = 1
      ready_q_priority1 = create_Q();
      
-     if(ready_q_priority1)
+     if(ready_q_priority1){
           printf("Priority Queue 1 Created\n");
+          pointer_2_RPQ[1] = ready_q_priority1;
+     }
      
      else {
           printf("Error Creating Priority Queue 1\n");
@@ -137,8 +140,10 @@ int init_queues( )
      // ready queue: Prio = 2
      ready_q_priority2 = create_Q();
      
-     if(ready_q_priority2)
+     if(ready_q_priority2){
           printf("Priority Queue 2 Created\n");
+          pointer_2_RPQ[2] = ready_q_priority2;
+     }
      
      else {
           printf("Error Creating Priority Queue 2\n");
@@ -148,8 +153,10 @@ int init_queues( )
      // ready queue: Prio = 3
      ready_q_priority3 = create_Q();
      
-     if(ready_q_priority3)
+     if(ready_q_priority3){
           printf("Priority Queue 3 Created\n");
+          pointer_2_RPQ[3] = ready_q_priority3;
+     }
      
      else {
           printf("Error Creating Priority Queue 3\n");
