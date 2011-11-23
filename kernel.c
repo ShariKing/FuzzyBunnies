@@ -97,6 +97,32 @@ PCB *PCB_DEQ(PCB_Q *queue) {
     return t;
 }
 
+//***REMOVE PCB FROM MIDDLE OF QUEUE***
+PCB *PCB_REMOVE(PCB_Q *q, int id){
+    if(q->head == NULL){              //if queue is empty
+                   printf("Queue is empty");
+                   return NULL;
+    }
+    PCB *index = q->head;           //create a pointer that starts at the head
+    if(index->pid == id){           //first PCB is the one we're looking for
+                  index = PCB_DEQ(q);
+                  return index;      //dequeue it and return it
+    }
+    PCB *prev = index;               //pointer prev trails index
+    index = index->p;                //index is leading prev now
+    while(index != NULL){            //while index didn't traverse the entire queue
+                if(index->pid == id){ //if the PCB is found
+                              prev = index->p;
+                              index->p = NULL;
+                              return index;
+                }
+                prev = index;
+                index = index->p;    //move on to the next PCB
+    }
+    
+    printf("Cannot find PCB in queue");
+    return NULL;
+}
 
 // ***ENVELOPE ENQUEUE***
 int env_ENQ(msg_env *e, env_Q *queue) {
@@ -321,7 +347,7 @@ PCB *convert_PID(int PID) {
 PCB_Q *convert_priority(int newPri) {
     
     // if the new priority is not valid (1-3)
-    if (newPri > 4 || newPri < 0) {           //changed to 5 due to NULL process
+    if (newPri > 3 || newPri < 0) {           
         //printf("Invalid priority!!!!!");
         return NULL;
     }
@@ -345,7 +371,7 @@ void release processor() {
 }
 
 // ***KERNEL GET ENVELOPE***
-msg_env *k_allocate_enevlope() {
+msg_env *k_request_msg_env() {
         while (envelope_q->head == NULL){        //while envelope q is empty
               PCB_ENQ(curr_process, blocked_on_env);     //enqueue on blocked_on_env q
               strcpy(curr_process->state,"BLOCED_ON_ENV");         // change state to blocked on env
@@ -356,7 +382,54 @@ msg_env *k_allocate_enevlope() {
 }
 
 //***USER GET ENVELOPE***
-msg_env *allocate_envelope(){
+msg_env *request_msg_env(){
         atomic (on);
         msg_env *tep = k_allocate_envelope();
         atomic (off);
+}
+
+//***KERNEL RELEASE ENVELOPE***
+int k_release_msg_env(msg_env *env){
+    env_ENQ(env, envelope_q);                      //enqueue the envelope to the envelope queue
+    if (blocked_on_envelope->head != NULL){        //if there's a blocked process
+       PCB *temp = PCB_DEQ(blocked_on_envelope);   //dequeue the first process from the blocked_on_env and make a temp pointer to the PCB
+       strcpy(temp->state,"READY");                //set the process state to ready
+       PCB_ENQ(temp, convert_priority(temp->priority));      //ENQ PCB in the appropriate rpq
+    }
+    return 1;
+}
+
+//***USER RELEASE ENV***
+int release_msg_env(msg_env *env){
+    atomic (on);
+    int z = k_release_msg_env(env);
+    atomic (off);
+    return z;
+}
+
+//***KERNEL CHANGE PRIOIRTY***
+int k_change_priority(int new_priority, int target_process_id){
+    if(new_priority>3 || new_priority<0){
+                      printf("invalid priority");
+                      return 0;
+    //if(target_process_id is not in the given ids){
+                           //printf("Invalid ID");
+                           //return 0;
+    PCB *target = convert_PID(target_process_id);              //create a pointer that points to the PCB
+    int old_priority = target->priority;                       //need the old one for later
+    if(old_priority == new_priority){
+                    printf("Old priority same as new one");
+                    return 1;                                  //success I guess?
+    }
+    target->priority = new_priority;                           //change the priority
+    PCB_REMOVE(convert_priority(old_priority), target_process_id);      //remove PCB from old rpq
+    PCB_ENQ(target, convert_priority(new_priority));                    //Enqueue it to the new rpq
+    return 1;
+
+//***USER CHANGE PRIORITY***
+int change_priority (int new_priority, int target_process_id){
+    atomic (on);
+    int z = k_change_priority(new_priority, target_process_id);
+    atomic (off);
+    return z;
+}
