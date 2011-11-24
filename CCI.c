@@ -15,6 +15,12 @@
 
 void CCI() 
 {   
+      int HH=0;
+      int MM=0;
+      int SS=0;
+      int pri=0;
+      int id=0;
+      msg_env* env;
       if (env){
           //now enter infinite loop 
           while (1) { 
@@ -50,19 +56,23 @@ void CCI()
                      }
                 // allows time to be displayed on console and halts if getting ct
                 else if (env->msg_text[buf_index] == "cd") { 
-                     e = request_msg_env();
-                     if (env->msg_text[buf_index] != "ct") {
+                     msg_env* e = request_msg_env();
+                     if (e->msg_text[buf_index] != "ct") {
                          int R = clock_out(clock, e);
                          if (R==0)
                             printf("Error with displaying clock in CCI");
                      }
                      else
-//fix                         deallocate_env(e);
+                         int L =release_msg_env(e);
+                         if (L==0)
+                            printf("Message not released in clock displaying in CCI");
                      }
                 // b displays past instances of send and receive messages
                 else if (env->msg_text[buf_index] == "b") { 
-//fix                     env1=request_msg_env();
- //fix                    get_trace_buffers(env1);
+                    msg_env* env1=request_msg_env();
+                    int U=get_trace_buffers(env1);
+                    if (U==0)
+                       printf("Error performing call on Trace Buffers");
                      }
                 // terminates RTX
                 else if (env->msg_text[buf_index] == "t") { 

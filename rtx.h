@@ -19,7 +19,8 @@
 
 // *** CONSTANTS ***
 #define SIZE 128
-#define NUM_PROC 12 //Number of processes we have. Will change when I know how many.
+#define TOTAL_NUM_PROC 12 //total number of processes, will change
+#define TOTAL_NUM_IPROC 3 //total number of i-processes
 
 // *** STRUCTS ***
 struct msgenv {
@@ -122,7 +123,7 @@ void begin_RTX( );
 
 
 // *** VARIABLES ***
-PCB *pointer_2_PCB[NUM_PROC];	//array of pointers to processes
+PCB *pointer_2_PCB[TOTAL_NUM_PROC];	//array of pointers to processes
 PCB_Q *pointer_2_RPQ[4];	//array of pointers to ready process queues
 PCB_Q *pointer_2_SQ;	//pointer to sleep queue
 
