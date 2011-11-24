@@ -191,16 +191,16 @@ msg_env *env_DEQ(env_Q *queue) {
 int k_send_message(int dest_id, msg_env *e) {
     
     // if the env is NULL
-    if (!e)
+    if (!e)                             //is this right?
         return 0;
     
     // if the PCB ID is not valid
-    if (dest_id > (NUM_PROC - 1) )  { 
-        //printf("Invalid 'Send To' ID, %i, ", dest_id);
+    if (dest_id > (NUM_PROC - 1 || dest_id < 0) )  { 
+        printf("dest ID not in range");
         return 0;
     }
     
-    // if the PCD ID is valid
+    // if the PCB ID is valid
     // set the target_id parameter of the env to dest_id
     e->target_id = dest_id;
     e->sender_id = curr_process->pid;
@@ -212,13 +212,13 @@ int k_send_message(int dest_id, msg_env *e) {
     if (target){
 
         /*unblock the target process if necessary*/
-        // if the target's receive message queue is empty or the target is not an i-process
-        /*if (target->receive_msg_Q->head == NULL || target->priority != -1) { 
+        // if the target's blocked on env
+        if (target->state == "BLOCKED_ON_ENV") { 
 
             // enqueue the PCB of the process on the appropriate ready queue
             PCB_ENQ(target, convert_priority(target->priority)); //*****not sure if need to put a '&' before convert_priority
             // set the target state to 'ready'
-            strcpy(target->state, "READY"); //apparently strcpy is how you write into an array of chars
+            strcpy(target->state, "READY");
         }*/
 
         // enqueue the env on the target's receive queue
@@ -344,16 +344,16 @@ PCB *convert_PID(int PID) {
 }
 
 // ***GET A PROIRITY AND RETURN A POINTER TO THE RPQ***
-PCB_Q *convert_priority(int newPri) {
+PCB_Q *convert_priority(int pri) {
     
     // if the new priority is not valid (1-3)
-    if (newPri > 3 || newPri < 0) {           
+    if (pri > 3 || pri < 0) {           
         //printf("Invalid priority!!!!!");
         return NULL;
     }
     
     // if the priority is valid, return the pointer to the priority queue from the array
-    return pointer_2_RPQ[newPri];
+    return pointer_2_RPQ[pri];
 }
 
 // ***KERNEL RELEASE PROCESSOR***
@@ -437,4 +437,22 @@ int change_priority (int new_priority, int target_process_id){
     return z;
 }
 
-
+//***KERENEL GET PROCESS STATUS*** PROBABLY NEEDS CHANGE!!!
+int request_process_status(msg_env *env){
+    // initialize array
+    int i=0;
+    msg_env *env_ps = request_msg_env();
+    while(i<TOTAL_NUM_PROC) {
+                            PCB *proc_pcb = convert_PID(i); // call process number
+                            list[i,1] = proc_pcb->pid;
+                            list[i,2] = proc_pcb->priority;
+                            list[i,3] = proc_pcb->state;
+                            i++;                     
+    }
+    env_ps->msg_text = list;
+    int R = send_console_chars(env_ps);
+    if (R==0)
+    printf("Error with sending process status in CCI");
+    return 0;
+}
+    

@@ -34,20 +34,10 @@ void CCI()
                       }
                 // display process status of all processes
                 else if (env->msg_text[buf_index] == "ps") { 
-                     int i=0;
-                     env_ps = request_msg_env();
-                     while(i<TOTAL_NUM_PROC) {
-                        proc_pcb = convert_PID(i); // call process number
-                        list[i,1] = proc_pcb->pid;
-                        list[i,2] = proc_pcb->priority;
-                        list[i,3] = proc_pcb->state;
-                        i++;                     
-                        }
-                     env_ps->msg_text = list;
-                     int R = send_console_chars(env_ps);
-                     if (R==0)
-                        printf("Error with sending process status in CCI");
-                     }                    
+                     msg_env* env_ps;
+                     int J=request_process_status(env_ps);
+                     if (J==0)
+                        printf("Error with getting Process Status");                  
                      }
                 // set clock to any valid 24hr time
                 else if (env->msg_text[buf_index] == "c", HH,MM,SS) { 

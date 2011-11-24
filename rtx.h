@@ -23,7 +23,7 @@
 
 // *** STRUCTS ***
 struct msgenv {
-	struct msgenv *p;	//pointer to the next env in the queue this env resides in
+	struct msgenv *p;	     //pointer to the next env in the queue this env resides in
 	int sender_id;
 	int target_id;
 	char* msg_type;         //type and text are char pointers, which are essentially arrays
@@ -61,7 +61,14 @@ struct clock{
 };
 typedef struct clock clk;
 
-
+struct messageTrace {
+       int sender_id;
+       int dest_id;
+       char* msg_type;
+       clk send_timestamp;
+       clk receive_timestamp;
+};
+typedef struct messageTrace msg_trace;
 
 // *** FUNCTION DECLARATIONS ***
 
@@ -81,7 +88,9 @@ int env_ENQ(msg_env *e, env_Q *queue);
 msg_env *env_DEQ(env_Q *queue);
 
 int send_message (int dest_id, msg_env *e);
+int k_send_message (int dest_id, msg_env *e);
 msg_env *receive_message();
+msg_env *k_receive_message();
 
 int send_console_chars(msg_env *env);
 int get_console_chars(msg_env *env);
