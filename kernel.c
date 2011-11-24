@@ -195,7 +195,7 @@ int k_send_message(int dest_id, msg_env *e) {
         return 0;
     
     // if the PCB ID is not valid
-    if (dest_id > (NUM_PROC - 1) )  { 
+    if (dest_id > (TOTAL_NUM_PROC - 1) )  { 
         //printf("Invalid 'Send To' ID, %i, ", dest_id);
         return 0;
     }
@@ -334,7 +334,7 @@ int get_console_chars(msg_env * env) {
 PCB *convert_PID(int PID) {
     
     // if the process ID is invalid
-    if (PID > (NUM_PROC - 1) || PID < 0) {
+    if (PID > (TOTAL_NUM_PROC - 1) || PID < 0) {
         // printf("invalid ID");
         return NULL;
         }

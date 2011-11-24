@@ -1,7 +1,3 @@
-// *** CONSTANTS ***
-#define TOTAL_NUM_PROC 12 //total number of processes, will change
-#define TOTAL_NUM_IPROC 3 //total number of i-processes
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <setjmp.h>
@@ -164,11 +160,11 @@ int init_queues( )
      }
      
           // Sleep Queue
-     sleep_Q = create_Q();
+     PCB_Q* sleep_Q = create_Q();
      
      if(sleep_Q){
           printf("Sleep Queue Created\n");
-          pointer_2_SQ = sleep_Q;
+          //pointer_2_SQ = sleep_Q;
      }
      
      else {
@@ -177,7 +173,7 @@ int init_queues( )
      }
      
      // Blocked On Receive queue
-     /*blocked_on_receive = create_Q(); This is not necessary
+     PCB_Q* blocked_on_receive = create_Q(); //This is not necessary
      
      if(blocked_on_receive)
           printf("Blocked on Receive Queue Created\n");
@@ -185,7 +181,7 @@ int init_queues( )
      else {
           printf("Error Creating Blocked on Envelope Queue\n");
           return 0;
-     }*/
+     }
           
      // Blocked On Envelope queue
      blocked_on_envelope = create_env_Q();
@@ -271,7 +267,7 @@ int init_processes ( )
             new_pcb->SP = NULL; //FOR CONTEXT SWITCHING. TO BE CHANGED LATER.
             
             // set process counter for the appropriate process from the table
-            //new_pcb->PC = itable[i][2]; // WHAT IS THIS?!
+            new_pcb->PC = itable[i][2]; // WHAT IS THIS?!
             
             // set all processes to the READY state
             strcpy(new_pcb->state, "READY");
@@ -288,7 +284,7 @@ int init_processes ( )
             //-------- From initialization pdf on Ace-----
             //-------- Initializing context of pcbs---------
             
-           /*  do{
+            do{
                 if (setjmp(kernel_buf)==0){ // used for first time of initializing context
                    _set_sp((char *) new_pcb->SP + SIZE); 
                    if (setjmp(new_pcb->PC)==0){ // if first time
@@ -302,7 +298,7 @@ int init_processes ( )
                      fpTmp(); 
                      }
                 }
-             }while(j <= TOTAL_NUM_PROC);*/
+             }while(j <= TOTAL_NUM_PROC);
              
             // enqueue the process on the appropriate ready queue
             if (new_pcb->priority == 0)

@@ -72,7 +72,7 @@ void ProcessC(){
     msg_env* envC;   
     // infinite loop of normal activity  
     while (1){
-        
+        int NUM =envC->msg_text[1];
         // if theres nothing the localQ, receive a message and enqueue it
         if (localQ->head == NULL){
             envC = receive_message();     
@@ -86,7 +86,7 @@ void ProcessC(){
             envC = env_DEQ(localQ);
             
         // if the message type is count report, and the value in msg_text is evenly divisible by 20, display "Process C"
-        if (envC->msg_type == "count_report" && envC->msg_text % 20 == 0){
+        if (envC->msg_type == "count_report" && NUM % 20 == 0){
   
             // send the display message
             strcpy(envC->msg_text, "Process C");
