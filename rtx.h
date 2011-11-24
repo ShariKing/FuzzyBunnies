@@ -127,9 +127,9 @@ PCB_Q* ready_q_priority0;
 PCB_Q* ready_q_priority1;
 PCB_Q* ready_q_priority2;
 PCB_Q* ready_q_priority3;
-
+PCB_Q* blocked_on_envelope;
 env_Q* envelope_q;
 
-env_Q* blocked_on_envelope;
+
 
 #endif

@@ -365,27 +365,27 @@ void k_release_processor() {
 
 // ***USER RELEASE PROCESSOR***
 void release_processor() {
-     atomic (on);                //turn atomicity on
+     atomic_on();                //turn atomicity on
      k_release_processor();     //call the kernel function
-     atomic (off);              //turn atomic off
+     atomic_off();              //turn atomic off
 }
 
 // ***KERNEL GET ENVELOPE***
 msg_env *k_request_msg_env() {
         while (envelope_q->head == NULL){        //while envelope q is empty
-              PCB_ENQ(curr_process, blocked_on_env);     //enqueue on blocked_on_env q
-              strcpy(curr_process->state,"BLOCED_ON_ENV");         // change state to blocked on env
+              PCB_ENQ(curr_process, blocked_on_envelope);     //enqueue on blocked_on_env q
+              strcpy(curr_process->state,"BLOCKED_ON_ENV");         // change state to blocked on env
               process_switch();
         }
-        msg env *temp = env_DEQ(envelope_q);            //make a temp pointer that points to the dequeued envelope from the free env q
+        msg_env *temp = env_DEQ(envelope_q);            //make a temp pointer that points to the dequeued envelope from the free env q
         return temp;
 }
 
 //***USER GET ENVELOPE***
 msg_env *request_msg_env(){
-        atomic (on);
+        atomic_on();
         msg_env *tep = k_request_msg_eng();
-        atomic (off);
+        atomic_off();
 }
 
 //***KERNEL RELEASE ENVELOPE***
@@ -401,9 +401,9 @@ int k_release_msg_env(msg_env *env){
 
 //***USER RELEASE ENV***
 int release_msg_env(msg_env *env){
-    atomic (on);
+    atomic_on();
     int z = k_release_msg_env(env);
-    atomic (off);
+    atomic_off();
     return z;
 }
 
@@ -425,12 +425,14 @@ int k_change_priority(int new_priority, int target_process_id){
     PCB_REMOVE(convert_priority(old_priority), target_process_id);      //remove PCB from old rpq
     PCB_ENQ(target, convert_priority(new_priority));                    //Enqueue it to the new rpq
     return 1;
+    }
+}
 
 //***USER CHANGE PRIORITY***
 int change_priority (int new_priority, int target_process_id){
-    atomic (on);
+    atomic_on();
     int z = k_change_priority(new_priority, target_process_id);
-    atomic (off);
+    atomic_off();
     return z;
 }
 

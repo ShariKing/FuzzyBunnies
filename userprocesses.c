@@ -18,16 +18,16 @@
 void ProcessA(){
     // initialize return int, count
     int num = 0;
-    
+    PCB* pA_pcb = convert_PID(3);
     // receive the message from the CCI
-    envA = receive_message();
+    msg_env* envA = receive_message();
 
     // deallocate the message from Proc A's queue in its PCB
-    // FIX       deallocate_message(envA);
+    envA= env_DEQ(pA_pcb->receive_msg_Q);
     
     while(1){
         // request an envelope
-        tempEnv = request_msg_env();
+        msg_env* tempEnv = request_msg_env();
         
         // set the env type and text
         strcpy(tempEnv->msg_type, "count_report");
@@ -47,7 +47,7 @@ void ProcessA(){
 void ProcessB(){
     while(1){
         // receive the message from Process A
-        envB = receive_message();
+        msg_env* envB = receive_message();
         
         // send to ProcessB
         int Z = send_message(5, envB);
@@ -66,15 +66,10 @@ void ProcessC(){
         printf("localQ in Proc C not created properly");
         return;
     } // can we use the queue on the proc pcb instead?
-            
-    // init a PCB and a couple env
-    struct pcb* CPCB = (struct pcb *) malloc(sizeof (struct pcb));
-    struct msgenv* envC = (struct msgenv *) malloc (sizeof (struct msgenv));
-    struct msgenv* envSend = (struct msgenv *) malloc (sizeof (struct msgenv));
 
-    CPCB = convert_PID(5);
-    envSend = request_msg_env();    
-        
+    PCB* pC_pcb = convert_PID(5);
+    
+    msg_env* envC;   
     // infinite loop of normal activity  
     while (1){
         
@@ -95,7 +90,7 @@ void ProcessC(){
   
             // send the display message
             strcpy(envC->msg_text, "Process C");
-            int W = send_console_chars(envSend); // Returns confirmation of sending
+            int W = send_console_chars(envC); // Returns confirmation of sending
             if (W==1) {
                 // if it is the ack message request a delay of 10s, with wakeup code "wakeup10"
                 int R = request_delay(10, "wakeup10", envC); // request_delay returns an int
@@ -108,7 +103,9 @@ void ProcessC(){
                 // if its not the wakeup message put it on the local Q
                 while (envC->msg_type != "wakeup10"){
                     envC = receive_message();
-                    envC = env_ENQ(localQ);
+                    int XX = env_ENQ(envC,localQ);
+                    if (XX==0)
+                       printf("Error with putting message on local Q in Proc C");
                 }   
             }
             else
@@ -116,10 +113,10 @@ void ProcessC(){
             
         }  
         // deallocate envelopes
-        deallocate_message(envC);
+        envC= env_DEQ(pC_pcb->receive_msg_Q);
         
         // release processor
-        int R =release_processor();
+        release_processor();
             
     }// end of infinite loop
 }
