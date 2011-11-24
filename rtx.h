@@ -39,7 +39,7 @@ typedef struct envQ env_Q;
 
 struct pcb {
 	struct pcb *p;		// pointer to next PCB in the queue that this PCB resides in
-	char state[SIZE];
+	char *state;
 	int pid;
 	int priority;
 	int PC;			//I'm guessing since it's a counter
