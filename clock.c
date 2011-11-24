@@ -91,3 +91,25 @@ int clock_out(clk* clock, msg_env *e){
           return 1; //Success!
      //}
 }
+
+
+//===================TO BE FINISHED, COMPLETED PART UP TO DOUBLE COMMENT================//
+//-------NOTE! Sleep queue added in init.c and pointer_2_SQ added to rtx.h!!!----------//
+
+
+/*int request_delay(int secDelay, int wakeup_code, msg_env *e) {
+
+    int invoketime = systemclock->ss + (systemclock->mm*60) + (systemclock->hh*60);
+    int RequestingPID = curr_process->pid;
+    strcpy(curr_process->state, "SLEEP");
+    //copy processor stack into process_PCB
+    //release_processor();                               ///context switching code, to be added later?
+    PCB_ENQ(pointer_2_PCB[RequestingPID], pointer_2_SQ);
+*//*	set sender_procid, destination_procid (timeout_i_process_pid), and message(wakeup_code) fields in message_envelope
+	send_message(timeout_i_process_pid, message_envelope)
+	message_envelope = receive_message( )
+	if(message_envelope->message = wakeup_code)
+		end request_delay, place in ready queue
+	else print error message (since all pids are known, the code should never get here. This is for debug purposes only)*//*
+}*/
+

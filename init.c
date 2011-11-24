@@ -163,6 +163,19 @@ int init_queues( )
           return 0;
      }
      
+          // Sleep Queue
+     sleep_Q = create_Q();
+     
+     if(sleep_Q){
+          printf("Sleep Queue Created\n");
+          pointer_2_SQ = sleep_Q;
+     }
+     
+     else {
+          printf("Error Creating Sleep Queue \n");
+          return 0;
+     }
+     
      // Blocked On Receive queue
      /*blocked_on_receive = create_Q(); This is not necessary
      

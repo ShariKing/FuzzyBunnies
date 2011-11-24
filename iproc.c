@@ -118,6 +118,7 @@ void timer_iproc(int sigval) {
         //printf("\nClock Signal Received.   Incrememting pulse counter from %i ", pulse_counter);
         //increment the pulse counter
   		pulse_counter++;
+  		
         //printf("to %i ...\n", pulse_counter);  		
   		//when pulse counter hits ten (one second)
 		if(pulse_counter == 10)
