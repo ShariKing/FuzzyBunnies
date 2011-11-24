@@ -421,7 +421,8 @@ int k_change_priority(int new_priority, int target_process_id){
                     printf("Old priority same as new one");
                     return 1;                                  //success I guess?
     }
-    target->priority = new_priority;                           //change the priority
+    target->priority = new_priority;                                     //change the priority
+    if(target->state
     PCB_REMOVE(convert_priority(old_priority), target_process_id);      //remove PCB from old rpq
     PCB_ENQ(target, convert_priority(new_priority));                    //Enqueue it to the new rpq
     return 1;

@@ -184,7 +184,7 @@ int init_queues( )
      }
           
      // Blocked On Envelope queue
-     blocked_on_envelope = create_env_Q();
+     blocked_on_envelope = create_Q();               //PCB queue
      
      if(blocked_on_envelope)
           printf("Blocked on Envelope Queue Created\n");
@@ -221,6 +221,7 @@ int init_processes ( )
     int pid = 3;
     int priority = 3;
     int i = 0;
+    
 
     
     // setting up PIDs and Prioritys
@@ -256,6 +257,14 @@ int init_processes ( )
         struct pcb* new_pcb = (struct pcb *) malloc(sizeof (struct pcb));
         
         if (new_pcb){
+        
+           char* tempState = (char *) malloc (sizeof (SIZE));            //create tempState and malloc size of char array
+           
+           if (!tempState)                                               //return 0 if it didn't malloc right
+            return 0;
+        
+        
+            new_pcb->state = tempState;                                 //set tempstate to the pcb
             
             // set the PID for the appropriate process from the table
             new_pcb->pid = itable[i][0];
@@ -267,6 +276,7 @@ int init_processes ( )
             new_pcb->SP = NULL; //FOR CONTEXT SWITCHING. TO BE CHANGED LATER.
             
             // set process counter for the appropriate process from the table
+
             new_pcb->PC = itable[i][2]; // WHAT IS THIS?!
             
             // set all processes to the READY state
