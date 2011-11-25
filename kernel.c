@@ -186,36 +186,8 @@ msg_env *env_DEQ(env_Q *queue) {
     return t;
 }
 
-// ***MESSAGE TRACE ENQUEUE***
-int msg_trace_ENQ(msg_trece* trace, msg_trace_Q *queue) {
-   
-    if (!trace || !queue)
-        return 0;
-    
-    //if queue is empty
-    if (queue->head == NULL) {
-
-        // set head of queue to trace
-        queue->head = trace;
-
-        // set tail of queue to trace
-        queue->tail = trace;
-
-        return 1;
-    }
-      
-    // if the queue is NOT empty
-    // set the 'next' pointer of the msg trace at the queue-tail to the newly enqueued trace
-    queue->tail->p = trace;
-   
-    // set the 'next' pointer of the new env to NULL
-    tracee->p = NULL;
-    
-    // set the tail of the queue to the new env
-    queue->tail = trace;
-    
-    return 1;
-}
+// *** RECORD A SEND MESSAGE ***
+int record_send(msg_env* e){
 
 // *** KERNEL SEND MESSAGE ***
 int k_send_message(int dest_id, msg_env *e) {
@@ -253,8 +225,18 @@ int k_send_message(int dest_id, msg_env *e) {
 
         // enqueue the env on the target's receive queue
         env_ENQ(e, target->receive_msg_Q);
-
-    return 1;
+        
+        send_counter++;                                          //increment the counter
+        send_end = (send_end + 1) % 16;                          //traverse the end index
+        if(send_counter > 15 || send_start < 0)                 //if the counter is greater than 15 (when the array  is full) or start index is -1 (ie first send) 
+                        send_start = (send_start + 1) % 16;     //traverse the start index 
+        
+        send_trace[send_end].sender_id = curr_process->pid;                //set the sender_id
+        send_trace[send_end].target_id = dest_id;                          //set the target_id
+        strcpy(send_trace[send_end].msg_type, "WTF is msg_type?");         //set the msg_type
+        //send_trace[send_end].timestamp] = get RTX clock;                 //set the timestamp
+        
+        return 1;
     
     }
     
@@ -293,12 +275,24 @@ msg_env *k_receive_message() { //Doesn't take the PCB as a parameter. Dealt with
         // if it's a normal process, block it on receive
         strcpy(curr_process->state, "BLK_ON_RCV"); //*********Doesn't need to be put in a queue, and don't care about process switch now********* FIX THIS
     
-        return NULL; // *****TO BE FIXED WITH CONTEXT SWITCHING
+        process_switch(); // Fixed it. Used to be return NULL.
     }
     
     // if the message queue is not empty, dequeue the first message in the queue
-    else
-        return env_DEQ(curr_process->receive_msg_Q);
+    else{
+        msg_env* env = env_DEQ(curr_process->receive_msg_Q);           //create a pointer and point it to the dequeued envelope
+         
+        receive_counter++;                                             //increment the counter
+        receive_end = (receive_end + 1) % 16;                          //traverse the end index
+        if(receive_counter > 15 || receive_start < 0)                  //if the counter is greater than 15 (when the array  is full) or start index is -1 (ie first send) 
+                        receive_start = (receive_start + 1) % 16;     //traverse the start index 
+        
+        receive_trace[receive_end].sender_id = env->sended_id;        //set the sender_id
+        send_trace[send_end].target_id = curr_process->pid;           //set the target_id
+        strcpy(send_trace[send_end].msg_type, "WTF is msg_type?");    //set the msg_type
+        //send_trace[send_end].timestamp] = get RTX clock;            //set the timestamp
+        
+        return env;
 }
 
 // ***USER RECEIVE MESSAGE***
@@ -487,3 +481,9 @@ int request_process_status(msg_env *env){
        printf("Error with sending process status in CCI");
     return 0;
 }
+
+// ***KERNEL TERMINATE***
+//int terminate()
+
+// ***KERNEL GET TRACE BUFFERS
+//int get_trace_buffers(msg_env* env) 

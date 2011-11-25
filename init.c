@@ -103,16 +103,6 @@ env_Q* create_env_Q( )
         return bob;
 }
 
-//*** CREATE MSG TRACE QUEUE FUNCTION ***
-msg_trace_Q* create_msg_trace_Q(){
-             msg_trace_Q *ahmed;      //create the queue pointer
-             ahmed = (struct messageTraceQ *) malloc(sizeof (struct messageTraceQ));
-             
-             ahmed->head = NULL;
-             return ahmed;
-}
-
-
 // *** INITIALIZE QUEUES ***
 int init_queues( )
 {
@@ -213,35 +203,34 @@ int init_queues( )
           printf("Error Creating Envelope Queue\n");
           return 0;
      }
-     
-     // Send Trace Queue
-     send_trace_q = create_msg_trace_Q();
-     
-     if(send_trace_q)
-          printf("Send Trace Queue Created\n");
-                        
-     else {
-          printf("Error Creating Send Trace Queue\n");
-          return 0;
-     }
-     
-     // Receive Trace Queue
-     receive_trace_q = create_msg_trace_Q();
-     
-     if(receive_trace_q)
-          printf("Receive Trace Queue Created\n");
-                        
-     else {
-          printf("Error Creating Receive Trace Queue\n");
-          return 0;
-     }
-     
-     send_start = NULL;                  //setting pointer to NULL to avoid dangling pointers
-     receive_start = NULL;
-     send_end = NULL;
-     receive_end = NULL;
           
      return 1;
+}
+
+int init_msg_trace(){
+    int i;
+    for(i=0; i<16; i++){
+             char* send_temp_msg_type = (char *) malloc (sizeof (SIZE));
+             if(!send_temp_msg_type){
+                                     printf("Error allocating memory to send_trace.msg_type");
+                                     return 0;           //FAIL!!
+             }
+             send_trace[i].msg_type = send_temp_msg_type;
+             
+             char* receive_temp_msg_type = (char *) malloc (sizeof (SIZE));
+             if(!receive_temp_msg_type){
+                                     printf("Error allocating memory to receive_trace.msg_type");
+                                     return 0;           //FAIL!!
+             }
+             receive_trace[i].msg_type = receive_temp_msg_type;
+    }
+    
+    send_counter = -1;                //so that the first send/receive will set it to 0;
+    receive_counter = -1;
+    send_start = -1;
+    send_end = -1;
+    receive_start = -1;
+    receive_end = -1;
 }
 
 jmp_buf kernel_buf;
