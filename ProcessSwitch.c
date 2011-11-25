@@ -13,13 +13,13 @@
 #include <errno.h>
 #include "rtx.h"
 
-void null process() {
+void null_process() {
 		while(1) {
 			release_processor();
 		}
 }
 
-process_switch() { 
+void process_switch() { 
     if(ready_Q_priority0 != NULL) // If highest priority queue isn't empty
         new_pcb = PCB_DEQ(ready_Q_priority0); //get ptr to highest priority ready process
     else if (ready_Q_priority1 != NULL)

@@ -115,10 +115,86 @@ void crt_iproc(int sigval) {
 void timer_iproc(int sigval) {
      
         static int pulse_counter = 0;     //Dummy Pulse Counter
+        PCB *sleeptraverse;               //Dummy PCB pointer to traverse the Sleep Queue
+        PCB *awakened;                    //Dummy PCB pointer for awakened PCBs
+        int removeid;                     //id to extract, if extraction necessary
+        
         //printf("\nClock Signal Received.   Incrememting pulse counter from %i ", pulse_counter);
         //increment the pulse counter
   		pulse_counter++;
-  		
+  		if(sleep_Q->head)     //if the sleep queue is not empty
+  		{
+             sleeptraverse = sleep_Q->head;
+             sleeptraverse->sleeptime = sleeptraverse->sleeptime - 100;      //decrement the sleeptime of the first PCB by 100msec
+             if(sleeptraverse->sleeptime <= 0)           //Check if the PCB has finished sleeping
+             {
+                  awakened = sleeptraverse;          //awakened now points to what sleeptraverse did before
+                  removeid = sleeptraverse->pid;     //Extracting the id to remove the PCB
+                  
+                  if(sleeptraverse->p)                   //Move the pointer to the next so we don't lose it after Dequeueing
+                       sleeptraverse = sleeptraverse->p;
+                  else                                   //If this is the only PCB in the sleep queue, set sleeptraverse to NULL.
+                       sleeptraverse = NULL;
+                  
+                  strcpy(awakened->state, "READY");      //Set the awakened process state to ready
+                  
+                  if(awakened->priority == 0)            //Remove the PCB from the queue and enqueue it in it's appropriate ready queue                                         
+                       PCB_ENQ(PCB_REMOVE(sleep_Q, removeid), ready_q_priority0);  //This  code may be wrong...I don't understand Yasser's PCB_remove
+                  else if(awakened->priority == 1)                                                     
+                       PCB_ENQ(PCB_REMOVE(sleep_Q, removeid), ready_q_priority1);     
+                  else if(awakened->priority == 2)                                                     
+                       PCB_ENQ(PCB_REMOVE(sleep_Q, removeid), ready_q_priority2);
+                  else if(awakened->priority == 3)                                                     
+                       PCB_ENQ(PCB_REMOVE(sleep_Q, removeid), ready_q_priority3);
+                  else
+                      printf("Whaaaaaaa?!\n");     //The code should never get here
+             }
+             else     //If head process is not awake yet, check for others in the queue and traverse
+             {
+                  if(sleeptraverse->p)
+                       sleeptraverse = sleeptraverse->p;
+                  else
+                       sleeptraverse = NULL;
+             }
+                  
+                       
+             while(sleeptraverse)    //If there are no others, sleeptraverse will be NULL and skip this. Otherwise, sleeptraverse
+             {                       // will be the next, undecremented PCB, and will loop.
+                 sleeptraverse->sleeptime = sleeptraverse->sleeptime - 100; 
+                 if(sleeptraverse->sleeptime <= 0)
+                 {
+                      awakened = sleeptraverse;         //awakened now points to what sleeptraverse did before
+                      removeid = sleeptraverse->pid;    //Extracting the id to remove the PCB                    
+                      
+                      if(sleeptraverse->p)              //Move the pointer to the next so we don't lose it after Dequeueing
+                           sleeptraverse = sleeptraverse->p;
+                      else                              //If this is the only PCB in the sleep queue, set sleeptraverse to NULL.
+                           sleeptraverse = NULL;
+                      
+                      strcpy(awakened->state, "READY");      //Set the awakened process state to ready
+                  
+                      if(awakened->priority == 0)      //Remove the PCB from the queue and enqueue it in it's appropriate ready queue                                                 
+                           PCB_ENQ(PCB_REMOVE(sleep_Q, removeid), ready_q_priority0);
+                      else if(awakened->priority == 1)                                                     
+                           PCB_ENQ(PCB_REMOVE(sleep_Q, removeid), ready_q_priority1);     
+                      else if(awakened->priority == 2)                                                     
+                           PCB_ENQ(PCB_REMOVE(sleep_Q, removeid), ready_q_priority2);
+                      else if(awakened->priority == 3)                                                     
+                           PCB_ENQ(PCB_REMOVE(sleep_Q, removeid), ready_q_priority3);
+                      else
+                          printf("Whaaaaaaa?!\n");     //The code should never get here
+                 }
+                 else                    //If other processes are not awake yet, check for existence of next in the queue and traverse
+                 {
+                      if(sleeptraverse->p)
+                           sleeptraverse = sleeptraverse->p;
+                      else
+                           sleeptraverse = NULL;            //if no next, kick out of loop
+                 }           
+              }
+        }
+        
+             
         //printf("to %i ...\n", pulse_counter);  		
   		//when pulse counter hits ten (one second)
 		if(pulse_counter == 10)

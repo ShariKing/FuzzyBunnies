@@ -243,6 +243,8 @@ jmp_buf kernel_buf;
 // *** INITIALIZE Non-I PROCESSES ****
 int init_processes ( )
 {
+    
+    curr_process = NULL;          //Initialize the current process to be null
     // read in file for itable
     FILE* itablefile;
     itablefile = fopen("itable.txt", "r");
@@ -289,7 +291,7 @@ int init_processes ( )
         
         if (new_pcb){
         
-           char* tempState = (char *) malloc (sizeof (SIZE));            //create tempState and malloc size of char array
+           char* tempState = (char* ) malloc (sizeof (SIZE));            //create tempState and malloc size of char array
            
            if (!tempState)                                               //return 0 if it didn't malloc right
             return 0;
@@ -309,6 +311,8 @@ int init_processes ( )
             // set process counter for the appropriate process from the table
 
             new_pcb->PC = itable[i][2]; // WHAT IS THIS?!
+            
+            new_pcb->sleeptime = NULL;
             
             // set all processes to the READY state
             strcpy(new_pcb->state, "READY");
@@ -437,6 +441,8 @@ int init_i_processes()
              strcpy(new_pcb->state,"READY"); //This is how you set the state
              
              new_pcb->p = NULL;
+             
+             new_pcb->sleeptime = NULL;
              
              new_pcb->receive_msg_Q = create_env_Q();
              
