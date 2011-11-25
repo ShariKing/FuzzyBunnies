@@ -44,6 +44,7 @@ struct pcb {
 	int pid;
 	int priority;
 	int PC;			//I'm guessing since it's a counter
+	int sleeptime;
 	char *SP;		
 	env_Q *receive_msg_Q;
 };
@@ -139,6 +140,7 @@ PCB_Q* ready_q_priority1;
 PCB_Q* ready_q_priority2;
 PCB_Q* ready_q_priority3;
 PCB_Q* blocked_on_envelope;
+PCB_Q* sleep_Q;
 env_Q* envelope_q;
 
 
