@@ -64,6 +64,7 @@ struct clock{
 typedef struct clock clk;
 
 struct messageTrace {
+       struct messageTrace *p;
        int id;
        char* msg_type;
        clk timestamp;

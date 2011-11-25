@@ -68,7 +68,7 @@ int PCB_ENQ(PCB *r, PCB_Q *queue) {
 }
 
 
-// *** PCB Dequeue ***
+// *** PCB DEQUEUE ***
 PCB *PCB_DEQ(PCB_Q *queue) {
 
     // if queue is empty
@@ -186,6 +186,36 @@ msg_env *env_DEQ(env_Q *queue) {
     return t;
 }
 
+// ***MESSAGE TRACE ENQUEUE***
+int msg_trace_ENQ(msg_trece* trace, msg_trace_Q *queue) {
+   
+    if (!trace || !queue)
+        return 0;
+    
+    //if queue is empty
+    if (queue->head == NULL) {
+
+        // set head of queue to trace
+        queue->head = trace;
+
+        // set tail of queue to trace
+        queue->tail = trace;
+
+        return 1;
+    }
+      
+    // if the queue is NOT empty
+    // set the 'next' pointer of the msg trace at the queue-tail to the newly enqueued trace
+    queue->tail->p = trace;
+   
+    // set the 'next' pointer of the new env to NULL
+    tracee->p = NULL;
+    
+    // set the tail of the queue to the new env
+    queue->tail = trace;
+    
+    return 1;
+}
 
 // *** KERNEL SEND MESSAGE ***
 int k_send_message(int dest_id, msg_env *e) {

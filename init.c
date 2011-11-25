@@ -235,6 +235,11 @@ int init_queues( )
           printf("Error Creating Receive Trace Queue\n");
           return 0;
      }
+     
+     send_start = NULL;                  //setting pointer to NULL to avoid dangling pointers
+     receive_start = NULL;
+     send_end = NULL;
+     receive_end = NULL;
           
      return 1;
 }
@@ -459,7 +464,9 @@ int init_i_processes()
      return 1;
 }
 
-int init_msg_trace(){      //both send and receive trace
+// GOING TO TALK TO KARIM THEN COMING BACK TO THIS!! MIGHT NEED TO REDO IT
+
+/*int init_msg_trace(){      //both send and receive trace
     int i;
     for (i = 0; i < 16; i++){
         struct messageTrace* fernando = (struct messageTrace *) malloc (sizeof (struct messageTrace));  //fernando is the send trace
@@ -467,6 +474,29 @@ int init_msg_trace(){      //both send and receive trace
         
         fernando->id = -3;        //using -3 to initialize cuz -3 doesn't exist
         hans->id = -3;
+        
+        char* tempMsgTypeF = (char *) malloc (sizeof (SIZE));             //initialize the character array pointer
+        char* tempMsgTypeH = (char *) malloc (sizeof (SIZE));             //F for Fernando. H for Hans
+        
+        // if the msg_type pointers are not created properly
+        if (!tempMsgTypeF || !tempMsgTypeH)
+            return 0;
+        
+        
+        fernando->msg_type = tempMsgTypeF;                                //casting them pointers like they be auditionin for them roles!!
+        hans->msg_type = tempMsgTypeH;
+        
+        fernando->timestamp->ss = 0;
+        fernando->timestamp->mm = 0;
+        fernando->timestamp->hh = 0;
+        
+        fernando->timestamp->ss = 0;
+        fernando->timestamp->mm = 0;
+        fernando->timestamp->hh = 0;
+        
+        msg_trace_ENQ(fernando, send_trace_q);                            //enqueing the msg trace in their respective queues
+        msg_trace_ENQ(hans, receive_trace_q);
+ */
         
 void kb_crt_start(){
     /* FORKING THE KEYBOARD  */
