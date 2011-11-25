@@ -195,7 +195,7 @@ int k_send_message(int dest_id, msg_env *e) {
         return 0;
     
     // if the PCB ID is not valid
-    if (dest_id > (NUM_PROC - 1 || dest_id < 0) )  { 
+    if (dest_id > (TOTAL_NUM_PROC - 1 || dest_id < 0) )  { 
         printf("dest ID not in range");
         return 0;
     }
@@ -219,7 +219,7 @@ int k_send_message(int dest_id, msg_env *e) {
             PCB_ENQ(target, convert_priority(target->priority)); //*****not sure if need to put a '&' before convert_priority
             // set the target state to 'ready'
             strcpy(target->state, "READY");
-        }*/
+        }
 
         // enqueue the env on the target's receive queue
         env_ENQ(e, target->receive_msg_Q);
@@ -293,10 +293,8 @@ int send_console_chars(msg_env *env) {
     if (!env)
         return 0;
     
-    int Z;
-    
     // relay the env to the crt i-process using send_message
-    Z = send_message(1, env);
+    int Z = send_message(1, env);
     
     // if sending fails
     if (Z == 0){
@@ -412,9 +410,11 @@ int k_change_priority(int new_priority, int target_process_id){
     if(new_priority>3 || new_priority<0){
                       printf("invalid priority");
                       return 0;
-    //if(target_process_id is not in the given ids){
-                           //printf("Invalid ID");
-                           //return 0;
+    }
+    if(target_process_id > TOTAL_NUM_PROC || target_process_id < TOTAL_NUM_IPROC){
+                           printf("Invalid ID");
+                           return 0;
+    }
     PCB *target = convert_PID(target_process_id);              //create a pointer that points to the PCB
     int old_priority = target->priority;                       //need the old one for later
     if(old_priority == new_priority){
@@ -422,12 +422,14 @@ int k_change_priority(int new_priority, int target_process_id){
                     return 1;                                  //success I guess?
     }
     target->priority = new_priority;                                     //change the priority
-    if(target->state
-    PCB_REMOVE(convert_priority(old_priority), target_process_id);      //remove PCB from old rpq
-    PCB_ENQ(target, convert_priority(new_priority));                    //Enqueue it to the new rpq
-    return 1;
+    if(target->state == "READY"){
+                     PCB_REMOVE(convert_priority(old_priority), target_process_id);      //remove PCB from old rpq
+                     PCB_ENQ(target, convert_priority(new_priority));                    //Enqueue it to the new rpq
+                     return 1;
     }
 }
+
+
 
 //***USER CHANGE PRIORITY***
 int change_priority (int new_priority, int target_process_id){
@@ -440,18 +442,18 @@ int change_priority (int new_priority, int target_process_id){
 //***KERENEL GET PROCESS STATUS*** PROBABLY NEEDS CHANGE!!!
 int request_process_status(msg_env *env){
     // initialize array
-    int i=0;
+    //char list[TOTAL_NUM_PROC][3] ='0';
+    int i;
     msg_env *env_ps = request_msg_env();
-    while(i<TOTAL_NUM_PROC) {
-                            PCB *proc_pcb = convert_PID(i); // call process number
-                            list[i,1] = proc_pcb->pid;
-                            list[i,2] = proc_pcb->priority;
-                            list[i,3] = proc_pcb->state;
-                            i++;                     
+    for(i=0;i<TOTAL_NUM_PROC;i++) {
+        PCB *proc_pcb = convert_PID(i); // call process number
+        //list[i,1] = proc_pcb->pid;
+        //list[i,2] = proc_pcb->priority;
+        //list[i,3] = proc_pcb->state;                     
     }
-    env_ps->msg_text = list;
+    //env_ps->msg_text = list;
     int R = send_console_chars(env_ps);
     if (R==0)
-    printf("Error with sending process status in CCI");
+       printf("Error with sending process status in CCI");
     return 0;
 }

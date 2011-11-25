@@ -47,10 +47,10 @@ void CCI()
                      }
                 // set clock to any valid 24hr time
                 else if (env->msg_text[buf_index] == "c", HH,MM,SS) { 
-                     int HH = hours;
-                     int MM = minutes;
-                     int SS = seconds;
-                     int R = clock_set(clock, hours, minutes, seconds);
+                     int HH;
+                     int MM;
+                     int SS;
+                     int R = clock_set(wallclock, HH, MM, SS);
                      if (R==0)
                         printf("Error with setting clock in CCI");
                      }
@@ -58,14 +58,15 @@ void CCI()
                 else if (env->msg_text[buf_index] == "cd") { 
                      msg_env* e = request_msg_env();
                      if (e->msg_text[buf_index] != "ct") {
-                         int R = clock_out(clock, e);
+                         int R = clock_out(wallclock, e);
                          if (R==0)
                             printf("Error with displaying clock in CCI");
                      }
-                     else
-                         int L =release_msg_env(e);
+                     else {
+                         int L = release_msg_env(e);
                          if (L==0)
                             printf("Message not released in clock displaying in CCI");
+                         }
                      }
                 // b displays past instances of send and receive messages
                 else if (env->msg_text[buf_index] == "b") { 

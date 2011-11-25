@@ -258,7 +258,7 @@ int init_processes ( )
         
         if (new_pcb){
         
-           char* tempState = (char *) malloc (sizeof (SIZE));            //create tempState and malloc size of char array
+           char* tempState = (char* ) malloc (sizeof (SIZE));            //create tempState and malloc size of char array
            
            if (!tempState)                                               //return 0 if it didn't malloc right
             return 0;
