@@ -412,9 +412,11 @@ int k_change_priority(int new_priority, int target_process_id){
     if(new_priority>3 || new_priority<0){
                       printf("invalid priority");
                       return 0;
-    //if(target_process_id is not in the given ids){
-                           //printf("Invalid ID");
-                           //return 0;
+    }
+    if(target_process_id > TOTAL_NUM_PROC || target_process_id < TOTAL_NUM_IPROC){
+                           printf("Invalid ID");
+                           return 0;
+                           }
     PCB *target = convert_PID(target_process_id);              //create a pointer that points to the PCB
     int old_priority = target->priority;                       //need the old one for later
     if(old_priority == new_priority){
@@ -422,10 +424,10 @@ int k_change_priority(int new_priority, int target_process_id){
                     return 1;                                  //success I guess?
     }
     target->priority = new_priority;                                     //change the priority
-    if(target->state
-    PCB_REMOVE(convert_priority(old_priority), target_process_id);      //remove PCB from old rpq
-    PCB_ENQ(target, convert_priority(new_priority));                    //Enqueue it to the new rpq
-    return 1;
+    if(target->state == "READY"){
+                     PCB_REMOVE(convert_priority(old_priority), target_process_id);      //remove PCB from old rpq
+                     PCB_ENQ(target, convert_priority(new_priority));                    //Enqueue it to the new rpq
+                     return 1;
     }
 }
 

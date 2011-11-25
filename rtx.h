@@ -33,25 +33,25 @@ struct msgenv {
 typedef struct msgenv msg_env;
 
 struct envQ{
- msg_env *head;
- msg_env *tail;
+ msg_env* head;
+ msg_env* tail;
 };
 typedef struct envQ env_Q;
 
 struct pcb {
 	struct pcb *p;		// pointer to next PCB in the queue that this PCB resides in
-	char *state;
+	char* state;
 	int pid;
 	int priority;
 	int PC;			//I'm guessing since it's a counter
-	char *SP;		
-	env_Q *receive_msg_Q;
+	char* SP;		
+	env_Q* receive_msg_Q;
 };
 typedef struct pcb PCB;	//use PCB
 
 struct pcbq{
-	PCB *head;
-	PCB *tail;
+	PCB* head;
+	PCB* tail;
 };
 typedef struct pcbq PCB_Q;
 
@@ -63,13 +63,16 @@ struct clock{
 typedef struct clock clk;
 
 struct messageTrace {
-       int sender_id;
-       int dest_id;
+       int id;
        char* msg_type;
-       clk send_timestamp;
-       clk receive_timestamp;
+       clk timestamp;
 };
 typedef struct messageTrace msg_trace;
+
+struct messageTraceQ{
+       msg_trace *head;
+};
+typedef struct messageTraceQ msg_trace_Q;
 
 // *** FUNCTION DECLARATIONS ***
 
@@ -82,24 +85,26 @@ void crt_iproc(int sigval);
 void timer_iproc(int sigval);
 
 // PRIMITIVES
-int PCB_ENQ(PCB *r, PCB_Q *queue);
-PCB *PCB_DEQ(PCB_Q *queue);
+int PCB_ENQ(PCB* r, PCB_Q* queue);
+PCB* PCB_DEQ(PCB_Q* queue);
 
-int env_ENQ(msg_env *e, env_Q *queue);
-msg_env *env_DEQ(env_Q *queue);
+int env_ENQ(msg_env* e, env_Q* queue);
+msg_env* env_DEQ(env_Q *queue);
 
-int send_message (int dest_id, msg_env *e);
-int k_send_message (int dest_id, msg_env *e);
-msg_env *receive_message();
-msg_env *k_receive_message();
+int msg_trace_ENQ(msg_trace* trace, msg_trace_Q* queue);
 
-int send_console_chars(msg_env *env);
-int get_console_chars(msg_env *env);
+int send_message (int dest_id, msg_env* e);
+int k_send_message (int dest_id, msg_env* e);
+msg_env* receive_message();
+msg_env* k_receive_message();
+
+int send_console_chars(msg_env* env);
+int get_console_chars(msg_env* env);
 
 void processP();
 
-PCB *convert_PID(int PID);
-PCB_Q *convert_priority(int pri);	
+PCB* convert_PID(int PID);
+PCB_Q* convert_priority(int pri);	
 
 void clock_increment(clk* clock, int system_or_wall);
 int clock_set(clk* clock, int hours, int minutes, int seconds);
@@ -110,6 +115,7 @@ void ClockTest(clk *clock);
 // INITIALIZATION FUNCTIONS
 PCB_Q* create_Q( );
 env_Q* create_env_Q( );
+msg_trace_Q* create_msg_trace_Q();
 
 int init_queues( );
 int init_env( );
@@ -117,17 +123,26 @@ int init_env( );
 int init_processes( );
 int init_i_processes( );
 
+int init_send_trace();
+int init_receive_trace();
+
 void kb_crt_start();
 
 void begin_RTX( );
 
 
 // *** VARIABLES ***
-PCB *pointer_2_PCB[TOTAL_NUM_PROC];	//array of pointers to processes
-PCB_Q *pointer_2_RPQ[4];	//array of pointers to ready process queues
-PCB_Q *pointer_2_SQ;	//pointer to sleep queue
+PCB* pointer_2_PCB[TOTAL_NUM_PROC];	//array of pointers to processes
+PCB_Q* pointer_2_RPQ[4];	//array of pointers to ready process queues
+PCB_Q* pointer_2_SQ;	//pointer to sleep queue
 
-PCB *curr_process;		
+msg_trace* send_start;          //pointer to the "first" message trace
+msg_trace* receive_start;
+
+msg_trace* send_end;            //pointer to the "last" message trace
+msg_trace* receive_end;
+
+PCB* curr_process;		
 
 clk* systemclock;
 clk* wallclock;     //Global Clock Variables
@@ -140,7 +155,7 @@ PCB_Q* ready_q_priority2;
 PCB_Q* ready_q_priority3;
 PCB_Q* blocked_on_envelope;
 env_Q* envelope_q;
-
-
+msg_trace_Q* send_trace_q;
+msg_trace_Q* receive_trace_q;
 
 #endif

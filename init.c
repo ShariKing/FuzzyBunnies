@@ -101,7 +101,16 @@ env_Q* create_env_Q( )
         bob->tail = NULL;
       }
         return bob;
-}        
+}
+
+//*** CREATE MSG TRACE QUEUE FUNCTION ***
+msg_trace_Q* create_msg_trace_Q(){
+             msg_trace_Q *ahmed;      //create the queue pointer
+             ahmed = (struct messageTraceQ *) malloc(sizeof (struct messageTraceQ));
+             
+             ahmed->head = NULL;
+             return ahmed;
+}
 
 
 // *** INITIALIZE QUEUES ***
@@ -202,6 +211,28 @@ int init_queues( )
      
      else {
           printf("Error Creating Envelope Queue\n");
+          return 0;
+     }
+     
+     // Send Trace Queue
+     send_trace_q = create_msg_trace_Q();
+     
+     if(send_trace_q)
+          printf("Send Trace Queue Created\n");
+                        
+     else {
+          printf("Error Creating Send Trace Queue\n");
+          return 0;
+     }
+     
+     // Receive Trace Queue
+     receive_trace_q = create_msg_trace_Q();
+     
+     if(receive_trace_q)
+          printf("Receive Trace Queue Created\n");
+                        
+     else {
+          printf("Error Creating Receive Trace Queue\n");
           return 0;
      }
           
@@ -422,6 +453,15 @@ int init_i_processes()
      return 1;
 }
 
+int init_msg_trace(){      //both send and receive trace
+    int i;
+    for (i = 0; i < 16; i++){
+        struct messageTrace* fernando = (struct messageTrace *) malloc (sizeof (struct messageTrace));  //fernando is the send trace
+        struct messageTrace* hans = (struct messageTrace *) malloc (sizeof (struct messageTrace));      //hans is the receive trace
+        
+        fernando->id = -3;        //using -3 to initialize cuz -3 doesn't exist
+        hans->id = -3;
+        
 void kb_crt_start(){
     /* FORKING THE KEYBOARD  */
   
