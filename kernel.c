@@ -316,7 +316,7 @@ msg_env *k_receive_message() { //Doesn't take the PCB as a parameter. Dealt with
         
         receive_trace[receive_end].sender_id = env->sended_id;        //set the sender_id
         send_trace[send_end].target_id = curr_process->pid;           //set the target_id
-        strcpy(send_trace[send_end].msg_type, env->msg_type;    //set the msg_type
+        strcpy(send_trace[send_end].msg_type, env->msg_type);    //set the msg_type
         //send_trace[send_end].timestamp] = get RTX clock;            //set the timestamp
         
         return env;
