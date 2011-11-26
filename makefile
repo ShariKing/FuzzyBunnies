@@ -1,7 +1,7 @@
 ALL: iRTX-G11 crt_child kbd_child
 
-iRTX-G11: init.o iproc.o kernel.o ProcessP.o userprocesses.o CCI.o ProcessSwitch.o ClockTest.o
-	gcc init.o iproc.o kernel.o ProcessP.o -o iRTX-G11
+iRTX-G11: init.o iproc.o kernel.o ProcessP.o userprocesses.o CCI.o ProcessSwitch.o ClockTest.o clock.o
+	gcc init.o iproc.o kernel.o ProcessP.o userprocesses.o CCI.o ProcessSwitch.o ClockTest.o clock.o -o iRTX-G11
 
 crt_child: crt.o
 	gcc crt.o -o crt_child
@@ -14,7 +14,10 @@ crt.o: crt.c kbcrt.h
 
 keyboard.o: keyboard.c kbcrt.h
 	gcc -c keyboard.c
-
+	
+ProcessSwitch.o: ProcessSwitch.c rtx.h
+	gcc -c ProcessSwitch.c
+	
 init.o: init.c rtx.h
 	gcc -c init.c
 
@@ -33,12 +36,12 @@ userprocesses.o: userprocesses.c rtx.h
 CCI.o: CCI.c rtx.h
 	gcc -c CCI.c
 
-ProcessSwitch.o: ProcessSwitch.c rtx.h
-	gcc -c ProcessSwitch.c
-
 ClockTest.o: ClockTest.c rtx.h
 	gcc -c ClockTest.c
-
+	
+clock.o: clock.c rtx.h
+	gcc -c clock.c
+	
 clean:
 	rm *.o 
 	rm RTX 

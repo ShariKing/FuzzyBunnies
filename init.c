@@ -15,7 +15,7 @@
 #include "rtx.h"
 #include "kbcrt.h"
 
-
+jmp_buf kernel_buf;
 // *** FUNCTION TO CLEAN UP PARENT PROCESSES***
 void parent_die(int signal)
 {
@@ -233,7 +233,7 @@ int init_msg_trace(){
     receive_end = -1;
 }
 
-jmp_buf kernel_buf;
+
 // *** INITIALIZE Non-I PROCESSES ****
 int init_processes ( )
 {
@@ -286,11 +286,13 @@ int init_processes ( )
         if (new_pcb){
         
            char* tempState = (char* ) malloc (sizeof (SIZE));            //create tempState and malloc size of char array
+           char* tempStack = (char*) malloc(sizeof (STACKSIZE));
            
-           if (!tempState)                                               //return 0 if it didn't malloc right
-            return 0;
-        
-        
+           if (!tempState || !tempStack)                                               //return 0 if it didn't malloc right
+              return 0;
+              
+            new_pcb->SP = tempStack;
+               
             new_pcb->state = tempState;                                 //set tempstate to the pcb
             
             // set the PID for the appropriate process from the table
@@ -300,13 +302,13 @@ int init_processes ( )
             new_pcb->priority = itable[i][1];
             
             // set ???? for the appropriate process from the table
-            new_pcb->SP = NULL; //FOR CONTEXT SWITCHING. TO BE CHANGED LATER.
+           // new_pcb->SP = NULL; //FOR CONTEXT SWITCHING. TO BE CHANGED LATER.
             
             // set process counter for the appropriate process from the table
 
             new_pcb->PC = itable[i][2]; // WHAT IS THIS?!
             
-            new_pcb->sleeptime = NULL;
+            new_pcb->sleeptime = -2;
             
             // set all processes to the READY state
             strcpy(new_pcb->state, "READY");
@@ -323,21 +325,21 @@ int init_processes ( )
             //-------- From initialization pdf on Ace-----
             //-------- Initializing context of pcbs---------
             
-            do{
-                if (setjmp(kernel_buf)==0){ // used for first time of initializing context
-                   _set_sp((char *) new_pcb->SP + SIZE); 
+            if (setjmp(kernel_buf)==0){ // used for first time of initializing context
+                   
+                   
+                  // _set_sp((char *) new_pcb->SP + SIZE); 
                    if (setjmp(new_pcb->PC)==0){ // if first time
-                      longjmp(kernel_buf,1);            // restore constext
+                      longjmp(kernel_buf,1);            // restore context
                    }
                    else{                                  
-                     curr_process = new_pcb; // sets the new pcb to be the current process
-                     strcpy(curr_process->state,"EXECUTING"); //sets state to executing
+                    // curr_process = new_pcb; // sets the new pcb to be the current process
+                   //  strcpy(curr_process->state,"EXECUTING"); //sets state to executing
                      void (*fpTmp)();
                      (fpTmp) = (void *)(curr_process->PC); //gets address of process code
                      fpTmp(); 
                      }
                 }
-             }while(j <= TOTAL_NUM_PROC);
              
             // enqueue the process on the appropriate ready queue
             if (new_pcb->priority == 0)
@@ -436,7 +438,7 @@ int init_i_processes()
              
              new_pcb->p = NULL;
              
-             new_pcb->sleeptime = NULL;
+             new_pcb->sleeptime = -2;
              
              new_pcb->receive_msg_Q = create_env_Q();
              
@@ -649,12 +651,8 @@ void kb_crt_start(){
         printf("CRT shared memory pointer not initialized\n");
 }
 
-/*******************************************************************/
-// ***** THE MAIN MAIN MAIN RTOS FUNCTION *****
-int main ()
-{
-    
-        //Allocate memory for the systemclock structure
+int init_clocks(){
+     //Allocate memory for the systemclock structure
         systemclock = (struct clock *) malloc (sizeof (struct clock));
         //Allocate memory for the wallclock structure
         wallclock = (struct clock *) malloc (sizeof (struct clock));
@@ -664,25 +662,33 @@ int main ()
              wallclock->ss = 0;
              wallclock->mm = 0;
              wallclock->hh = 0;
-             printf("Wall clock created at address pointer %p \n", wallclock);
         }
-        else {
-            printf("Error, wallclock initialization failed!!!\n");
-            exit;
-        }
+        else 
+            return 0;
         
         //Initialize and set the wallclock to 0
         if(systemclock) {
              systemclock->ss = 0;
              systemclock->mm = 0;
              systemclock->hh = 0;
-             printf("System clock created at address pointer %p \n", systemclock);
-        }
+             }
         else {
-            printf("Error, system clock initialization failed!!!\n");
-            exit;
+            return 0;
         }
         
+        return 1;        
+     }
+     
+/*******************************************************************/
+// ***** THE MAIN MAIN MAIN RTOS FUNCTION *****
+int main ()
+{
+        if (init_clocks())
+             printf("Wall clock & System clock created successfully", wallclock);
+         else {
+             printf("Error, wallclock or systemclock initialization failed!!!\n");
+             exit;
+         }
         
         // if init_queues returned 1
         if (init_queues())
@@ -722,10 +728,10 @@ int main ()
     
         // set the current process to whatever comes first
         // ***** should be the first process in the first ready queue? does that mean we can just hardcode this since it will be the same every time?
-        curr_process = convert_PID(4);
+        curr_process = convert_PID(3);
 
         // ***** why are we doing this???
-        strcpy(curr_process->state,"NEVER_BLK_PROC");
+        strcpy(curr_process->state,"RUNNING");
 
         
         // *****CODE FROM HERE TO THE BOTTOM WAS TAKEN FROM DEMO.C*****
@@ -757,23 +763,12 @@ int main ()
 
 
         //*** BACK TO MAIN RTOS STUFF ***
-        // **** this section should initialize anything else that needs to happen
 
-        //The following functions are not necessary for the partial implementation, but will be for the full.
-        //allocate system_clock = (struct clock *) malloc (sizeof (struct clock))
-        //system_clock.ss = 0
-        //system_clock.mm = 0
-        //system_clock.hh = 0
-            //release_processor( )
-            //process_switch( )
-        
-        //printf("Welcome to the wonderful world of RTOS! Type (whatever) to see it go!"); 
-       
-        // code to make process P work
-        printf("Type something then an end-of-line and it will be echoed by the superbly awesome Process P:\n");
-        ClockTest(systemclock);
+        // code to say we've started!!
+        printf("Proc A Ready! Waiting to go!");
+        ClockTest(systemclock); // remove later?
         
         // should never reach here, but in case we do, clean up after ourselves
-        cleanup();
+        terminate();
         exit(1);
 }	

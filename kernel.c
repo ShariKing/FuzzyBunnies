@@ -660,7 +660,7 @@ int k_terminate(){
 // ***USER TERMINATE***
 int terminate(){
     atomic_on();
-    int z = k_int_terminate();
+    int z = k_terminate();
     atomic_off();
     return z;
 }

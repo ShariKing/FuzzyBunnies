@@ -19,6 +19,7 @@
 
 // *** CONSTANTS ***
 #define SIZE 128
+#define STACKSIZE 40 // size of stack pointer
 #define TOTAL_NUM_PROC 12 //total number of processes, will change
 #define TOTAL_NUM_IPROC 3 //total number of i-processes
 #define TIMERIPROCPID 2
@@ -48,6 +49,7 @@ struct pcb {
 	int sleeptime;
 	char *SP;		
 	env_Q *receive_msg_Q;
+	jmp_buf pcb_buf;
 };
 typedef struct pcb PCB;	//use PCB
 
@@ -82,6 +84,8 @@ void kbd_iproc(int sigval);
 void crt_iproc(int sigval);
 void timer_iproc(int sigval);
 
+void process_switch();
+void context_switch(jmp_buf previous, jmp_buf next);
 void atomic_off();
 void atomic_on();
 
@@ -130,8 +134,8 @@ int k_request_process_status(msg_env *env);
 void k_release_processor();
 void release_processor();
 
-int request_delay(int time_delay, int wakeup_code, msg_env *m);
-int k_request_delay(int time_delay, int wakeup_code, msg_env *m);
+int request_delay(int time_delay, char* wakeup_code, msg_env *m);
+int k_request_delay(int time_delay, char* wakeup_code, msg_env *m);
 
 void processP();
 
@@ -148,6 +152,7 @@ void ClockTest(clk *clock);
 PCB_Q* create_Q( );
 env_Q* create_env_Q( );
 
+int init_clocks();
 int init_queues( );
 int init_msg_trace();
 int init_env( );

@@ -35,7 +35,7 @@ void CCI()
                 */
                 char* input_txt = env->msg_text;
                 // send envelope to Process A
-                if (input_txt == 's') { //if the text in the field is "s"
+                if (input_txt == "s") { //if the text in the field is "s"
                       msg_env *env2 = request_msg_env(); //request an envelope
                       int Z =0;
                       Z = send_message(3,env2); // send message to Process A
@@ -59,7 +59,7 @@ void CCI()
                 // allows time to be displayed on console and halts if getting ct
                 else if (input_txt == "cd") { 
                      msg_env* e = request_msg_env();
-                     if (e->msg_text[buf_index] != "ct") {
+                     if (input_txt != "ct") {
                          int R = clock_out(wallclock, e);
                          if (R==0)
                             printf("Error with displaying clock in CCI");
@@ -89,6 +89,7 @@ void CCI()
                      if (R==0)
                             printf("Error with changing priority in CCI");
                      }
+                /*
                 // knock knock joke
                 else if (input_txt == "knock") { 
                      knock_knock();
@@ -101,6 +102,7 @@ void CCI()
                 else if (input_txt == "pong") { 
                      Pong();
                      }
+                     */
                 else {
                      printf("Invalid CCI input. Please try again.");                   
                 }
