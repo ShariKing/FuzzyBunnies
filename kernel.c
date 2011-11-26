@@ -186,6 +186,33 @@ msg_env *env_DEQ(env_Q *queue) {
     return t;
 }
 
+//***REMOVE ENV FROM MIDDLE OF QUEUE***
+msg_env *env_REMOVE(env_Q *q, int senderid){
+    if(q->head == NULL){              //if queue is empty
+                   printf("Queue is empty");
+                   return NULL;
+    }
+    msg_env *index = q->head;           //create a pointer that starts at the head
+    if(index->sender_id == id){           //first PCB is the one we're looking for
+                  index = env_DEQ(q);
+                  return index;      //dequeue it and return it
+    }
+    msg_env *prev = index;               //pointer prev trails index
+    index = index->p;                //index is leading prev now
+    while(index != NULL){            //while index didn't traverse the entire queue
+                if(index->sender_id == id){ //if the PCB is found
+                              prev = index->p;
+                              index->p = NULL;
+                              return index;
+                }
+                prev = index;
+                index = index->p;    //move on to the next PCB
+    }
+    
+    printf("Cannot find env in queue");
+    return NULL;
+}
+
 // *** RECORD A SEND MESSAGE ***
 int record_send(msg_env* e){
 
