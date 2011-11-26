@@ -20,16 +20,17 @@ void null_process() {
 }
 
 void process_switch() { 
-    if(ready_Q_priority0 != NULL) // If highest priority queue isn't empty
-        new_pcb = PCB_DEQ(ready_Q_priority0); //get ptr to highest priority ready process
-    else if (ready_Q_priority1 != NULL)
-         new_pcb = PCB_DEQ(ready_Q_priority1); //get ptr to highest priority ready process
-    else if (ready_Q_priority2 != NULL)
-         new_pcb = PCB_DEQ(ready_Q_priority2); //get ptr to highest priority ready process
-    else if (ready_Q_priority3 != NULL)
-         new_pcb = PCB_DEQ(ready_Q_priority3); //get ptr to highest priority ready process
+    PCB* new_pcb;
+    if(ready_q_priority0 != NULL) // If highest priority queue isn't empty
+        new_pcb = PCB_DEQ(ready_q_priority0); //get ptr to highest priority ready process
+    else if (ready_q_priority1 != NULL)
+         new_pcb = PCB_DEQ(ready_q_priority1); //get ptr to highest priority ready process
+    else if (ready_q_priority2 != NULL)
+         new_pcb = PCB_DEQ(ready_q_priority2); //get ptr to highest priority ready process
+    else if (ready_q_priority3 != NULL)
+         new_pcb = PCB_DEQ(ready_q_priority3); //get ptr to highest priority ready process
     else 
-         new_pcb = PCB_DEQ(ready_Q_priority4); //only for null process
+         new_pcb = PCB_DEQ(ready_q_priority4); //only for null process
     strcpy(new_pcb->state, "RUNNING"); //set new proc state to running
     strcpy(old_pcb->state, "READY"); //set old proc state to ready
     old_pcb = curr_process;

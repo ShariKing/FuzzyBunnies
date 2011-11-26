@@ -93,7 +93,7 @@ void ProcessC(){
             int W = send_console_chars(envC); // Returns confirmation of sending
             if (W==1) {
                 // if it is the ack message request a delay of 10s, with wakeup code "wakeup10"
-                int R = request_delay(10, "wakeup10", envC); // request_delay returns an int
+                int R = request_delay(10000, "wakeup10", envC); // request_delay returns an int
                 if (R==0)
                    printf("Error with request_delay");
                    

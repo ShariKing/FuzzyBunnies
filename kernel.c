@@ -290,7 +290,7 @@ int k_send_message(int dest_id, msg_env *e) {
         
         send_trace[send_end].sender_id = curr_process->pid;                //set the sender_id
         send_trace[send_end].target_id = dest_id;                          //set the target_id
-        strcpy(send_trace[send_end].msg_type, env->msg_type);         //set the msg_type
+        strcpy(send_trace[send_end].msg_type, e->msg_type);         //set the msg_type
         send_trace[send_end].timestamp.hh = systemclock->hh;          //set the timestamp
         send_trace[send_end].timestamp.mm = systemclock->mm;
         send_trace[send_end].timestamp.ss = systemclock->ss;
@@ -354,6 +354,7 @@ msg_env *k_receive_message() { //Doesn't take the PCB as a parameter. Dealt with
         receive_trace[receive_end].timestamp.ss = systemclock->ss;
         
         return env;
+        }
 }
 
 // ***USER RECEIVE MESSAGE***
@@ -485,8 +486,9 @@ msg_env *k_request_msg_env() {
 //***USER GET ENVELOPE***
 msg_env *request_msg_env(){
         atomic_on();
-        msg_env *tep = k_request_msg_eng();
+        msg_env *tep = k_request_msg_env();
         atomic_off();
+        return tep;
 }
 
 //***KERNEL RELEASE ENVELOPE***
@@ -549,12 +551,11 @@ int k_request_process_status(msg_env *env){
               return 0;
     }
     char* temp = (char*) malloc(sizeof(SIZE));    //make an char array and allocate memory
-    strcpy(msg_env->msg_text, "proc_id    status   priority \n\n");        //write the headers in the env
+    strcpy(env->msg_text, "proc_id    status   priority \n\n");        //write the headers in the env
     int i;
     for(i=0; i<TOTAL_NUM_PROC; i++){
-             sprintf(temp, "%i      %s        %i \n", pointer_2_PCB[i]i->pid, 
-             pointer_2_PCB[i]i->state, pointer_2_PCB[i]i->priority,);              //write the id status and priority in temp
-             strcat(msg_env->msg_text, temp);                                      //cat temp with the envelope
+             sprintf(temp, "%i      %s        %i \n", pointer_2_PCB[i]->pid,pointer_2_PCB[i]->state, pointer_2_PCB[i]->priority);//write the id status and priority in temp
+             strcat(env->msg_text, temp);                                      //cat temp with the envelope
     }
     return 1;
 }
@@ -568,13 +569,13 @@ int request_process_status(msg_env *env){
 } 
 
 //***KERNEL REQUEST DELAY***
-int k_request_delay(int time_delay, int wakeup_code, msg_env *m)
+int k_request_delay(int time_delay, char* wakeup_code, msg_env *m)
 {
     int RequestingPID = curr_process->pid;         //Temporary PID holder
     strcpy(curr_process->state, "SLEEP");          
     m->sender_id = RequestingPID;
     m->target_id = TIMERIPROCPID;                  //Set Target ID to the Timer Iproc
-    sprintf(m->msg_type, "%d", wakeup_code);       //Set the message type to wakeup code and the text to the delay,
+    sprintf(m->msg_type, wakeup_code);       //Set the message type to wakeup code and the text to the delay,
     sprintf(m->msg_text, "%d", time_delay);        //in order to send both wakeup code and time delay in one envelope.
     k_send_message(TIMERIPROCPID, m);              //Send the envelope to the timer iproc
     m = k_receive_message();                       //Invoke receive message, which blocks the invoking process until delay is over
@@ -590,9 +591,9 @@ int k_request_delay(int time_delay, int wakeup_code, msg_env *m)
 }
 
 //***USER REQUEST DELAY***
-int request_delay(int time_delay, int wakeup_code, msg_env *m){
+int request_delay(int time_delay, char* wakeup_code, msg_env *m){
     atomic_on();
-    int z = k_request_delay(time_delay, wakeup_code, msg_env *m);
+    int z = k_request_delay(time_delay, wakeup_code, m);
     atomic_off();
     return z;
 }
@@ -618,7 +619,7 @@ int request_delay(int msecDelay) {
 int k_terminate(){
   free_env_queue(envelope_q);
   free_env_queue(sleep_Q);
-  free_PCB_queue(blocked on envelope);
+  free_PCB_queue(blocked_on_envelope);
   free_PCB_queue(ready_q_priority3);
   free_PCB_queue(ready_q_priority2);
   free_PCB_queue(ready_q_priority1);
@@ -638,8 +639,8 @@ int k_terminate(){
   }
   
   for(i=0; i<16; i++){
-           free(send_trace[i]->msg_type);
-           free(receive_trace[i]->msg_type);
+           free(send_trace[i].msg_type);
+           free(receive_trace[i].msg_type);
   }
   
   free(systemclock);
@@ -704,6 +705,7 @@ int k_get_trace_buffers(msg_env* env){
             j++;
          }
     return 1;
+    }
 }
 
 // ***USER GET TRACE BUFFERS

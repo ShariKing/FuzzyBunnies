@@ -27,26 +27,28 @@ void CCI()
 
                 get_console_chars(env);   //keyboard input 
                 env = receive_message(); //***STOPS HERE TO WAIT FOR INPUT
-
+                /*
                 while (env == NULL) {
                         usleep(100000);
                         env = receive_message();  
                 }
+                */
+                char* input_txt = env->msg_text;
                 // send envelope to Process A
-                if (env->msg_text[buf_index] == "s") { //if the text in the field is "s"
+                if (input_txt == 's') { //if the text in the field is "s"
                       msg_env *env2 = request_msg_env(); //request an envelope
                       int Z =0;
                       Z = send_message(3,env2); // send message to Process A
                       }
                 // display process status of all processes
-                else if (env->msg_text[buf_index] == "ps") { 
+                else if (input_txt == "ps") { 
                      msg_env* env_ps;
                      int J=request_process_status(env_ps);
                      if (J==0)
                         printf("Error with getting Process Status");                  
                      }
                 // set clock to any valid 24hr time
-                else if (env->msg_text[buf_index] == "c", HH,MM,SS) { 
+                else if (input_txt == "c", HH,MM,SS) { 
                      int HH;
                      int MM;
                      int SS;
@@ -55,7 +57,7 @@ void CCI()
                         printf("Error with setting clock in CCI");
                      }
                 // allows time to be displayed on console and halts if getting ct
-                else if (env->msg_text[buf_index] == "cd") { 
+                else if (input_txt == "cd") { 
                      msg_env* e = request_msg_env();
                      if (e->msg_text[buf_index] != "ct") {
                          int R = clock_out(wallclock, e);
@@ -69,18 +71,18 @@ void CCI()
                          }
                      }
                 // b displays past instances of send and receive messages
-                else if (env->msg_text[buf_index] == "b") { 
+                else if (input_txt == "b") { 
                     msg_env* env1=request_msg_env();
                     int U=get_trace_buffers(env1);
                     if (U==0)
                        printf("Error performing call on Trace Buffers");
                      }
                 // terminates RTX
-                else if (env->msg_text[buf_index] == "t") { 
+                else if (input_txt == "t") { 
                      terminate();
                      }
                 // changes priority
-                else if (env->msg_text[buf_index] == "n",pri,id) { 
+                else if (input_txt == "n",pri,id) { 
                      int ID = id;
                      int new_pri = pri;
                      int R = change_priority(new_pri, ID);
@@ -88,15 +90,15 @@ void CCI()
                             printf("Error with changing priority in CCI");
                      }
                 // knock knock joke
-                else if (env->msg_text[buf_index] == "knock") { 
+                else if (input_txt == "knock") { 
                      knock_knock();
                      }
                 // time warp
-                else if (env->msg_text[buf_index] == "timewarp") { 
+                else if (input_txt == "timewarp") { 
                      Time_Warp();
                      }
                 // pong
-                else if (env->msg_text[buf_index] == "pong") { 
+                else if (input_txt == "pong") { 
                      Pong();
                      }
                 else {

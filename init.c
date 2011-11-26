@@ -732,14 +732,14 @@ int main ()
 
         // catch signals so we can clean up everything before exiting
         // signals defined in /usr/include/signal.h
-        sigset(SIGINT,int terminate());	// catch kill signals 
-        sigset(SIGBUS,int terminate());	// catch bus errors
-        sigset(SIGHUP,int terminate());		
-        sigset(SIGILL,int terminate());	// illegal instruction
-        sigset(SIGQUIT,int terminate());
-        sigset(SIGABRT,int terminate());
-        sigset(SIGTERM,int terminate());
-        sigset(SIGSEGV,int terminate());	// catch segmentation faults
+        sigset(SIGINT,terminate());	// catch kill signals 
+        sigset(SIGBUS,terminate());	// catch bus errors
+        sigset(SIGHUP,terminate());		
+        sigset(SIGILL,terminate());	// illegal instruction
+        sigset(SIGQUIT,terminate());
+        sigset(SIGABRT,terminate());
+        sigset(SIGTERM,terminate());
+        sigset(SIGSEGV,terminate());	// catch segmentation faults
         sigset(SIGUSR1,kbd_iproc);
         sigset(SIGUSR2,crt_iproc);
         sigset(SIGALRM,timer_iproc); //Catch clock ticks
