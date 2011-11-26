@@ -509,6 +509,45 @@ int request_process_status(msg_env *env){
     return 0;
 }
 
+
+int request_delay(int time_delay, int wakeup_code, msg_env *m)
+{
+    int RequestingPID = curr_process->pid;         //Temporary PID holder
+    strcpy(curr_process->state, "SLEEP");          
+    m->sender_id = RequestingPID;
+    m->target_id = TIMERIPROCPID;                  //Set Target ID to the Timer Iproc
+    sprintf(m->msg_type, "%d", wakeup_code);       //Set the message type to wakeup code and the text to the delay,
+    sprintf(m->msg_text, "%d", time_delay);        //in order to send both wakeup code and time delay in one envelope.
+    k_send_message(TIMERIPROCPID, m);              //Send the envelope to the timer iproc
+    m = k_receive_message();                       //Invoke receive message, which blocks the invoking process until delay is over
+    if(m)
+    {
+        PCB *RequestingPCB;                            //After unblocking, this code executes:
+        RequestingPCB = convert_PID(RequestingPID);    //Create a PCB pointer to manage stuff for enqueueing, then Find the Delayed PCB
+        PCB_ENQ(RequestingPCB, convert_priority(RequestingPCB->priority));    //Enqueue the now awakened process
+        return 1;              //SUCCESS!
+    }
+    else
+        return 0;              //The code should never get here
+}
+    
+
+//===============    THE CODE BELOW THIS LINE IS WORKING, BUT DOES NOT FIT THE PROTOTYPE. KEEP AS A BACKUP =======================//
+/*
+int request_delay(int msecDelay) {
+
+    //int invoketime = systemclock->ss + (systemclock->mm*60) + (systemclock->hh*60*60);   //no longer necessary
+    int RequestingPID = curr_process->pid;
+    strcpy(curr_process->state, "SLEEP");
+    curr_process->sleeptime = msecDelay;
+    //copy processor stack into process_PCB
+    //release_processor();                               //context switching code, to be added later?
+    PCB_ENQ(pointer_2_PCB[RequestingPID], pointer_2_SQ);
+}
+*/
+
+
+
 // ***KERNEL TERMINATE***
 //int terminate()
 
