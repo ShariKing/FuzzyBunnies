@@ -21,6 +21,7 @@
 #define SIZE 128
 #define TOTAL_NUM_PROC 12 //total number of processes, will change
 #define TOTAL_NUM_IPROC 3 //total number of i-processes
+#define TIMERIPROCPID 2
 
 // *** STRUCTS ***
 struct msgenv {
@@ -84,9 +85,11 @@ void timer_iproc(int sigval);
 // PRIMITIVES
 int PCB_ENQ(PCB* r, PCB_Q* queue);
 PCB* PCB_DEQ(PCB_Q* queue);
+PCB *PCB_REMOVE(PCB_Q *q, int id);
 
 int env_ENQ(msg_env* e, env_Q* queue);
 msg_env* env_DEQ(env_Q *queue);
+msg_env *env_REMOVE(env_Q *q, int senderid);
 
 int send_message (int dest_id, msg_env* e);
 int k_send_message (int dest_id, msg_env* e);
@@ -151,7 +154,7 @@ void begin_RTX( );
 // *** VARIABLES ***
 PCB* pointer_2_PCB[TOTAL_NUM_PROC];	//array of pointers to processes
 PCB_Q* pointer_2_RPQ[4];	//array of pointers to ready process queues
-PCB_Q* pointer_2_SQ;	//pointer to sleep queue
+env_Q* pointer_2_SQ;	//pointer to sleep queue
 
 PCB* curr_process;		
 
@@ -175,7 +178,7 @@ PCB_Q* ready_q_priority1;
 PCB_Q* ready_q_priority2;
 PCB_Q* ready_q_priority3;
 PCB_Q* blocked_on_envelope;
-PCB_Q* sleep_Q;
+env_Q* sleep_Q;
 env_Q* envelope_q;
 
 #endif

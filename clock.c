@@ -62,8 +62,8 @@ int clock_set(clk* clock, int hours, int minutes, int seconds) {
 
 int clock_out(clk* clock, msg_env *e){
      
-     char* temptime = (char *) malloc (sizeof (char)); //temporary holding variable
-     char* timewords = (char *) malloc (sizeof (char));  //Temporary character pointer
+     char* temptime = (char *) malloc (sizeof (SIZE)); //temporary holding variable
+     char* timewords = (char *) malloc (sizeof (SIZE));  //Temporary character pointer
      
      if(!temptime || !timewords)
           return 0; //Error with clock printing
@@ -90,20 +90,4 @@ int clock_out(clk* clock, msg_env *e){
           send_console_chars(e);
           return 1; //Success!
      //}
-}
-
-
-//===================TO BE FINISHED, COMPLETED PART UP TO DOUBLE COMMENT================//
-//-------NOTE! Sleep queue added in init.c and pointer_2_SQ added to rtx.h!!!----------//
-
-
-int request_delay(int msecDelay) {
-
-    //int invoketime = systemclock->ss + (systemclock->mm*60) + (systemclock->hh*60*60);   //no longer necessary
-    int RequestingPID = curr_process->pid;
-    strcpy(curr_process->state, "SLEEP");
-    curr_process->sleeptime = msecDelay;
-    //copy processor stack into process_PCB
-    //release_processor();                               //context switching code, to be added later?
-    PCB_ENQ(pointer_2_PCB[RequestingPID], pointer_2_SQ);
 }

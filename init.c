@@ -159,7 +159,7 @@ int init_queues( )
      }
      
           // Sleep Queue
-     PCB_Q* sleep_Q = create_Q();
+     env_Q* sleep_Q = create_env_Q();
      
      if(sleep_Q){
           printf("Sleep Queue Created\n");

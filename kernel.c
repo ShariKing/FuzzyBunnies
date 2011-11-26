@@ -187,6 +187,34 @@ msg_env *env_DEQ(env_Q *queue) {
     return t;
 }
 
+
+//***REMOVE ENV FROM MIDDLE OF QUEUE***
+msg_env *env_REMOVE(env_Q *q, int senderid){
+    if(q->head == NULL){              //if queue is empty
+                   printf("Queue is empty");
+                   return NULL;
+    }
+    msg_env *index = q->head;           //create a pointer that starts at the head
+    if(index->sender_id == senderid){           //first PCB is the one we're looking for
+                  index = env_DEQ(q);
+                  return index;      //dequeue it and return it
+    }
+    msg_env *prev = index;               //pointer prev trails index
+    index = index->p;                //index is leading prev now
+    while(index != NULL){            //while index didn't traverse the entire queue
+                if(index->sender_id == senderid){ //if the PCB is found
+                              prev = index->p;
+                              index->p = NULL;
+                              return index;
+                }
+                prev = index;
+                index = index->p;    //move on to the next PCB
+    }
+    
+    printf("Cannot find env in queue");
+    return NULL;
+}
+
 // *** KERNEL SEND MESSAGE ***
 int k_send_message(int dest_id, msg_env *e) {
     
@@ -231,7 +259,7 @@ int k_send_message(int dest_id, msg_env *e) {
         
         send_trace[send_end].sender_id = curr_process->pid;                //set the sender_id
         send_trace[send_end].target_id = dest_id;                          //set the target_id
-        strcpy(send_trace[send_end].msg_type, "WTF is msg_type?");         //set the msg_type
+        strcpy(send_trace[send_end].msg_type, env->msg_type);         //set the msg_type
         send_trace[send_end].timestamp.hh = systemclock->hh;          //set the timestamp
         send_trace[send_end].timestamp.mm = systemclock->mm;
         send_trace[send_end].timestamp.ss = systemclock->ss;
@@ -289,7 +317,7 @@ msg_env *k_receive_message() { //Doesn't take the PCB as a parameter. Dealt with
         
         receive_trace[receive_end].sender_id = env->sender_id;               //set the sender_id
         receive_trace[receive_end].target_id = curr_process->pid;           //set the target_id
-        strcpy(receive_trace[receive_end].msg_type, env->msg_type;          //set the msg_type
+        strcpy(receive_trace[receive_end].msg_type, env->msg_type);          //set the msg_type
         receive_trace[receive_end].timestamp.hh = systemclock->hh;          //set the timestamp
         receive_trace[receive_end].timestamp.mm = systemclock->mm;
         receive_trace[receive_end].timestamp.ss = systemclock->ss;
@@ -501,6 +529,45 @@ int request_process_status(msg_env *env){
        printf("Error with sending process status in CCI");
     return 0;
 }
+
+
+int request_delay(int time_delay, int wakeup_code, msg_env *m)
+{
+    int RequestingPID = curr_process->pid;         //Temporary PID holder
+    strcpy(curr_process->state, "SLEEP");          
+    m->sender_id = RequestingPID;
+    m->target_id = TIMERIPROCPID;                  //Set Target ID to the Timer Iproc
+    sprintf(m->msg_type, "%d", wakeup_code);       //Set the message type to wakeup code and the text to the delay,
+    sprintf(m->msg_text, "%d", time_delay);        //in order to send both wakeup code and time delay in one envelope.
+    k_send_message(TIMERIPROCPID, m);              //Send the envelope to the timer iproc
+    m = k_receive_message();                       //Invoke receive message, which blocks the invoking process until delay is over
+    if(m)
+    {
+        PCB *RequestingPCB;                            //After unblocking, this code executes:
+        RequestingPCB = convert_PID(RequestingPID);    //Create a PCB pointer to manage stuff for enqueueing, then Find the Delayed PCB
+        PCB_ENQ(RequestingPCB, convert_priority(RequestingPCB->priority));    //Enqueue the now awakened process
+        return 1;              //SUCCESS!
+    }
+    else
+        return 0;              //The code should never get here
+}
+    
+
+//===============    THE CODE BELOW THIS LINE IS WORKING, BUT DOES NOT FIT THE PROTOTYPE. KEEP AS A BACKUP =======================//
+/*
+int request_delay(int msecDelay) {
+
+    //int invoketime = systemclock->ss + (systemclock->mm*60) + (systemclock->hh*60*60);   //no longer necessary
+    int RequestingPID = curr_process->pid;
+    strcpy(curr_process->state, "SLEEP");
+    curr_process->sleeptime = msecDelay;
+    //copy processor stack into process_PCB
+    //release_processor();                               //context switching code, to be added later?
+    PCB_ENQ(pointer_2_PCB[RequestingPID], pointer_2_SQ);
+}
+*/
+
+
 
 // ***KERNEL TERMINATE***
 //int k_terminate(){

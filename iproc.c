@@ -115,14 +115,89 @@ void crt_iproc(int sigval) {
 void timer_iproc(int sigval) {
      
         static int pulse_counter = 0;     //Dummy Pulse Counter
-        PCB *sleeptraverse;               //Dummy PCB pointer to traverse the Sleep Queue
-        PCB *awakened;                    //Dummy PCB pointer for awakened PCBs
+        msg_env *sleeptraverse;           //Dummy envelope pointer to traverse the Sleep Queue
+        msg_env *awakened;                //Dummy envelope pointer for awakened envelopes
         int removeid;                     //id to extract, if extraction necessary
+        int sleeptime;                    //Dummy integer to use for string conversion
         
-        //printf("\nClock Signal Received.   Incrememting pulse counter from %i ", pulse_counter);
+        //printf("\nClock Signal Received.   Incrementing pulse counter from %i ", pulse_counter);
         //increment the pulse counter
-  		pulse_counter++;
-  		if(sleep_Q->head)     //if the sleep queue is not empty
+  		pulse_counter++;     
+        //printf("to %i ...\n", pulse_counter);  		
+  		
+          //when pulse counter hits ten (one second)
+		if(pulse_counter == 10)
+        {
+            //printf("%p wallclock pointer .... %p system clock pointer\n\n", wallclock, systemclock);
+			clock_increment(systemclock, 0);
+			clock_increment(wallclock, 1);
+			pulse_counter = 0;
+		}
+		
+//==========CODE TO HANDLE REQUEST DELAY=============		
+		msg_env *delayRequest;
+		delayRequest = receive_message();              //Receive Message for Delays
+		if(delayRequest)
+            env_ENQ(delayRequest, sleep_Q);            //Enqueue delay requests onto the sleep Q
+        
+       	if(sleep_Q->head)     //if the sleep queue is not empty
+  		{
+             sleeptraverse = sleep_Q->head;        //Point Sleeptraverse at the head to begin
+             sleeptime = atoi(sleeptraverse->msg_text);              //Convert the delay time text to an integer
+             sleeptime = sleeptime - 100;                                //Decrement the sleeptime
+             if(sleeptime <= 0)           //Check if the head env has finished sleeping
+             {
+                  awakened = sleeptraverse;          //awakened now points to what sleeptraverse did before
+                  
+                  if(sleeptraverse->p)                   //Move the pointer to the next so we don't lose it after Dequeueing
+                       sleeptraverse = sleeptraverse->p;
+                  else                                   //If this is the only envelope in the sleep queue, set sleeptraverse to NULL.
+                       sleeptraverse = NULL;
+                  
+                  awakened = env_DEQ(sleep_Q);           //Dequeue awakened from the head
+                  send_message(awakened->sender_id, awakened);     //send awakened back to its sender id, which should be blocked_on_receive
+             }
+             else     //If head process is not awake yet, check for others in the queue and traverse
+             {
+                  sprintf(sleeptraverse->msg_text, "%d", sleeptime);    //copy the new sleeptime back into a string and put it back in the envelope
+                  if(sleeptraverse->p)                            //traverse
+                       sleeptraverse = sleeptraverse->p;
+                  else
+                       sleeptraverse = NULL;
+             }
+        }
+             while(sleeptraverse)    //If there are no others, sleeptraverse will be NULL and skip this. Otherwise, sleeptraverse
+             {                       // will be the next, undecremented envelope, and will loop.
+                 removeid = sleeptraverse->sender_id;     //Extracting the id to use with env_remove to remove the envelope from the queue
+                 
+                 sleeptime = atoi(sleeptraverse->msg_text);            //Convert the delay time text to an integer
+                 sleeptime = sleeptime - 100;                          //decrement the delay time
+                 if(sleeptime <= 0)           //Check if the env has finished sleeping
+                 {
+                      awakened = sleeptraverse;          //awakened now points to what sleeptraverse did before
+                  
+                      if(sleeptraverse->p)                   //Move the pointer to the next so we don't lose it after Dequeueing
+                           sleeptraverse = sleeptraverse->p;
+                      else                                   //If this is the only envelope in the sleep queue, set sleeptraverse to NULL.
+                           sleeptraverse = NULL;
+                      
+                      
+                      awakened = env_REMOVE(sleep_Q, removeid);   //Remove awakened from the sleep queue without losing any links
+                      send_message(awakened->sender_id, awakened); //send awakened back to its sender id, which should be blocked_on_receive
+                 }
+                 else     //If current decrementing process is not awake yet, check for others in the queue and traverse
+                 {
+                      sprintf(sleeptraverse->msg_text, "%d", sleeptime);    //copy the new sleeptime back into a string and put it back in the envelope
+                      if(sleeptraverse->p)                                  //traverse
+                           sleeptraverse = sleeptraverse->p;
+                      else
+                           sleeptraverse = NULL;
+                 }
+             }        
+}
+
+//==========    CODE BELOW THIS LINE IS FUNCTIONAL, BUT DOES NOT FIT THE STANDARD DESIGN. LEAVE AS BACKUP     ===================//
+/*  		if(sleep_Q->head)     //if the sleep queue is not empty
   		{
              sleeptraverse = sleep_Q->head;
              sleeptraverse->sleeptime = sleeptraverse->sleeptime - 100;      //decrement the sleeptime of the first PCB by 100msec
@@ -192,17 +267,6 @@ void timer_iproc(int sigval) {
                            sleeptraverse = NULL;            //if no next, kick out of loop
                  }           
               }
-        }
-        
-             
-        //printf("to %i ...\n", pulse_counter);  		
-  		//when pulse counter hits ten (one second)
-		if(pulse_counter == 10)
-        {
-            //printf("%p wallclock pointer .... %p system clock pointer\n\n", wallclock, systemclock);
-			clock_increment(systemclock, 0);
-			clock_increment(wallclock, 1);
-			pulse_counter = 0;
-		}
-}
+        }*/
+//==========    CODE ABOVE THIS LINE IS FUNCTIONAL, BUT DOES NOT FIT THE STANDARD DESIGN. LEAVE AS BACKUP     ===================//   
 
