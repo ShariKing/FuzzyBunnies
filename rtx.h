@@ -90,15 +90,36 @@ msg_env* env_DEQ(env_Q *queue);
 
 int send_message (int dest_id, msg_env* e);
 int k_send_message (int dest_id, msg_env* e);
+
 msg_env* receive_message();
 msg_env* k_receive_message();
 
 int send_console_chars(msg_env* env);
+int k_send_console_chars(msg_env* env);
+
 int get_console_chars(msg_env* env);
+int k_get_console_chars(msg_env* env);
 
 int terminate();
+int k_terminate();
 
 int get_trace_buffers(msg_env* env);
+int k_get_trace_buffers(msg_env* env);
+
+int change_priority (int new_priority, int target_process_id);
+int k_change_priority (int new_priority, int target_process_id);
+
+msg_env *k_request_msg_env();
+msg_env *request_msg_env();
+
+int k_release_msg_env(msg_env *env);
+int release_msg_env(msg_env *env);
+
+int request_process_status(msg_env *env);
+int k_request_process_status(msg_env *env);
+
+void k_release_processor();
+void release_processor();
 
 void processP();
 

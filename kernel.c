@@ -35,6 +35,7 @@ void atomic_off() {
      sigprocmask(SIG_SETMASK, &oldmask, NULL);
      }
 
+
 // *** PCB ENQUEUE ***
 int PCB_ENQ(PCB *r, PCB_Q *queue) {
 
@@ -186,9 +187,6 @@ msg_env *env_DEQ(env_Q *queue) {
     return t;
 }
 
-// *** RECORD A SEND MESSAGE ***
-int record_send(msg_env* e){
-
 // *** KERNEL SEND MESSAGE ***
 int k_send_message(int dest_id, msg_env *e) {
     
@@ -234,7 +232,9 @@ int k_send_message(int dest_id, msg_env *e) {
         send_trace[send_end].sender_id = curr_process->pid;                //set the sender_id
         send_trace[send_end].target_id = dest_id;                          //set the target_id
         strcpy(send_trace[send_end].msg_type, "WTF is msg_type?");         //set the msg_type
-        //send_trace[send_end].timestamp] = get RTX clock;                 //set the timestamp
+        send_trace[send_end].timestamp.hh = systemclock->hh;          //set the timestamp
+        send_trace[send_end].timestamp.mm = systemclock->mm;
+        send_trace[send_end].timestamp.ss = systemclock->ss;
         
         return 1;
     
@@ -287,10 +287,12 @@ msg_env *k_receive_message() { //Doesn't take the PCB as a parameter. Dealt with
         if(receive_counter > 15 || receive_start < 0)                  //if the counter is greater than 15 (when the array  is full) or start index is -1 (ie first send) 
                         receive_start = (receive_start + 1) % 16;     //traverse the start index 
         
-        receive_trace[receive_end].sender_id = env->sended_id;        //set the sender_id
-        send_trace[send_end].target_id = curr_process->pid;           //set the target_id
-        strcpy(send_trace[send_end].msg_type, env->msg_type;    //set the msg_type
-        //send_trace[send_end].timestamp] = get RTX clock;            //set the timestamp
+        receive_trace[receive_end].sender_id = env->sender_id;               //set the sender_id
+        receive_trace[receive_end].target_id = curr_process->pid;           //set the target_id
+        strcpy(receive_trace[receive_end].msg_type, env->msg_type;          //set the msg_type
+        receive_trace[receive_end].timestamp.hh = systemclock->hh;          //set the timestamp
+        receive_trace[receive_end].timestamp.mm = systemclock->mm;
+        receive_trace[receive_end].timestamp.ss = systemclock->ss;
         
         return env;
 }
@@ -310,28 +312,37 @@ msg_env *receive_message() {
         return temp;
 }
 
-// *** SEND CONSOLE CHARS***
-int send_console_chars(msg_env *env) {
+// *** KERNEL SEND CONSOLE CHARS***
+int k_send_console_chars(msg_env *env) {
     
     // if the env is NULL
     if (!env)
         return 0;
     
     // relay the env to the crt i-process using send_message
-    int Z = send_message(1, env);
+    int Z = k_send_message(1, env);       //call the kernel send message
     
     // if sending fails
     if (Z == 0){
-        //printf("Error with sending");
+        printf("Error with sending");
         return 0;
     }
 
     return 1;
 }
 
+// *** USER SEND MESSAGE CHARS***
+int send_console_chars(msg_env *env) {
+    
+    atomic_on();
+    int z = k_send_console_chars(env);
+    atomic_off();
+    return z;
+}
 
-// ***GET CONSOLE CHARS***
-int get_console_chars(msg_env * env) {
+
+// ***KERNEL GET CONSOLE CHARS***
+int k_get_console_chars(msg_env * env) {
     
     // if the env is NULL
     if (!env)
@@ -340,16 +351,25 @@ int get_console_chars(msg_env * env) {
     int Z;
 
     // relay the env to the kb i-process using send_message
-    Z = send_message(0, env);
+    Z = k_send_message(0, env);                //call the kernel send message
 
     // incorrect return from send_message
     if(Z == 0) {
-            //printf("Error with sending");
+            printf("Error with sending");
             return 0;
     }
     
     return 1;
 }
+
+// ***USER GET CONSOLE CHARS***
+int get_console_chars(msg_env * env) {
+    atomic_on();
+    int z = k_get_console_chars(env);
+    atomic_off();
+    return z;
+}
+    
 
 
 // ***GIVE A PROCESS ID AND RETURN IT'S PCB POINTER***
@@ -379,7 +399,7 @@ PCB_Q *convert_priority(int pri) {
 }
 
 // ***KERNEL RELEASE PROCESSOR***
-void k_release_processor() {
+void k_release_processor() {                //should be an int but we'll figure it later
     strcpy (curr_process->state, "READY");  //Change current process state to "ready"
     PCB_ENQ(curr_process, convert_priority(curr_process->priority));       //Enqueue PCB into a rpq
     process_switch();                       //Shari is taking care of process switch.
@@ -483,9 +503,64 @@ int request_process_status(msg_env *env){
 }
 
 // ***KERNEL TERMINATE***
-//int terminate()
+//int k_terminate(){
+    
+// ***USER TERMINATE***
+int terminate(){
+    atomic_on();
+    int z = k_int_terminate();
+    atomic_off();
+    return z;
+}
 
 // ***KERNEL GET TRACE BUFFERS
-//int get_trace_buffers(msg_env* env)
+int k_get_trace_buffers(msg_env* env){
+    if(!env){
+             printf("No envelope was passed");
+             return 0;
+    }
+    
+    strcpy(env->msg_text, "send trace buffer (from oldest to newest) \n No.    sender_id    target_id    msg_type    time stamp    \n\n");
+    
+    int i;
+    int j = 1;
+    char* temp = (char*) malloc(sizeof(SIZE));
+    
+    if(send_counter < 0)
+                    strcat(env->msg_text, "Send trace buffer empty \n");
+    else{
+         for(i = send_start; i == send_end; i = (i+1)%16){
+                             sprintf(temp, "%i    %i    %i    %s    %i:%i:%i    \n",
+                               j, send_trace[i].sender_id, send_trace[i].target_id, send_trace[i].msg_type, send_trace[i].timestamp.hh,
+                               send_trace[i].timestamp.mm, send_trace[i].timestamp.ss);
+                             strcat(env->msg_text, temp);
+                             j++;
+         }
+    }
+    
+    j = 1;
+    
+    strcat(env->msg_text, "\n\n receive trace buffer (from oldest to newest) \n No.    sender_id    target_id    msg_type    time stamp    \n\n");
+    
+    if(receive_counter < 0)
+                       strcat(env->msg_text, "Receive trace buffer empty \n");
+    else{
+         for(i = receive_start; i == receive_end; i = (i+1)%16){
+            sprintf(temp, "%i    %i    %i    %s    %i:%i:%i    \n",
+                        j, receive_trace[i].sender_id, receive_trace[i].target_id, receive_trace[i].msg_type, receive_trace[i].timestamp.hh,
+                        receive_trace[i].timestamp.mm, receive_trace[i].timestamp.ss);
+            strcat(env->msg_text, temp);
+            j++;
+         }
+    return 1;
+}
+
+// ***USER GET TRACE BUFFERS
+int get_trace_buffers(msg_env* env){
+    atomic_on();
+    int z = k_get_trace_buffers(env);
+    atomic_off();
+    return z;
+}
 
  
