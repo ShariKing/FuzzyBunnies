@@ -82,6 +82,9 @@ void kbd_iproc(int sigval);
 void crt_iproc(int sigval);
 void timer_iproc(int sigval);
 
+void atomic_off();
+void atomic_on();
+
 // PRIMITIVES
 int PCB_ENQ(PCB* r, PCB_Q* queue);
 PCB* PCB_DEQ(PCB_Q* queue);
@@ -90,6 +93,9 @@ PCB *PCB_REMOVE(PCB_Q *q, int id);
 int env_ENQ(msg_env* e, env_Q* queue);
 msg_env* env_DEQ(env_Q *queue);
 msg_env *env_REMOVE(env_Q *q, int senderid);
+
+int free_env_queue(env_Q* Q);
+int free_PCB_queue(PCB_Q* Qu);
 
 int send_message (int dest_id, msg_env* e);
 int k_send_message (int dest_id, msg_env* e);
@@ -123,6 +129,9 @@ int k_request_process_status(msg_env *env);
 
 void k_release_processor();
 void release_processor();
+
+int request_delay(int time_delay, int wakeup_code, msg_env *m);
+int k_request_delay(int time_delay, int wakeup_code, msg_env *m);
 
 void processP();
 

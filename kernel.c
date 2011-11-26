@@ -94,6 +94,7 @@ PCB *PCB_DEQ(PCB_Q *queue) {
     if (queue->head->p == NULL)
         queue->tail = queue->head;
 
+    t->p = NULL;    //set the pointer of the dequeued PCB to NULL 
     // return the pointer to the dequeued PCB
     return t;
 }
@@ -184,6 +185,8 @@ msg_env *env_DEQ(env_Q *queue) {
     if (queue->head == NULL) 
         queue->tail = queue->head;
     
+    t->p = NULL;    //set the pointer of the dequeued envelope to NULL
+    
     return t;
 }
 
@@ -214,6 +217,34 @@ msg_env *env_REMOVE(env_Q *q, int senderid){
     printf("Cannot find env in queue");
     return NULL;
 }
+
+//*** FREE ENVELOPE QUEUE
+int free_env_queue(env_Q* Q){
+    msg_env* willy;                       // hehehehe wait for it
+    while (Q->head != NULL){     // while the queue is not empty
+          willy = env_DEQ(Q);    // Dq from the queue and set it to willy
+          free(willy->msg_text);          // free the msg_text array
+          free(willy->msg_type);          // free the msg_type array
+          free(willy);                    // THERE IT IS!!
+    }
+    free(Q);
+    return 1;
+}
+
+//*** FREE PCB QUEUE
+int free_PCB_queue(PCB_Q* Qu){
+    PCB* dom;
+    while (Qu->head != NULL){
+          dom = PCB_DEQ(Qu);
+          free_env_queue(dom->receive_msg_Q);
+          free(dom->SP);
+          free(dom->state);
+          free(dom->p);
+          free(dom);
+    }
+    free(Qu);
+}
+          
 
 // *** KERNEL SEND MESSAGE ***
 int k_send_message(int dest_id, msg_env *e) {
@@ -511,27 +542,33 @@ int change_priority (int new_priority, int target_process_id){
     return z;
 }
 
-//***KERENEL GET PROCESS STATUS*** PROBABLY NEEDS CHANGE!!!
-int request_process_status(msg_env *env){
-    // initialize array
-    //char list[TOTAL_NUM_PROC][3] ='0';
-    int i;
-    msg_env *env_ps = request_msg_env();
-    for(i=0;i<TOTAL_NUM_PROC;i++) {
-        PCB *proc_pcb = convert_PID(i); // call process number
-        //list[i,1] = proc_pcb->pid;
-        //list[i,2] = proc_pcb->priority;
-        //list[i,3] = proc_pcb->state;                     
+//***KERENEL GET PROCESS STATUS***
+int k_request_process_status(msg_env *env){
+    if (!env){                                    //if no envelope was passed
+              printf("No envelope was passed");
+              return 0;
     }
-    //env_ps->msg_text = list;
-    int R = send_console_chars(env_ps);
-    if (R==0)
-       printf("Error with sending process status in CCI");
-    return 0;
+    char* temp = (char*) malloc(sizeof(SIZE));    //make an char array and allocate memory
+    strcpy(msg_env->msg_text, "proc_id    status   priority \n\n");        //write the headers in the env
+    int i;
+    for(i=0; i<TOTAL_NUM_PROC; i++){
+             sprintf(temp, "%i      %s        %i \n", pointer_2_PCB[i]i->pid, 
+             pointer_2_PCB[i]i->state, pointer_2_PCB[i]i->priority,);              //write the id status and priority in temp
+             strcat(msg_env->msg_text, temp);                                      //cat temp with the envelope
+    }
+    return 1;
 }
 
+//***USER GET PROCESS STATUS***
+int request_process_status(msg_env *env){
+    atomic_on();
+    int z = k_request_process_status(env);
+    atomic_off();
+    return z;
+} 
 
-int request_delay(int time_delay, int wakeup_code, msg_env *m)
+//***KERNEL REQUEST DELAY***
+int k_request_delay(int time_delay, int wakeup_code, msg_env *m)
 {
     int RequestingPID = curr_process->pid;         //Temporary PID holder
     strcpy(curr_process->state, "SLEEP");          
@@ -550,6 +587,14 @@ int request_delay(int time_delay, int wakeup_code, msg_env *m)
     }
     else
         return 0;              //The code should never get here
+}
+
+//***USER REQUEST DELAY***
+int request_delay(int time_delay, int wakeup_code, msg_env *m){
+    atomic_on();
+    int z = k_request_delay(time_delay, wakeup_code, msg_env *m);
+    atomic_off();
+    return z;
 }
     
 
@@ -570,8 +615,47 @@ int request_delay(int msecDelay) {
 
 
 // ***KERNEL TERMINATE***
-//int k_terminate(){
-    
+int k_terminate(){
+  free_env_queue(envelope_q);
+  free_env_queue(sleep_Q);
+  free_PCB_queue(blocked on envelope);
+  free_PCB_queue(ready_q_priority3);
+  free_PCB_queue(ready_q_priority2);
+  free_PCB_queue(ready_q_priority1);
+  free_PCB_queue(ready_q_priority0);
+  
+  int i;
+  for(i=0; i<4; i++)
+          free(pointer_2_RPQ[i]);
+  free(pointer_2_SQ);
+  
+  for(i=0; i<TOTAL_NUM_PROC; i++){
+           free_env_queue(pointer_2_PCB[i]->receive_msg_Q);
+           free(pointer_2_PCB[i]->state);
+           free(pointer_2_PCB[i]->SP);
+           free(pointer_2_PCB[i]->p);
+           free(pointer_2_PCB[i]);
+  }
+  
+  for(i=0; i<16; i++){
+           free(send_trace[i]->msg_type);
+           free(receive_trace[i]->msg_type);
+  }
+  
+  free(systemclock);
+  free(wallclock);
+  
+  free_env_queue(curr_process->receive_msg_Q);
+  free(curr_process->state);
+  free(curr_process->SP);
+  free(curr_process->p);
+  free(curr_process);
+  
+  cleanup();
+  
+  return 1;
+}
+
 // ***USER TERMINATE***
 int terminate(){
     atomic_on();
