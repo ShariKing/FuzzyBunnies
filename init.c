@@ -290,10 +290,13 @@ int init_processes ( )
            
            if (!tempState || !tempStack)                                               //return 0 if it didn't malloc right
               return 0;
-              
-            new_pcb->SP = tempStack;
-               
-            new_pcb->state = tempState;                                 //set tempstate to the pcb
+            
+             // initialize the 'next' pointer (for queues) to NULL
+            new_pcb->p = NULL;
+            
+            new_pcb->state = tempState;
+            // set all processes to the READY state
+            strcpy(new_pcb->state, "READY");//set tempstate to the pcb
             
             // set the PID for the appropriate process from the table
             new_pcb->pid = itable[i][0];
@@ -301,20 +304,12 @@ int init_processes ( )
             // set the Priority for the appropriate process from the table
             new_pcb->priority = itable[i][1];
             
-            // set ???? for the appropriate process from the table
-           // new_pcb->SP = NULL; //FOR CONTEXT SWITCHING. TO BE CHANGED LATER.
-            
             // set process counter for the appropriate process from the table
-
             new_pcb->PC = itable[i][2]; // WHAT IS THIS?!
-            
+           
             new_pcb->sleeptime = -2;
             
-            // set all processes to the READY state
-            strcpy(new_pcb->state, "READY");
-            
-            // initialize the 'next' pointer (for queues) to NULL
-            new_pcb->p = NULL;
+            new_pcb->SP = tempStack; 
             
             // initialize the process' receiving queue
             new_pcb->receive_msg_Q = create_env_Q();
