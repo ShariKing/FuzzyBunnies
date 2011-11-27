@@ -15,7 +15,7 @@
 #include "rtx.h"
 #include "kbcrt.h"
 
-jmp_buf kernel_buf;
+
 // *** FUNCTION TO CLEAN UP PARENT PROCESSES***
 void parent_die(int signal)
 {
@@ -247,35 +247,40 @@ int init_processes ( )
     int itable[TOTAL_NUM_PROC][2] = {0};
     int pid = 3;
     int priority = 3;
+    int proc_count = 3;
     int i = 0;
+    jmp_buf kernel_buf;
     
-
     
     // setting up PIDs and Prioritys
     for (i = 0; i < TOTAL_NUM_PROC; i++) {
         
         // reading PID
-        if (fscanf(itablefile, "%d", &pid))
-            itable[i][0] = pid;
+        if (fscanf(itablefile, "%d", &pid)){
         
+            itable[i][0] = pid;
+        }
         else {
             printf("Error, initialization table missing PID for process ", i, "\n");
             return 0;
         }
-        
+
+
         // reading Priority
         if (fscanf(itablefile, "%d", &priority))
             itable[i][1] = priority; //ALL PRIORITIES ARE SET TO ZERO FOR NOW. FIX THIS.
         
         else {
-            printf("Error, initialization table missing Priority for process ", i, "\n");
+            printf("Error, initialization table missing Priority for process \n", i, "\n");
             return 0;
         }
-    }
+
+   }
+   
     
     // close file for itable
     fclose(itablefile);
-    
+
     // 
     int j;
     for (j = 0; j < TOTAL_NUM_PROC; j++) {
@@ -295,6 +300,7 @@ int init_processes ( )
             new_pcb->p = NULL;
             
             new_pcb->state = tempState;
+            
             // set all processes to the READY state
             strcpy(new_pcb->state, "READY");//set tempstate to the pcb
             
@@ -305,8 +311,8 @@ int init_processes ( )
             new_pcb->priority = itable[i][1];
             
             // set process counter for the appropriate process from the table
-            new_pcb->PC = itable[i][2]; // WHAT IS THIS?!
-           
+            new_pcb->PC = &new_pcb; 
+          
             new_pcb->sleeptime = -2;
             
             new_pcb->SP = tempStack; 
@@ -321,29 +327,25 @@ int init_processes ( )
             //-------- Initializing context of pcbs---------
             
             if (setjmp(kernel_buf)==0){ // used for first time of initializing context
-                   char* jmpsp = new_pcb->SP;
-                   #ifdef i386
-                   __asm__ ("movl %0,%%esp" :"=m" (jmpsp)); // if Linux i386 target
-                   #endif // line 2
-                   /*
-                   #ifdef __sparc
-                   _set_sp( jmpsp ); // if Sparc target (eceunix)
-                   #endif
-                   */
-                   
-                  // _set_sp((char *) new_pcb->SP + SIZE); 
-                   if (setjmp(new_pcb->PC)==0){ // if first time
-                      longjmp(kernel_buf,1);            // restore context
-                   }
-                   else{                                  
-                    // curr_process = new_pcb; // sets the new pcb to be the current process
-                   //  strcpy(curr_process->state,"EXECUTING"); //sets state to executing
-                     void (*fpTmp)();
-                     (fpTmp) = (void *)(curr_process->PC); //gets address of process code
-                     fpTmp(); 
-                     }
+
+                char* jmpsp = new_pcb->SP;
+
+               //#ifdef __i386__
+               __asm__ ("movl %0,%%esp" :"=m" (jmpsp)); // if Linux i386 target
+               //#endif // line 2
+
+               if ( setjmp( (void*)new_pcb->SP ) == 0) // if first time
+                  longjmp(kernel_buf,1); 
+               
+               else{                                  
+                // curr_process = new_pcb; // sets the new pcb to be the current process
+                 printf("line 4\n");
+                   void (*fpTmp)();
+                 (fpTmp) = (void *)curr_process->PC; //gets address of process code
+                 fpTmp(); 
+                 }
                 }
-             
+            
             // enqueue the process on the appropriate ready queue
             if (new_pcb->priority == 0)
                 PCB_ENQ(new_pcb, ready_q_priority0);
@@ -358,7 +360,7 @@ int init_processes ( )
                 PCB_ENQ(new_pcb, ready_q_priority3);
             
             else {
-                printf("Error, invalid priority for process ", j, "\n");
+                printf("Error, invalid priority for process %d w/ priority %d \n", j, new_pcb->priority);
                 return 0;
             }
         }
@@ -687,7 +689,7 @@ int init_clocks(){
 int main ()
 {
         if (init_clocks())
-             printf("Wall clock & System clock created successfully", wallclock);
+             printf("Wall clock & System clock created successfully\n", wallclock);
          else {
              printf("Error, wallclock or systemclock initialization failed!!!\n");
              exit;

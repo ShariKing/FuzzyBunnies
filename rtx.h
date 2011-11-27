@@ -19,8 +19,8 @@
 
 // *** CONSTANTS ***
 #define SIZE 128
-#define STACKSIZE 40 // size of stack pointer
-#define TOTAL_NUM_PROC 12 //total number of processes, will change
+#define STACKSIZE 4096 // size of stack pointer
+#define TOTAL_NUM_PROC 7 //total number of processes, will change
 #define TOTAL_NUM_IPROC 3 //total number of i-processes
 #define TIMERIPROCPID 2
 
@@ -45,7 +45,7 @@ struct pcb {
 	char* state;
 	int pid;
 	int priority;
-	int PC;			//I'm guessing since it's a counter
+	void* PC;			//I'm guessing since it's a counter
 	int sleeptime;
 	char *SP;		
 	env_Q *receive_msg_Q;

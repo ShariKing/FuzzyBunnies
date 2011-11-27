@@ -1,7 +1,7 @@
-ALL: iRTX-G11 crt_child kbd_child
+ALL: RTX crt_child kbd_child
 
-iRTX-G11: init.o iproc.o kernel.o ProcessP.o userprocesses.o CCI.o ProcessSwitch.o ClockTest.o clock.o
-	gcc init.o iproc.o kernel.o ProcessP.o userprocesses.o CCI.o ProcessSwitch.o ClockTest.o clock.o -o iRTX-G11
+RTX: init.o iproc.o kernel.o ProcessP.o userprocesses.o CCI.o ProcessSwitch.o ClockTest.o clock.o
+	gcc init.o iproc.o kernel.o ProcessP.o userprocesses.o CCI.o ProcessSwitch.o ClockTest.o clock.o -o RTX
 
 crt_child: crt.o
 	gcc crt.o -o crt_child
