@@ -14,12 +14,14 @@
 #include "rtx.h"
 
 void null_process() {
+    printf("You're in null_process\n");
 		while(1) {
 			release_processor();
 		}
 }
 
-void process_switch() { 
+void process_switch() {
+    printf("You're in process_switch\n");
     PCB* new_pcb;
     PCB* old_pcb = curr_process;
     if(ready_q_priority0 != NULL) // If highest priority queue isn't empty
@@ -41,6 +43,7 @@ void process_switch() {
 // at the point where its context was last saved with a setjmp(). */
 
 void context_switch(jmp_buf previous, jmp_buf next) {
+    printf("You're in context_switch\n");
      int return_code = setjmp(previous); 
      if (return_code == 0) {
         longjmp(next,1);

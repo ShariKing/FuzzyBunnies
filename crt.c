@@ -25,12 +25,13 @@
 
 // ***FUNCTION TO CLEAN UP CHILD PROCESSES***
 void c_child_die(int signal) {
+    printf("You're in c_child_die\n");
     exit(0);
 }
 
 // ***CRT UART SIMULATION***
 int main(int argc, char * argv[]) {
-    
+    printf("You're in crt main\n");
     // delay after being forked from parent
     usleep(1000000);
 

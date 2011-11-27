@@ -14,7 +14,7 @@
 #include "rtx.h"
 
 void clock_increment(clk* clock, int system_or_wall) {
-		
+		printf("You're in clock_increment\n");
         //printf("%p is the pointer %d", clock, system_or_wall);
         //printf("%d is the seconds %d is the minutes %d is the hours \n", clock->ss, clock->mm, clock->hh);
         if (clock->ss < 60)
@@ -45,7 +45,7 @@ void clock_increment(clk* clock, int system_or_wall) {
 }
 
 int clock_set(clk* clock, int hours, int minutes, int seconds) {
-    
+    printf("You're in clock_set\n");
         if(seconds < 60 && seconds >= 0)	{
              if(minutes < 60 && minutes >= 0){
                   if(hours < 24 && hours >= 0){
@@ -61,7 +61,7 @@ int clock_set(clk* clock, int hours, int minutes, int seconds) {
 }
 
 int clock_out(clk* clock, msg_env *e){
-     
+     printf("You're in clock_out\n");
      char* temptime = (char *) malloc (sizeof (SIZE)); //temporary holding variable
      char* timewords = (char *) malloc (sizeof (SIZE));  //Temporary character pointer
      

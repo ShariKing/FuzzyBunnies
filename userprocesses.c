@@ -16,11 +16,13 @@
 
 // *** PROCESS A *** PID 3
 void ProcessA(){
+    printf("You're in ProcessA\n");
     // initialize return int, count
     int num = 0;
     PCB* pA_pcb = convert_PID(3);
     // receive the message from the CCI
     msg_env* envA = receive_message();
+    printf("%s", pA_pcb->state);
 
     // deallocate the message from Proc A's queue in its PCB
     envA= env_DEQ(pA_pcb->receive_msg_Q);
@@ -45,6 +47,7 @@ void ProcessA(){
 
 // *** PROCESS B *** PID 4
 void ProcessB(){
+    printf("You're in ProcessB\n");
     while(1){
         // receive the message from Process A
         msg_env* envB = receive_message();
@@ -59,7 +62,7 @@ void ProcessB(){
 
 // *** PROCESS C *** PID 5
 void ProcessC(){
-
+        printf("You're in ProcessC\n");
     // init the local queue
     struct envQ* localQ = (struct envQ *) malloc (sizeof (struct envQ));
     if (!localQ) {

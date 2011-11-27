@@ -76,7 +76,7 @@ typedef struct messageTrace msg_trace;
 
 // *** FUNCTION DECLARATIONS ***
 
-void parent_die(int signal);
+void k_terminate(int signal);
 void cleanup();
 
 // PROCESSES
@@ -113,8 +113,8 @@ int k_send_console_chars(msg_env* env);
 int get_console_chars(msg_env* env);
 int k_get_console_chars(msg_env* env);
 
-int terminate();
-int k_terminate();
+void terminate(int signal);
+//int k_terminate();
 
 int get_trace_buffers(msg_env* env);
 int k_get_trace_buffers(msg_env* env);
@@ -137,7 +137,9 @@ void release_processor();
 int request_delay(int time_delay, char* wakeup_code, msg_env *m);
 int k_request_delay(int time_delay, char* wakeup_code, msg_env *m);
 
-void processP();
+void ProcessA();
+void ProcessB();
+void ProcessC();
 
 PCB* convert_PID(int PID);
 PCB_Q* convert_priority(int pri);	
@@ -184,7 +186,7 @@ int receive_start;
 int receive_end;
 int send_counter;
 int receive_counter;                        //the only way I can think of setting up circular array
-
+int Atom;
 
 // QUEUES
 PCB_Q* ready_q_priority0;

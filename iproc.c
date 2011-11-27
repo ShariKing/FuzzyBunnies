@@ -16,7 +16,7 @@
 
 // ***KEYBOARD I-PROCESS***
 void kbd_iproc(int sigval) {
-    
+    printf("You're in kbd_iproc\n");
     // temporary env pointer
     msg_env *temp_k = NULL;
 
@@ -68,7 +68,7 @@ void kbd_iproc(int sigval) {
 // ***CRT I-PROCESS***
 
 void crt_iproc(int sigval) {
-
+printf("You're in crt_iproc\n");
         // temporary env pointer
         msg_env *temp_c = NULL;
 
@@ -113,7 +113,7 @@ void crt_iproc(int sigval) {
 }
 
 void timer_iproc(int sigval) {
-     
+     printf("You're in timer_iproc\n");
         static int pulse_counter = 0;     //Dummy Pulse Counter
         msg_env *sleeptraverse;           //Dummy envelope pointer to traverse the Sleep Queue
         msg_env *awakened;                //Dummy envelope pointer for awakened envelopes

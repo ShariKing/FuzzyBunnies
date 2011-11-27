@@ -26,12 +26,13 @@
 
 // ***FUNCTION TO CLEAN UP CHILD PROCESSES***
 void k_child_die(int signal) {
+    printf("You're in k_child_die\n");
     exit(0);
 }
 
 // ***KEYBOARD UART SIMULATION***
 int main(int argc, char * argv[]) {
-     
+     printf("You're in keyboard main\n");
     // delay after being forked from parent
     usleep(1000000);
      

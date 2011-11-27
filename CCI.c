@@ -15,6 +15,7 @@
 
 void CCI() 
 {   
+    printf("You're in CCI\n");
       int HH=0;
       int MM=0;
       int SS=0;
@@ -79,7 +80,7 @@ void CCI()
                      }
                 // terminates RTX
                 else if (input_txt == "t") { 
-                     terminate();
+                     terminate(0);
                      }
                 // changes priority
                 else if (input_txt == "n",pri,id) { 

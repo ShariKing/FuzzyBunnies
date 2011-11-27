@@ -17,8 +17,9 @@
 
 
 // *** FUNCTION TO CLEAN UP PARENT PROCESSES***
-void parent_die(int signal)
+void k_terminate(int signal)
 {
+    printf("You're in k_terminate\n");
     cleanup();
     printf("\n\nSignal %i Received.   Leaving RTOS ...\n", signal);
     exit(0);
@@ -29,6 +30,7 @@ void parent_die(int signal)
 // This stuff must be cleaned up or we have child processes and shared
 // memory hanging around after the main process terminates
 void cleanup() {
+    printf("You're in cleanup\n");
     // terminate child process(es)
     kill(in_pid, SIGINT);
     kill(out_pid, SIGINT);
@@ -68,7 +70,7 @@ void cleanup() {
     // unlink (i.e. delete) the temporary mmap file
     c_status = unlink(c_sfilename);
     if (c_status == -1) {
-        printf("Bad unlink during CRT claeanup.\n");
+        printf("Bad unlink during CRT cleanup.\n");
     }
 }
 
@@ -290,18 +292,19 @@ int init_processes ( )
         
         if (new_pcb){
         
-           char* tempState = (char* ) malloc (sizeof (SIZE));            //create tempState and malloc size of char array
+           //create tempState and malloc size of char array
            char* tempStack = (char*) malloc(sizeof (STACKSIZE));
+           char* tempState = (char*) malloc(sizeof (SIZE));
            
-           if (!tempState || !tempStack)                                               //return 0 if it didn't malloc right
+           //return 0 if it didn't malloc right
+           if (!tempStack || !tempState) 
               return 0;
             
-             // initialize the 'next' pointer (for queues) to NULL
+            // initialize the 'next' pointer (for queues) to NULL
             new_pcb->p = NULL;
-            
-            new_pcb->state = tempState;
-            
+
             // set all processes to the READY state
+            new_pcb->state = tempState;
             strcpy(new_pcb->state, "READY");//set tempstate to the pcb
             
             // set the PID for the appropriate process from the table
@@ -323,9 +326,10 @@ int init_processes ( )
             // create a pointer to the pcb, based on its PID, and save it in the array
             pointer_2_PCB[TOTAL_NUM_IPROC + j] = new_pcb;
 
+
             //-------- From initialization pdf on Ace-----
             //-------- Initializing context of pcbs---------
-            
+
             if (setjmp(kernel_buf)==0){ // used for first time of initializing context
 
                 char* jmpsp = new_pcb->SP;
@@ -339,13 +343,12 @@ int init_processes ( )
                
                else{                                  
                 // curr_process = new_pcb; // sets the new pcb to be the current process
-                 printf("line 4\n");
-                   void (*fpTmp)();
+                 void (*fpTmp)();
                  (fpTmp) = (void *)curr_process->PC; //gets address of process code
                  fpTmp(); 
                  }
                 }
-            
+
             // enqueue the process on the appropriate ready queue
             if (new_pcb->priority == 0)
                 PCB_ENQ(new_pcb, ready_q_priority0);
@@ -410,9 +413,6 @@ int init_env()
             
         new_env->msg_text = tempMsgText;
         
-        //new_env->msg_type ; 
-        //new_env->msg_text ;
-        
         // enqueue the new env on the free env queue
         env_ENQ(new_env, envelope_q);
       }
@@ -423,32 +423,54 @@ int init_env()
 
 int init_i_processes()
 {
-     //finish reading in file for iproctable
-     int k; 
+     int k;
+     jmp_buf kernel_buf;
      for (k = 0; k < TOTAL_NUM_IPROC; k++)
      {
          struct pcb* new_pcb = (struct pcb *) malloc (sizeof (struct pcb));
-         
+         char* tempStack = (char*) malloc(sizeof (STACKSIZE));
+         char* tempState = (char*) malloc(sizeof (SIZE));
+             
          // if the PCB pointer is cool
-         if (new_pcb){
-             
-             new_pcb->priority = -1;
-             
-             new_pcb->SP = NULL; //FOR CONTEXT SWITCHING. TO BE CHANGED LATER.
-             
-             new_pcb->pid = k;
-             
-             //new_pcb->PC = itable[k][1];
-             strcpy(new_pcb->state,"READY"); //This is how you set the state
+         if (new_pcb && tempStack){
              
              new_pcb->p = NULL;
              
+             new_pcb->state = tempState;
+             strcpy(new_pcb->state,"READY"); //This is how you set the state
+             
+             new_pcb->pid = k;
+             
+             new_pcb->priority = -1;
+             
+             new_pcb->PC = &new_pcb;
+             
              new_pcb->sleeptime = -2;
+             
+             new_pcb->SP = tempStack; //FOR CONTEXT SWITCHING. TO BE CHANGED LATER.
              
              new_pcb->receive_msg_Q = create_env_Q();
              
              pointer_2_PCB[k] = new_pcb;//This code creates a pointer to the pcb, based on its pid
              
+             if (setjmp(kernel_buf)==0){ // used for first time of initializing context
+
+             char* jmpsp = new_pcb->SP;
+
+             //#ifdef __i386__
+             __asm__ ("movl %0,%%esp" :"=m" (jmpsp)); // if Linux i386 target
+             //#endif // line 2
+
+             if ( setjmp( (void*)new_pcb->SP ) == 0) // if first time
+                longjmp(kernel_buf,1); 
+
+             else{                                  
+                // curr_process = new_pcb; // sets the new pcb to be the current process
+                void (*fpTmp)();
+                (fpTmp) = (void *)curr_process->PC; //gets address of process code
+                fpTmp(); 
+             }
+            }
          }
          
          // if the PCB pointer needs to go back to school
@@ -459,40 +481,6 @@ int init_i_processes()
      // if everything jives
      return 1;
 }
-
-// GOING TO TALK TO KARIM THEN COMING BACK TO THIS!! MIGHT NEED TO REDO IT
-
-/*int init_msg_trace(){      //both send and receive trace
-    int i;
-    for (i = 0; i < 16; i++){
-        struct messageTrace* fernando = (struct messageTrace *) malloc (sizeof (struct messageTrace));  //fernando is the send trace
-        struct messageTrace* hans = (struct messageTrace *) malloc (sizeof (struct messageTrace));      //hans is the receive trace
-        
-        fernando->id = -3;        //using -3 to initialize cuz -3 doesn't exist
-        hans->id = -3;
-        
-        char* tempMsgTypeF = (char *) malloc (sizeof (SIZE));             //initialize the character array pointer
-        char* tempMsgTypeH = (char *) malloc (sizeof (SIZE));             //F for Fernando. H for Hans
-        
-        // if the msg_type pointers are not created properly
-        if (!tempMsgTypeF || !tempMsgTypeH)
-            return 0;
-        
-        
-        fernando->msg_type = tempMsgTypeF;                                //casting them pointers like they be auditionin for them roles!!
-        hans->msg_type = tempMsgTypeH;
-        
-        fernando->timestamp->ss = 0;
-        fernando->timestamp->mm = 0;
-        fernando->timestamp->hh = 0;
-        
-        fernando->timestamp->ss = 0;
-        fernando->timestamp->mm = 0;
-        fernando->timestamp->hh = 0;
-        
-        msg_trace_ENQ(fernando, send_trace_q);                            //enqueing the msg trace in their respective queues
-        msg_trace_ENQ(hans, receive_trace_q);
- */
         
 void kb_crt_start(){
     /* FORKING THE KEYBOARD  */
@@ -551,7 +539,7 @@ void kb_crt_start(){
 
     if (k_mmap_ptr == MAP_FAILED){
         printf("Parent's memory map has failed, about to quit!\n");
-	parent_die(0);  // do cleanup and terminate
+	terminate(0);  // do cleanup and terminate
     };
 
     // create the shared memory pointer
@@ -631,7 +619,7 @@ void kb_crt_start(){
 
     if (c_mmap_ptr == MAP_FAILED){
         printf("Parent's memory map has failed, about to quit!\n");
-	parent_die(0);  // do cleanup and terminate
+	terminate(0);  // do cleanup and terminate
     };
 	
     // create the shared memory pointer
@@ -721,7 +709,7 @@ int main ()
                 printf("Error, process initialization failed!!!\n");
                 exit;
         }
-        
+
         // if init_i_processes returned 1
         if (init_i_processes())
                 printf("Initialized I-processes correctly\n");
@@ -730,34 +718,26 @@ int main ()
                 printf("Error, i-process initialization failed!!!\n");
                 exit;
         }
-    
-        // set the current process to whatever comes first
-        // ***** should be the first process in the first ready queue? does that mean we can just hardcode this since it will be the same every time?
-        curr_process = convert_PID(3);
 
-        // ***** why are we doing this???
-        strcpy(curr_process->state,"RUNNING");
-
-        
         // *****CODE FROM HERE TO THE BOTTOM WAS TAKEN FROM DEMO.C*****
 
         // catch signals so we can clean up everything before exiting
         // signals defined in /usr/include/signal.h
-        sigset(SIGINT,terminate());	// catch kill signals 
-        sigset(SIGBUS,terminate());	// catch bus errors
-        sigset(SIGHUP,terminate());		
-        sigset(SIGILL,terminate());	// illegal instruction
-        sigset(SIGQUIT,terminate());
-        sigset(SIGABRT,terminate());
-        sigset(SIGTERM,terminate());
-        sigset(SIGSEGV,terminate());	// catch segmentation faults
+        sigset(SIGINT,terminate);	// catch kill signals 
+        sigset(SIGBUS,terminate);	// catch bus errors
+        sigset(SIGHUP,terminate);		
+        sigset(SIGILL,terminate);	// illegal instruction
+        sigset(SIGQUIT,terminate);
+        sigset(SIGABRT,terminate);
+        sigset(SIGTERM,terminate);
+        sigset(SIGSEGV,terminate);	// catch segmentation faults
         sigset(SIGUSR1,kbd_iproc);
         sigset(SIGUSR2,crt_iproc);
         sigset(SIGALRM,timer_iproc); //Catch clock ticks
 
+        
         // INITIALIZE KB AND CRT
         kb_crt_start();
-
         
         //set a repeating alarm to send SIGALRM every 100000 usec, or 0.1sec
         int alarmstatus = ualarm(100000, 100000);
@@ -765,15 +745,23 @@ int main ()
         if(alarmstatus != 0)
              printf("Error: Something is wrong with the system timer!\n");
         
+    
+        // set the current process to whatever comes first
+        // ***** should be the first process in the first ready queue? does that mean we can just hardcode this since it will be the same every time?
+        curr_process = convert_PID(3);
 
+        // ***** why are we doing this???
+        strcpy(curr_process->state,"RUNNING");
+        
 
         //*** BACK TO MAIN RTOS STUFF ***
 
         // code to say we've started!!
-        printf("Proc A Ready! Waiting to go!");
-        ClockTest(systemclock); // remove later?
+        printf("Proc A Ready! Waiting to go!\n");
+        ProcessA();
+        //ClockTest(systemclock); // remove later?
         
         // should never reach here, but in case we do, clean up after ourselves
-        terminate();
+        terminate(0);
         exit(1);
 }	
