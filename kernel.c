@@ -24,7 +24,7 @@ void atomic_on() {
         sigset_t newmask;
         sigemptyset(&newmask);
         //sigaddset(&newmask, SIGALRM); //the alarm signal
-        //sigaddset(&newmask, SIGINT); // the CNTRL-C
+        sigaddset(&newmask, SIGINT); // the CNTRL-C
         sigaddset(&newmask, SIGUSR1); // the CRT signal
         sigaddset(&newmask, SIGUSR2); // the KB signal
         sigprocmask(SIG_BLOCK, &newmask, &oldmask);
@@ -248,7 +248,6 @@ int free_env_queue(env_Q* Q){
           free(willy->p);// Dq from the queue and set it to willy
           free(willy);                    // THERE IT IS!!
     }
-    printf("free my willy 6\n");
          
     free(Q);
     return 1;
@@ -356,7 +355,7 @@ msg_env *k_receive_message() { //Doesn't take the PCB as a parameter. Dealt with
         
         // if it's a normal process, block it on receive
         strcpy(curr_process->state, "BLK_ON_RCV"); //*********Doesn't need to be put in a queue, and don't care about process switch now********* FIX THIS
-    
+    printf("in k_rec before proc switch pid %d, %s\n", curr_process->pid, curr_process->state);
         process_switch(); // Fixed it. Used to be return NULL.
     }
     
@@ -378,6 +377,7 @@ msg_env *k_receive_message() { //Doesn't take the PCB as a parameter. Dealt with
         
         return env;
         }
+        printf("in k_rec after proc switch pid %d, %s\n", curr_process->pid, curr_process->state);
 }
 
 // ***USER RECEIVE MESSAGE***
@@ -393,7 +393,8 @@ msg_env *receive_message() {
         atomic_off();
         
         // return the pointer to the message envelope
-        return temp;
+        if (temp)
+                return temp;
 }
 
 // *** KERNEL SEND CONSOLE CHARS***
@@ -461,9 +462,10 @@ int get_console_chars(msg_env * env) {
 PCB *convert_PID(int PID) {
     printf("You're in convert_PID\n");
     // if the process ID is invalid
-    if (PID > (TOTAL_NUM_PROC - 1) || PID < 0) {
+    if (PID > (TOTAL_NUM_PROC + TOTAL_NUM_IPROC - 1) || PID < 0) {
         // printf("invalid ID");
-        return NULL;
+        printf("Invalid PID, cannot continue\n");
+        terminate(0);
         }
     
     // if the ID is valid, return the pointer in the PCB array at the value of ID

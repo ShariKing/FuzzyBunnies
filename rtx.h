@@ -168,7 +168,7 @@ void begin_RTX( );
 
 
 // *** VARIABLES ***
-PCB* pointer_2_PCB[TOTAL_NUM_PROC];	//array of pointers to processes
+PCB* pointer_2_PCB[TOTAL_NUM_PROC + TOTAL_NUM_IPROC];	//array of pointers to processes
 PCB_Q* pointer_2_RPQ[4];	//array of pointers to ready process queues
 env_Q* pointer_2_SQ;	//pointer to sleep queue
 

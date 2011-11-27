@@ -22,7 +22,6 @@ void ProcessA(){
     PCB* pA_pcb = convert_PID(3);
     // receive the message from the CCI
     msg_env* envA = receive_message();
-    printf("%s", pA_pcb->state);
 
     // deallocate the message from Proc A's queue in its PCB
     envA= env_DEQ(pA_pcb->receive_msg_Q);

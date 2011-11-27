@@ -21,9 +21,11 @@ void null_process() {
 }
 
 void process_switch() {
+    atomic_on();
     printf("You're in process_switch\n");
     PCB* new_pcb;
     PCB* old_pcb = curr_process;
+    
     if(ready_q_priority0 != NULL) // If highest priority queue isn't empty
         new_pcb = PCB_DEQ(ready_q_priority0); //get ptr to highest priority ready process
     else if (ready_q_priority1 != NULL)
@@ -32,10 +34,16 @@ void process_switch() {
          new_pcb = PCB_DEQ(ready_q_priority2); //get ptr to highest priority ready process
     else 
          new_pcb = PCB_DEQ(ready_q_priority3); //only for null process
+    
+    if (old_pcb->state == "RUNNING"){
+        strcpy(old_pcb->state, "READY"); //set old proc state to ready
+    }
+    
     strcpy(new_pcb->state, "RUNNING"); //set new proc state to running
-    strcpy(old_pcb->state, "READY"); //set old proc state to ready
+    
     curr_process = new_pcb; //make the next_pcb the current process
     context_switch( old_pcb->pcb_buf, new_pcb->pcb_buf );
+    atomic_off();
 }
 
 // context_switch() - performs the context switch between two user processes
