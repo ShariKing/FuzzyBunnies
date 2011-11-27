@@ -326,7 +326,15 @@ int init_processes ( )
             //-------- Initializing context of pcbs---------
             
             if (setjmp(kernel_buf)==0){ // used for first time of initializing context
-                   
+                   char* jmpsp = new_pcb->SP;
+                   #ifdef i386
+                   __asm__ ("movl %0,%%esp" :"=m" (jmpsp)); // if Linux i386 target
+                   #endif // line 2
+                   /*
+                   #ifdef __sparc
+                   _set_sp( jmpsp ); // if Sparc target (eceunix)
+                   #endif
+                   */
                    
                   // _set_sp((char *) new_pcb->SP + SIZE); 
                    if (setjmp(new_pcb->PC)==0){ // if first time
