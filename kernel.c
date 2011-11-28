@@ -23,10 +23,11 @@ void atomic_on() {
         static sigset_t oldmask;
         sigset_t newmask;
         sigemptyset(&newmask);
-        //sigaddset(&newmask, SIGALRM); //the alarm signal
+        sigaddset(&newmask, SIGALRM); //the alarm signal
         sigaddset(&newmask, SIGINT); // the CNTRL-C
         sigaddset(&newmask, SIGUSR1); // the CRT signal
         sigaddset(&newmask, SIGUSR2); // the KB signal
+        sigaddset(&newmask, SIGTTIN); // random signal that breaks things!!!!!!!!
         sigprocmask(SIG_BLOCK, &newmask, &oldmask);
         Atom ++;
         printf("Atomic on\n");

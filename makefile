@@ -1,46 +1,46 @@
 ALL: RTX crt_child kbd_child
 
 RTX: init.o iproc.o kernel.o ProcessP.o userprocesses.o CCI.o ProcessSwitch.o ClockTest.o clock.o
-	gcc init.o iproc.o kernel.o ProcessP.o userprocesses.o CCI.o ProcessSwitch.o ClockTest.o clock.o -o RTX
+	gcc -g init.o iproc.o kernel.o ProcessP.o userprocesses.o CCI.o ProcessSwitch.o ClockTest.o clock.o -o RTX
 
 crt_child: crt.o
-	gcc crt.o -o crt_child
+	gcc -g crt.o -o crt_child
 	
 kbd_child: keyboard.o
-	gcc keyboard.o -o kbd_child
+	gcc -g keyboard.o -o kbd_child
 	
 crt.o: crt.c kbcrt.h
-	gcc -c crt.c
+	gcc -g -c crt.c
 
 keyboard.o: keyboard.c kbcrt.h
-	gcc -c keyboard.c
+	gcc -g -c keyboard.c
 	
 ProcessSwitch.o: ProcessSwitch.c rtx.h
-	gcc -c ProcessSwitch.c
+	gcc -g -c ProcessSwitch.c
 	
 init.o: init.c rtx.h
-	gcc -c init.c
+	gcc -g -c init.c
 
 iproc.o: iproc.c rtx.h
-	gcc -c iproc.c
+	gcc -g -c iproc.c
 
 kernel.o: kernel.c rtx.h
-	gcc -c kernel.c
+	gcc -g -c kernel.c
 
 ProcessP.o: ProcessP.c rtx.h
-	gcc -c ProcessP.c
+	gcc -g -c ProcessP.c
 
 userprocesses.o: userprocesses.c rtx.h
-	gcc -c userprocesses.c
+	gcc -g -c userprocesses.c
 
 CCI.o: CCI.c rtx.h
-	gcc -c CCI.c
+	gcc -g -c CCI.c
 
 ClockTest.o: ClockTest.c rtx.h
-	gcc -c ClockTest.c
+	gcc -g -c ClockTest.c
 	
 clock.o: clock.c rtx.h
-	gcc -c clock.c
+	gcc -g -c clock.c
 	
 clean:
 	rm *.o 

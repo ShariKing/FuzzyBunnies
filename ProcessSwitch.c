@@ -52,8 +52,8 @@ void process_switch() {
 
 void context_switch(jmp_buf previous, jmp_buf next) {
     printf("You're in context_switch\n");
-     int return_code = setjmp(previous); 
-     if (return_code == 0) {
+    // int return_code = setjmp(previous);
+     if (setjmp(previous) == 0) {
         longjmp(next,1);
      }
 }

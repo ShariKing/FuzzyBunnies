@@ -14,7 +14,11 @@
 
 #include "rtx.h"
 #include "kbcrt.h"
+#include "CCI.c"
+#include "ProcessSwitch.c"
+#include "iproc.c"
 
+init_table itable[TOTAL_NUM_PROC + TOTAL_NUM_IPROC];
 
 // *** FUNCTION TO CLEAN UP PARENT PROCESSES***
 void k_terminate(int signal)
@@ -239,8 +243,48 @@ int init_msg_trace(){
 // *** INITIALIZE Non-I PROCESSES ****
 int init_processes ( )
 {
-    
+    jmp_buf kernel_buf;
+       itable[3].pid = 3;
+       itable[3].priority = 2;
+       itable[3].stack_size =STACKSIZE;
+      // itable[3].process_type = user_process;
+       itable[3].address = &ProcessA;
+
+       itable[4].pid = 4;
+       itable[4].priority = 2;
+       itable[4].stack_size =STACKSIZE;
+       //itable[4].process_type = user_process;
+       itable[4].address = &ProcessB;
+       
+       itable[5].pid = 5;
+       itable[5].priority = 1;
+       itable[5].stack_size =STACKSIZE;
+       //itable[5].process_type = user_process;
+       itable[5].address = &ProcessC;
+        
+       itable[6].pid = 6;
+       itable[6].priority = 0;
+       itable[6].stack_size =STACKSIZE;
+      // itable[6].process_type = user_process;  
+       itable[6].address = &CCI;
+
+       /*
+       itable[j].pid = 7;
+       itable[j].priority = 1;
+       itable[j].stack_size =STACKSIZE;
+       //itable[j].process_type = clock_process;  
+       itable[j].address = (void*)clock_process;
+       
+       */
+       itable[7].pid = 7; // change after the clock process is written
+       itable[7].priority = 3;
+       itable[7].stack_size =STACKSIZE;
+       //itable[7].process_type = null_process;  
+       itable[7].address = &null_process;
+
+               
     curr_process = NULL;          //Initialize the current process to be null
+    /*
     // read in file for itable
     FILE* itablefile;
     itablefile = fopen("itable.txt", "r");
@@ -251,8 +295,7 @@ int init_processes ( )
     int priority = 3;
     int proc_count = 3;
     int i = 0;
-    jmp_buf kernel_buf;
-    
+   
     
     // setting up PIDs and Prioritys
     for (i = 0; i < TOTAL_NUM_PROC; i++) {
@@ -282,8 +325,8 @@ int init_processes ( )
     
     // close file for itable
     fclose(itablefile);
-
-    // 
+*/
+    
     int j;
     for (j = 0; j < TOTAL_NUM_PROC; j++) {
         
@@ -292,14 +335,14 @@ int init_processes ( )
         
         if (new_pcb){
         
-           //create tempState and malloc size of char array
-           char* tempStack = (char*) malloc(sizeof (STACKSIZE));
+            //create tempState and malloc size of char array
+           char* tempStack = (char*) malloc(sizeof (itable[j].stack_size));
            char* tempState = (char*) malloc(sizeof (SIZE));
            
            //return 0 if it didn't malloc right
            if (!tempStack || !tempState) 
               return 0;
-            
+                          
             // initialize the 'next' pointer (for queues) to NULL
             new_pcb->p = NULL;
 
@@ -308,13 +351,14 @@ int init_processes ( )
             strcpy(new_pcb->state, "READY");//set tempstate to the pcb
             
             // set the PID for the appropriate process from the table
-            new_pcb->pid = itable[j][0];
+            new_pcb->pid = itable[j].pid;
             
             // set the Priority for the appropriate process from the table
-            new_pcb->priority = itable[j][1];
+            new_pcb->priority = itable[j].priority;
             
             // set process counter for the appropriate process from the table
-            new_pcb->PC = &new_pcb; 
+            
+            new_pcb->PC = itable[j].address; 
           
             new_pcb->sleeptime = -2;
             
@@ -332,13 +376,13 @@ int init_processes ( )
 
             if (setjmp(kernel_buf)==0){ // used for first time of initializing context
 
-                char* jmpsp = new_pcb->SP;
+                char* jmpsp = new_pcb->SP + STACKSIZE;
 
                //#ifdef __i386__
                __asm__ ("movl %0,%%esp" :"=m" (jmpsp)); // if Linux i386 target
                //#endif // line 2
 
-               if ( setjmp( (void*)new_pcb->SP ) == 0) // if first time
+               if ( setjmp(new_pcb->pcb_buf ) == 0) // if first time
                   longjmp(kernel_buf,1); 
                
                else{                                  
@@ -347,7 +391,7 @@ int init_processes ( )
                  (fpTmp) = (void *)curr_process->PC; //gets address of process code
                  fpTmp(); 
                  }
-                }
+              }
 
             // enqueue the process on the appropriate ready queue
             if (new_pcb->priority == 0)
@@ -425,6 +469,25 @@ int init_i_processes()
 {
      int k;
      jmp_buf kernel_buf;
+     
+       itable[0].pid = 0;
+       itable[0].priority = -1;
+       itable[0].stack_size =STACKSIZE;
+       //itable[0].process_type = i_process;
+       itable[0].address = &kbd_iproc;
+       
+       itable[1].pid = 1;
+       itable[1].priority = -1;
+       itable[1].stack_size =STACKSIZE;
+       //itable[1].process_type = i_process;
+       itable[1].address = &crt_iproc;
+       
+       itable[2].pid = 2;
+       itable[2].priority = -1;
+       itable[2].stack_size =STACKSIZE;
+      // itable[2].process_type = i_process;
+       itable[2].address = &timer_iproc;
+       
      for (k = 0; k < TOTAL_NUM_IPROC; k++)
      {
          struct pcb* new_pcb = (struct pcb *) malloc (sizeof (struct pcb));
@@ -439,11 +502,11 @@ int init_i_processes()
              new_pcb->state = tempState;
              strcpy(new_pcb->state,"READY"); //This is how you set the state
              
-             new_pcb->pid = k;
+             new_pcb->pid = itable[k].pid;
              
-             new_pcb->priority = -1;
+             new_pcb->priority = itable[k].priority;
              
-             new_pcb->PC = &new_pcb;
+             new_pcb->PC = itable[k].address;
              
              new_pcb->sleeptime = -2;
              
@@ -455,21 +518,21 @@ int init_i_processes()
              
              if (setjmp(kernel_buf)==0){ // used for first time of initializing context
 
-             char* jmpsp = new_pcb->SP;
-
-             //#ifdef __i386__
-             __asm__ ("movl %0,%%esp" :"=m" (jmpsp)); // if Linux i386 target
-             //#endif // line 2
-
-             if ( setjmp( (void*)new_pcb->SP ) == 0) // if first time
-                longjmp(kernel_buf,1); 
-
-             else{                                  
-                // curr_process = new_pcb; // sets the new pcb to be the current process
-                void (*fpTmp)();
-                (fpTmp) = (void *)curr_process->PC; //gets address of process code
-                fpTmp(); 
-             }
+                 char* jmpsp = new_pcb->SP +STACKSIZE;
+    
+                 //#ifdef __i386__
+                 __asm__ ("movl %0,%%esp" :"=m" (jmpsp)); // if Linux i386 target
+                 //#endif // line 2
+    
+                 if ( setjmp(new_pcb->pcb_buf ) == 0) // if first time
+                    longjmp(kernel_buf,1); 
+    
+                 else{                                  
+                    // curr_process = new_pcb; // sets the new pcb to be the current process
+                    void (*fpTmp)();
+                    (fpTmp) = (void *)curr_process->PC; //gets address of process code
+                    fpTmp(); 
+                 }
             }
          }
          

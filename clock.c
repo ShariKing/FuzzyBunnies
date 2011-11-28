@@ -88,9 +88,10 @@ int clock_out(clk* clock, msg_env *e){
      //{
           strcpy(e->msg_text, timewords);    //put the formatted time text into the envelope
           int Z = send_console_chars(e);
-          if (Z==0)
+          if (Z==0) {
              printf("Send console chars in clock has error");
              return 0;
+             }
           else
              return 1; //Success!
      //}

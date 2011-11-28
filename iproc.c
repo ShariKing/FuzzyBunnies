@@ -14,7 +14,7 @@
 #include <errno.h>
 #include "rtx.h"
 
-// ***KEYBOARD I-PROCESS***
+// ***KEYBOARD I-PROCESS priority 0***
 void kbd_iproc(int sigval) {
     printf("You're in kbd_iproc\n");
     // temporary env pointer
@@ -53,7 +53,7 @@ void kbd_iproc(int sigval) {
         strcpy(temp_k->msg_type, "console_input");
 
         // send env back to process
-        int Z = send_message(4, temp_k); 
+        int Z = send_message(4, temp_k); //check location being sent here!
 
         // if it didn't send like it should have
         if (Z == 0)

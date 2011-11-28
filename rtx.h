@@ -17,10 +17,11 @@
 #include "kbcrt.h"
 
 
+
 // *** CONSTANTS ***
 #define SIZE 128
 #define STACKSIZE 4096 // size of stack pointer
-#define TOTAL_NUM_PROC 7 //total number of processes, will change
+#define TOTAL_NUM_PROC 8 //total number of processes, will change
 #define TOTAL_NUM_IPROC 3 //total number of i-processes
 #define TIMERIPROCPID 2
 
@@ -73,6 +74,14 @@ struct messageTrace {
        clk timestamp;
 };
 typedef struct messageTrace msg_trace;
+
+struct init_table {
+       int pid;
+       int priority;
+       int stack_size;
+       void* address;
+};
+typedef struct init_table init_table;
 
 // *** FUNCTION DECLARATIONS ***
 
