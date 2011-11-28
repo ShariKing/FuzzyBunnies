@@ -115,7 +115,10 @@ void ProcessC(){
             
         }  
         // deallocate envelopes
-        envC= env_DEQ(pC_pcb->receive_msg_Q);
+        //envC= env_DEQ(pC_pcb->receive_msg_Q);
+        int dun = release_msg_env(envC);
+        if (dun==0)
+           printf("ERROR IN DEALLOCATING ENVELOPE AT END OF Proc C");
         
         // release processor
         release_processor();

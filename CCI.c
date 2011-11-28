@@ -107,6 +107,11 @@ void CCI()
                 else {
                      printf("Invalid CCI input. Please try again.");                   
                 }
+            int dun = release_msg_env(env);
+            if (dun==0)
+               printf("ERROR IN DEALLOCATING ENVELOPE AT END OF CCI");
+            else
+               printf("CCI finished, I think");
         } 
       }
 }
