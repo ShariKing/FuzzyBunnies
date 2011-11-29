@@ -157,8 +157,9 @@ void timer_iproc(int sigval) {
 //==========CODE TO HANDLE REQUEST DELAY=============		
     msg_env *delayRequest;
     delayRequest = receive_message();              //Receive Message for Delays
-    if(delayRequest)
-    env_ENQ(delayRequest, sleep_Q);            //Enqueue delay requests onto the sleep Q
+   
+    if(delayRequest != NULL)
+         env_ENQ(delayRequest, sleep_Q);            //Enqueue delay requests onto the sleep Q
 
     if(sleep_Q->head) {    //if the sleep queue is not empty
         
@@ -166,15 +167,15 @@ void timer_iproc(int sigval) {
          sleeptime = atoi(sleeptraverse->msg_text);              //Convert the delay time text to an integer
          sleeptime = sleeptime - 100;                                //Decrement the sleeptime
          
-         if(sleeptime <= 0)           //Check if the head env has finished sleeping
+         /*if(sleeptime <= 0)           //Check if the head env has finished sleeping
          {
-              /*awakened = sleeptraverse;          //awakened now points to what sleeptraverse did before
+              awakened = sleeptraverse;          //awakened now points to what sleeptraverse did before
 
               if(sleeptraverse->p != NULL)                   //Move the pointer to the next so we don't lose it after Dequeueing
                    sleeptraverse = sleeptraverse->p;
               else                                   //If this is the only envelope in the sleep queue, set sleeptraverse to NULL.
                    sleeptraverse = NULL;
-              */
+              
               awakened = env_DEQ(sleep_Q);           //Dequeue awakened from the head
               send_message(awakened->sender_id, awakened);     //send awakened back to its sender id, which should be blocked_on_receive
          }
@@ -186,18 +187,19 @@ void timer_iproc(int sigval) {
               else
                    sleeptraverse = NULL;
          }
-    }
-         while(sleeptraverse)    //If there are no others, sleeptraverse will be NULL and skip this. Otherwise, sleeptraverse
+    }*/
+         while(sleeptraverse != NULL)    //If there are no others, sleeptraverse will be NULL and skip this. Otherwise, sleeptraverse
          {                       // will be the next, undecremented envelope, and will loop.
              removeid = sleeptraverse->sender_id;     //Extracting the id to use with env_remove to remove the envelope from the queue
 
              sleeptime = atoi(sleeptraverse->msg_text);            //Convert the delay time text to an integer
              sleeptime = sleeptime - 100;                          //decrement the delay time
+             
              if(sleeptime <= 0)           //Check if the env has finished sleeping
              {
                   awakened = sleeptraverse;          //awakened now points to what sleeptraverse did before
 
-                  if(sleeptraverse->p)                   //Move the pointer to the next so we don't lose it after Dequeueing
+                  if(sleeptraverse->p != NULL)                   //Move the pointer to the next so we don't lose it after Dequeueing
                        sleeptraverse = sleeptraverse->p;
                   else                                   //If this is the only envelope in the sleep queue, set sleeptraverse to NULL.
                        sleeptraverse = NULL;
@@ -206,16 +208,20 @@ void timer_iproc(int sigval) {
                   awakened = env_REMOVE(sleep_Q, removeid);   //Remove awakened from the sleep queue without losing any links
                   send_message(awakened->sender_id, awakened); //send awakened back to its sender id, which should be blocked_on_receive
              }
+             
              else     //If current decrementing process is not awake yet, check for others in the queue and traverse
              {
                   sprintf(sleeptraverse->msg_text, "%d\0", sleeptime);    //copy the new sleeptime back into a string and put it back in the envelope
-                  if(sleeptraverse->p)                                  //traverse
+                  
+                  if(sleeptraverse->p != NULL)                                  //traverse
                        sleeptraverse = sleeptraverse->p;
                   else
                        sleeptraverse = NULL;
              }
-         }        
-         curr_process = interrupted_proc;
+         }
+    }
+    
+    curr_process = interrupted_proc;
 }
 
 //==========    CODE BELOW THIS LINE IS FUNCTIONAL, BUT DOES NOT FIT THE STANDARD DESIGN. LEAVE AS BACKUP     ===================//

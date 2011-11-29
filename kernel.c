@@ -128,23 +128,31 @@ printf("You're in PCB_DEQ\n");
 //***REMOVE PCB FROM MIDDLE OF QUEUE***
 PCB *PCB_REMOVE(PCB_Q *q, int id){
     printf("You're in PCB_REMOVE\n");
+    
     if(q->head == NULL){              //if queue is empty
                    //printf("Queue is empty");
                    return NULL;
     }
+    
     PCB *index = q->head;           //create a pointer that starts at the head
+    
     if(index->pid == id){           //first PCB is the one we're looking for
                   index = PCB_DEQ(q);
                   return index;      //dequeue it and return it
     }
+    
     PCB *prev = index;               //pointer prev trails index
+    
     index = index->p;                //index is leading prev now
+    
     while(index != NULL){            //while index didn't traverse the entire queue
+               
                 if(index->pid == id){ //if the PCB is found
-                              prev = index->p;
+                              prev->p = index->p;
                               index->p = NULL;
                               return index;
                 }
+                
                 prev = index;
                 index = index->p;    //move on to the next PCB
     }
@@ -224,25 +232,31 @@ msg_env *env_DEQ(env_Q *queue) {
 //***REMOVE ENV FROM MIDDLE OF QUEUE***
 msg_env *env_REMOVE(env_Q *q, int senderid){
     printf("You're in env_REMOVE\n");
+    
     if(q->head == NULL){              //if queue is empty
                    //printf("Queue is empty");
                    return NULL;
     }
+    
     msg_env *index = q->head;           //create a pointer that starts at the head
     if(index->sender_id == senderid){           //first PCB is the one we're looking for
-                  index = env_DEQ(q);
-                  return index;      //dequeue it and return it
+            index = env_DEQ(q);
+            return index;      //dequeue it and return it
     }
+    
     msg_env *prev = index;               //pointer prev trails index
     index = index->p;                //index is leading prev now
+    
     while(index != NULL){            //while index didn't traverse the entire queue
-                if(index->sender_id == senderid){ //if the PCB is found
-                              prev = index->p;
-                              index->p = NULL;
-                              return index;
-                }
-                prev = index;
-                index = index->p;    //move on to the next PCB
+            
+        if(index->sender_id == senderid){ //if the PCB is found
+                  prev->p = index->p;
+                  index->p = NULL;
+                  return index;
+        }
+        
+        prev = index;
+        index = index->p;    //move on to the next PCB
     }
     
     printf("Cannot find env in queue\n");
