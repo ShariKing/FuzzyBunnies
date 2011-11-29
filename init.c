@@ -291,39 +291,31 @@ int init_processes ( )
        itable[3].pid = 3;
        itable[3].priority = 2;
        itable[3].stack_size =STACKSIZE;
-      // itable[3].process_type = user_process;
+       itable[3].process_type = 1; //user_process is type 1
        itable[3].address = &ProcessA;
 
        itable[4].pid = 4;
        itable[4].priority = 2;
        itable[4].stack_size =STACKSIZE;
-       //itable[4].process_type = user_process;
+       itable[4].process_type = 1;
        itable[4].address = &ProcessB;
        
        itable[5].pid = 5;
        itable[5].priority = 1;
        itable[5].stack_size =STACKSIZE;
-       //itable[5].process_type = user_process;
+       itable[5].process_type = 1;
        itable[5].address = &ProcessC;
         
        itable[6].pid = 6;
        itable[6].priority = 0;
        itable[6].stack_size =STACKSIZE;
-      // itable[6].process_type = user_process;  
+       itable[6].process_type = 1;  
        itable[6].address = &CCI;
 
-       /*
-       itable[j].pid = 7;
-       itable[j].priority = 1;
-       itable[j].stack_size =STACKSIZE;
-       //itable[j].process_type = clock_process;  
-       itable[j].address = (void*)clock_process;
-       
-       */
-       itable[7].pid = 7; // change after the clock process is written
+       itable[7].pid = 7; 
        itable[7].priority = 3;
        itable[7].stack_size =STACKSIZE;
-       //itable[7].process_type = null_process;  
+       itable[7].process_type = 2; // null proc is type 2 
        itable[7].address = &null_process;
 
                
@@ -476,19 +468,19 @@ int init_i_processes()
        itable[0].pid = 0;
        itable[0].priority = -1;
        itable[0].stack_size =STACKSIZE;
-       //itable[0].process_type = i_process;
+       itable[0].process_type = 0; //i process type is 0
        itable[0].address = &kbd_iproc;
        
        itable[1].pid = 1;
        itable[1].priority = -1;
        itable[1].stack_size =STACKSIZE;
-       //itable[1].process_type = i_process;
+       itable[1].process_type = 0;
        itable[1].address = &crt_iproc;
        
        itable[2].pid = 2;
        itable[2].priority = -1;
        itable[2].stack_size =STACKSIZE;
-      // itable[2].process_type = i_process;
+       itable[2].process_type = 0;
        itable[2].address = &timer_iproc;
        
      for (k = 0; k < TOTAL_NUM_IPROC; k++)
