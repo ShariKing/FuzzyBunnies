@@ -15,13 +15,17 @@
 
 void CCI() 
 {   
-        printf("You're in CCI\n");
+        printf("You're in the CCI\n");
         int HH=0;
         int MM=0;
         int SS=0;
         int pri=0;
         int id=0;
         int U = 0;
+        
+        printf("Welcome to the RTOS that works.\nPlease input something in our CCI:\n");
+        //sleep (5);
+        //getchar();
         msg_env* env = request_msg_env();
 
         U = get_console_chars(env);   //keyboard input 

@@ -261,38 +261,7 @@ msg_env *env_REMOVE(env_Q *q, int senderid){
     
     printf("Cannot find env in queue\n");
     return NULL;
-}
-
-/*
-//*** FREE ENVELOPE QUEUE
-int free_env_queue(env_Q* Q){
-    msg_env* willy;                       // hehehehe wait for it
-    while (Q->head != NULL){     // while the queue is not empty
-          willy = env_DEQ(Q);          
-          free(willy->msg_text);          // free the msg_text array
-          free(willy->msg_type);          // free the msg_type array
-          free(willy->p);// Dq from the queue and set it to willy
-          free(willy);                    // THERE IT IS!!
-    }
-         
-    free(Q);
-    return 1;
-}
-
-//*** FREE PCB QUEUE
-int free_PCB_queue(PCB_Q* Qu){
-    PCB* dom;
-    while (Qu->head != NULL){
-          dom = PCB_DEQ(Qu);
-          free_env_queue(dom->receive_msg_Q);
-          free(dom->SP);
-          free(dom->state);
-          free(dom->p);
-          free(dom);
-    }
-    free(Qu);
-}
-   */       
+} 
 
 // *** KERNEL SEND MESSAGE ***
 int k_send_message(int dest_id, msg_env *e) {
@@ -376,9 +345,10 @@ msg_env *k_receive_message() { //Doesn't take the PCB as a parameter. Dealt with
     if (curr_process->receive_msg_Q->head == NULL) {
         
         // if the process is an iprocess or should never be blocked, return a NULL pointer (ie. no env)
-        if (curr_process->priority == -1)
+        if (curr_process->priority < 0){
+            printf("Can't block an Iprocess\n");
             return NULL;
-        
+        }
         // if it's a normal process, block it on receive
         curr_process->state = BLK_ON_RCV; //*********Doesn't need to be put in a queue, and don't care about process switch now********* FIX THIS
     //printf("in k_rec before proc switch pid %d, %s\n", curr_process->pid, curr_process->state);
@@ -571,21 +541,28 @@ int release_msg_env(msg_env *env){
 //***KERNEL CHANGE PRIOIRTY***
 int k_change_priority(int new_priority, int target_process_id){
    printf("You're in k_change_priority\n");
-    if(new_priority>3 || new_priority<0){
+   
+    if(new_priority > 3 || new_priority < 0){
                       printf("invalid priority\n");
                       return 0;
     }
-    if(target_process_id > TOTAL_NUM_PROC || target_process_id < TOTAL_NUM_IPROC || target_process_id == 7){
-                           printf("Invalid ID\n");
+   
+    if(target_process_id >= (TOTAL_NUM_PROC + TOTAL_NUM_IPROC) || target_process_id < TOTAL_NUM_IPROC || target_process_id == 7){
+                           printf("Cannot change priority of process %d\n", target_process_id);
                            return 0;
     }
-    PCB *target = convert_PID(target_process_id);              //create a pointer that points to the PCB
-    int old_priority = target->priority;                       //need the old one for later
-    if(old_priority == new_priority){
+    
+   PCB *target = convert_PID(target_process_id);              //create a pointer that points to the PCB
+    
+   int old_priority = target->priority;                       //need the old one for later
+    
+   if(old_priority == new_priority){
                     printf("Old priority same as new one\n");
                     return 1;                                  //success I guess?
     }
+   
     target->priority = new_priority;                                     //change the priority
+    
     if(target->state == READY){
                      PCB_REMOVE(convert_priority(old_priority), target_process_id);      //remove PCB from old rpq
                      PCB_ENQ(target, convert_priority(new_priority));                    //Enqueue it to the new rpq
@@ -621,7 +598,7 @@ int k_request_process_status(msg_env *env){
     }
     
     strcat(env->msg_text, "\0");
-    
+    env->msg_type = PROCESS_STATUS;
     int worked = send_console_chars(env);
     return worked;
 }
@@ -689,52 +666,6 @@ int request_delay(int msecDelay) {
 */
 
 
- /*
-// ***KERNEL TERMINATE***
-int k_terminate(){
-   
-  free_env_queue(envelope_q);
-  free_env_queue(sleep_Q);
-  free_PCB_queue(blocked_on_envelope);
-  free_PCB_queue(ready_q_priority3);
-  free_PCB_queue(ready_q_priority2);
-  free_PCB_queue(ready_q_priority1);
-  free_PCB_queue(ready_q_priority0);
-  
-  int i;
-  for(i=0; i<4; i++)
-          free(pointer_2_RPQ[i]);
-  
-  free(pointer_2_SQ);
-  
-  for(i=0; i < TOTAL_NUM_PROC; i++){
-           free_env_queue(pointer_2_PCB[i]->receive_msg_Q);
-           free(pointer_2_PCB[i]->state);
-           free(pointer_2_PCB[i]->SP);
-           free(pointer_2_PCB[i]->p);
-           free(pointer_2_PCB[i]);
-  }
-  
-  for(i=0; i<16; i++){
-           free(send_trace[i].msg_type);
-           free(receive_trace[i].msg_type);
-  }
-  
-  free(systemclock);
-  free(wallclock);
-  
-  free_env_queue(curr_process->receive_msg_Q);
-  free(curr_process->state);
-  free(curr_process->SP);
-  free(curr_process->p);
-  free(curr_process);
-  
-  parent_die();
-  
-  return 1;
-}
-*/
-
 // ***KERNEL GET TRACE BUFFERS
 int k_get_trace_buffers(msg_env* env){
    printf("You're in k_get_trace_buffers\n");
@@ -776,7 +707,9 @@ int k_get_trace_buffers(msg_env* env){
          }
     
          strcat(env->msg_text, "\0");
-    return 1;
+    env->msg_type = TRACE_BUFFER;
+    int worked = send_console_chars(env);
+    return worked;
     }
 }
 

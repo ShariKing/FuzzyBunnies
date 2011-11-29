@@ -20,7 +20,7 @@
 
 // *** CONSTANTS ***
 #define SIZE 2048
-#define STACKSIZE 4096 // size of stack pointer
+#define STACKSIZE 50000 // size of stack pointer
 #define TOTAL_NUM_PROC 5 //total number of processes, will change
 #define TOTAL_NUM_IPROC 3 //total number of i-processes
 #define TIMERIPROCPID 2
@@ -47,11 +47,11 @@ struct pcb {
 	int state;
 	int pid;
 	int priority;
-	void* PC;			//I'm guessing since it's a counter
-	int sleeptime;
+	void* PC;
 	char *SP;		
 	env_Q *receive_msg_Q;
 	jmp_buf pcb_buf;
+        int process_type;
 };
 typedef struct pcb PCB;	//use PCB
 
@@ -108,9 +108,6 @@ int env_ENQ(msg_env* e, env_Q* queue);
 msg_env* env_DEQ(env_Q *queue);
 msg_env *env_REMOVE(env_Q *q, int senderid);
 
-int free_env_queue(env_Q* Q);
-int free_PCB_queue(PCB_Q* Qu);
-
 int send_message (int dest_id, msg_env* e);
 int k_send_message (int dest_id, msg_env* e);
 
@@ -143,8 +140,8 @@ int k_request_process_status(msg_env *env);
 void k_release_processor();
 void release_processor();
 
-int request_delay(int time_delay, char* wakeup_code, msg_env *m);
-int k_request_delay(int time_delay, char* wakeup_code, msg_env *m);
+int request_delay(int time_delay, int wakeup_code, msg_env *m);
+int k_request_delay(int time_delay, int wakeup_code, msg_env *m);
 
 void process_switch();
 void context_switch(jmp_buf previous, jmp_buf next);
@@ -180,7 +177,6 @@ void begin_RTX( );
 // *** VARIABLES ***
 PCB* pointer_2_PCB[TOTAL_NUM_PROC + TOTAL_NUM_IPROC];	//array of pointers to processes
 PCB_Q* pointer_2_RPQ[4];	//array of pointers to ready process queues
-env_Q* pointer_2_SQ;	//pointer to sleep queue
 
 PCB* curr_process;		
 
@@ -197,15 +193,20 @@ int receive_start;
 int receive_end;
 int send_counter;
 int receive_counter;                        //the only way I can think of setting up circular array
+
 int Atom;
+
+static int pulse_counter;     //Dummy Pulse Counter
+int alarmstatus;
 
 // QUEUES
 PCB_Q* ready_q_priority0;
 PCB_Q* ready_q_priority1;
 PCB_Q* ready_q_priority2;
 PCB_Q* ready_q_priority3;
-PCB_Q* blocked_on_envelope;
 env_Q* sleep_Q;
+PCB_Q* blocked_on_envelope;
+PCB_Q* blocked_on_receive;
 env_Q* envelope_q;
 
 // STATES
@@ -220,5 +221,7 @@ env_Q* envelope_q;
 #define DISPLAY_ACK 1
 #define NO_TYPE 3
 #define WAKEUP 4
+#define TRACE_BUFFER 5
+#define PROCESS_STATUS 6
 
 #endif

@@ -161,12 +161,11 @@ int init_queues( )
           return 0;
      }
      
-          // Sleep Queue
-     env_Q* sleep_Q = create_env_Q();
+     // Sleep Queue
+     sleep_Q = create_env_Q();
      
      if(sleep_Q){
           printf("Sleep Queue Created\n");
-          //pointer_2_SQ = sleep_Q;
      }
      
      else {
@@ -175,7 +174,7 @@ int init_queues( )
      }
      
      // Blocked On Receive queue
-     PCB_Q* blocked_on_receive = create_Q(); //This is not necessary
+     blocked_on_receive = create_Q(); //This is not necessary
      
      if(blocked_on_receive)
           printf("Blocked on Receive Queue Created\n");
@@ -184,9 +183,9 @@ int init_queues( )
           printf("Error Creating Blocked on Envelope Queue\n");
           return 0;
      }
-          
-     // Blocked On Envelope queue
-     blocked_on_envelope = create_Q();               //PCB queue
+     
+     // Blocked On Envelope Queue
+     blocked_on_envelope = create_Q();
      
      if(blocked_on_envelope)
           printf("Blocked on Envelope Queue Created\n");
@@ -195,7 +194,7 @@ int init_queues( )
           printf("Error Creating Blocked on Envelope Queue\n");
           return 0;
      }
-          
+     
      // Free Envelope Queue
      envelope_q = create_env_Q();
      
@@ -307,51 +306,6 @@ int init_processes ( )
        itable[7].stack_size =STACKSIZE;
        itable[7].process_type = 2; // null proc is type 2 
        itable[7].address = &null_process;
-
-               
-    //curr_process = NULL;          //Initialize the current process to be null
-    /*
-    // read in file for itable
-    FILE* itablefile;
-    itablefile = fopen("itable.txt", "r");
-
-    // initialize variables used for reading from table
-    int itable[TOTAL_NUM_PROC][2] = {0};
-    int pid = 3;
-    int priority = 3;
-    int proc_count = 3;
-    int i = 0;
-   
-    
-    // setting up PIDs and Prioritys
-    for (i = 0; i < TOTAL_NUM_PROC; i++) {
-        
-        // reading PID
-        if (fscanf(itablefile, "%d", &pid)){
-        
-            itable[i][0] = pid;
-        }
-        else {
-            printf("Error, initialization table missing PID for process ", i, "\n");
-            return 0;
-        }
-
-
-        // reading Priority
-        if (fscanf(itablefile, "%d", &priority))
-            itable[i][1] = priority; //ALL PRIORITIES ARE SET TO ZERO FOR NOW. FIX THIS.
-        
-        else {
-            printf("Error, initialization table missing Priority for process \n", i, "\n");
-            return 0;
-        }
-
-   }
-   
-    
-    // close file for itable
-    fclose(itablefile);
-*/
     
     int j;
     for (j = TOTAL_NUM_IPROC; j < (TOTAL_NUM_IPROC + TOTAL_NUM_PROC); j++) {
@@ -381,10 +335,9 @@ int init_processes ( )
             new_pcb->priority = itable[j].priority;
             
             // set process counter for the appropriate process from the table
-            
             new_pcb->PC = itable[j].address; 
-          
-            new_pcb->sleeptime = -2;
+            
+            new_pcb->process_type = itable[j].process_type;
             
             new_pcb->SP = tempStack; 
             
@@ -489,8 +442,8 @@ int init_i_processes()
              
              new_pcb->PC = itable[k].address;
              
-             new_pcb->sleeptime = -2;
-             
+             new_pcb->process_type = itable[k].process_type;
+            
              new_pcb->SP = tempStack; //FOR CONTEXT SWITCHING. TO BE CHANGED LATER.
              
              new_pcb->receive_msg_Q = create_env_Q();
@@ -715,6 +668,7 @@ int init_clocks(){
             return 0;
         }
         
+        pulse_counter = 0;     //Dummy Pulse Counter
         return 1;        
      }
 
@@ -803,7 +757,7 @@ int main ()
         kb_crt_start();
         
         //set a repeating alarm to send SIGALRM every 100000 usec, or 0.1sec
-        int alarmstatus = ualarm(100000, 100000);
+        alarmstatus = ualarm(100000, 100000);
         //ualarm returns zero if functioning normally, otherwise return an error message
         if(alarmstatus != 0)
              printf("Error: Something is wrong with the system timer!\n");
@@ -816,7 +770,7 @@ int main ()
         // code to say we've started!!
         //printf("Proc A Ready! Waiting to go!\n");
         longjmp(curr_process->pcb_buf,1);
-        sleep(1000000);
+        //sleep(1000000);
         //ClockTest(systemclock); // remove later?
         
         // should never reach here, but in case we do, clean up after ourselves
