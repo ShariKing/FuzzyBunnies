@@ -71,7 +71,7 @@ void ProcessC(){
 
     PCB* pC_pcb = convert_PID(5);
     
-    msg_env* envC;   
+    msg_env* envC = request_msg_env();   
     // infinite loop of normal activity  
     while (1){
         int NUM =envC->msg_text[1];
