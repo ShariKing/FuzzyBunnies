@@ -379,18 +379,18 @@ int init_processes ( )
                __asm__ ("movl %0,%%esp" :"=m" (jmpsp)); // if Linux i386 target
                //#endif // line 2
 
-               //if ( setjmp(new_pcb->pcb_buf ) == 0) // if first time
+               if ( setjmp(new_pcb->pcb_buf ) == 0) // if first time
                   longjmp(kernel_buf,1); 
-               /*
+               
                else{                                  
                 // curr_process = new_pcb; // sets the new pcb to be the current process
                  void (*fpTmp)();
                  (fpTmp) = (void *)curr_process->PC; //gets address of process code
                  fpTmp(); 
                  }
-                 */
+                 
               }
-
+              
             // enqueue the process on the appropriate ready queue
             if (new_pcb->priority == 0)
                 PCB_ENQ(new_pcb, ready_q_priority0);
@@ -524,14 +524,15 @@ int init_i_processes()
     
                  if ( setjmp(new_pcb->pcb_buf ) == 0) // if first time
                     longjmp(kernel_buf,1); 
-    /*
-                 else{                                  
+    
+                 else{ 
+                    printf("MADE IT HERE");                                 
                     // curr_process = new_pcb; // sets the new pcb to be the current process
                     void (*fpTmp)();
                     (fpTmp) = (void *)curr_process->PC; //gets address of process code
                     fpTmp(); 
                  }
-                 */
+                 
             }
          }
          
@@ -819,7 +820,7 @@ int main ()
 
         // code to say we've started!!
         //printf("Proc A Ready! Waiting to go!\n");
-        process_switch();
+        longjmp(curr_process->pcb_buf,1);
         sleep(1000000);
         //ClockTest(systemclock); // remove later?
         

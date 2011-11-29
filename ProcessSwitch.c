@@ -16,6 +16,7 @@
 void null_process() {
     printf("You're in null_process\n");
 		while(1) {
+            printf("IN NULLLLLLLLLL!");      
 			release_processor();
 		}
 }
