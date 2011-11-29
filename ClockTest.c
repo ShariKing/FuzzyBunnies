@@ -14,38 +14,27 @@
 #include <errno.h>
 #include "rtx.h"
 
-// Clock Test Process
-void ClockTest(clk *clock) 
+// WallClock user process
+int WallClock() 
 {   
-      struct msgenv* env = (struct msgenv *) malloc (sizeof (struct msgenv));
-      env->msg_type = (char*)malloc (sizeof (SIZE));
-      env->msg_text = (char*)malloc (sizeof (SIZE));
-
-      if (env){
-
-          //now enter infinite loop 
-          while (1) { 
-                clock_out(clock, env);
-                usleep(100000);
-                /*get_console_chars(env);   //keyboard input 
-
-                env = receive_message(); //***STOPS HERE TO WAIT FOR INPUT
-
-                while (env == NULL) {
-                        usleep(100000);
-                        env = receive_message();  
-                }
-
-                send_console_chars(env);   //CRT output, wait for ack 
-
-                env = receive_message(); 
-
-                while (env == NULL) { 
-                        usleep (100000); 
-                        env = receive_message(); 
-                }*/
-                
-                
-        } 
+      printf("You're in Wall Clock\n");
+      
+      int Printsuccess;
+      
+      msg_env* clockEnv = request_msg_env();
+      if (clockEnv){
+         Printsuccess = clock_out(wallclock, clockEnv);
+         if(Printsuccess == 1)
+              return 1;  //SUCCESS!
+         else
+         {
+             printf("Error with Wall Clock Process!\n");
+             return 0;     //Code should never get here
+         }
+      }
+      else
+      {
+          printf("Request Message Envelope for Wall Clock failed!\n");
+          return 0;       //code should never get here either
       }
 }
