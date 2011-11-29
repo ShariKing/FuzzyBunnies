@@ -29,28 +29,29 @@ void process_switch() {
     //printf("%d\n",curr_process->pid);
     if(ready_q_priority0->head != NULL) {// If highest priority queue isn't empty
         new_pcb = PCB_DEQ(ready_q_priority0); //get ptr to highest priority ready process
-        //printf("q0");
+        printf("q0\n");
         }
     else if (ready_q_priority1->head != NULL){
          new_pcb = PCB_DEQ(ready_q_priority1); //get ptr to highest priority ready process
-        // printf("q1");
+         printf("q1\n");
         }
     else if (ready_q_priority2->head != NULL){
          new_pcb = PCB_DEQ(ready_q_priority2); //get ptr to highest priority ready process
-        // printf("q2");
+         printf("q2\n");
         }
     else if (ready_q_priority3->head != NULL){
          new_pcb = PCB_DEQ(ready_q_priority3); //only for null process
-         //printf("q3");
+         printf("q3\n");
         }
     else {
         printf("EMPTY\n");
         return;
         }
     if (old_pcb->state == "RUNNING"){
+       printf("AHDSHDSDLKJDFSKJFDF\n");
         strcpy(old_pcb->state, "READY"); //set old proc state to ready
     }
-    
+    printf("next........\n");
     strcpy(new_pcb->state, "RUNNING"); //set new proc state to running
     //printf("%d\n",curr_process->pid);   
     curr_process = new_pcb; //make the next_pcb the current process
