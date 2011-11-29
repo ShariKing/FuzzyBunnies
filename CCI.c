@@ -25,7 +25,7 @@ void CCI()
       msg_env* env = request_msg_env();
       
           //now enter infinite loop 
-          while (1) { 
+         // while (1) { 
                 U = get_console_chars(env);   //keyboard input 
                 sleep(5);
                 // only do this if there was input
@@ -122,6 +122,6 @@ void CCI()
               }
           // if there was no input
           release_processor();
-        } 
+        //} 
 }
 

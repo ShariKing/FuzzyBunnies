@@ -117,7 +117,9 @@ printf("You're in PCB_DEQ\n");
         //if the new queue only has one PCB, set the tail = head = PCB
         if (queue->head->p == NULL)
             queue->tail = queue->head;
-    }        
+    } 
+    else
+        queue->tail =NULL;       
 
     temp->p = NULL;    //set the pointer of the dequeued PCB to NULL 
     // return the pointer to the dequeued PCB
@@ -213,7 +215,9 @@ msg_env *env_DEQ(env_Q *queue) {
         // if the queue now only has one env, set the tail = head = sole env
         if (queue->head == NULL) 
             queue->tail = queue->head;
-        }
+    }
+    else 
+         queue->tail = NULL;
     temp->p = NULL;    //set the pointer of the dequeued envelope to NULL
     
     return temp;
