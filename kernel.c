@@ -482,8 +482,6 @@ int get_console_chars(msg_env * env) {
     return z;
 }
     
-
-
 // ***GIVE A PROCESS ID AND RETURN IT'S PCB POINTER***
 PCB *convert_PID(int PID) {
     printf("You're in convert_PID\n");
@@ -651,9 +649,9 @@ int k_request_delay(int time_delay, int wakeup_code, msg_env *m)
     m->msg_type = wakeup_code;       //Set the message type to wakeup code and the text to the delay,
     sprintf(m->msg_text, "%d\0", time_delay);        //in order to send both wakeup code and time delay in one envelope.
     
-    k_send_message(TIMERIPROCPID, m);              //Send the envelope to the timer iproc
-    m = k_receive_message();                       //Invoke receive message, which blocks the invoking process until delay is over
-    if(m)
+    return ( k_send_message(TIMERIPROCPID, m) );              //Send the envelope to the timer iproc
+    
+   /* if(m)
     {
         PCB *RequestingPCB;                            //After unblocking, this code executes:
         RequestingPCB = convert_PID(RequestingPID);    //Create a PCB pointer to manage stuff for enqueueing, then Find the Delayed PCB
@@ -662,6 +660,8 @@ int k_request_delay(int time_delay, int wakeup_code, msg_env *m)
     }
     else
         return 0;              //The code should never get here
+*/
+
 }
 
 //***USER REQUEST DELAY***
