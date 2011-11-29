@@ -247,7 +247,7 @@ int init_env()
         struct msgenv* new_env = (struct msgenv *) malloc (sizeof (struct msgenv));
         
         // if the new_env is not created properly
-        if (!new_env)
+        if (new_env==NULL)
             return 0;
         
         // initialize env parameters
@@ -255,11 +255,12 @@ int init_env()
         new_env->sender_id = -1; //setting the id to an int of -1 just for initialize
         new_env->target_id = -1; //setting the id to an int of -1 just for initialize
         new_env->msg_type = 3;
+
         
         char* tempMsgText = (char *) malloc (sizeof (SIZE)); //initialize the character array pointer
 
         // if the msg_text pointer is not created properly
-        if (!tempMsgText)
+        if (tempMsgText==NULL)
             return 0;
             
         strcpy(tempMsgText, "no_text\0");
@@ -480,7 +481,7 @@ int init_i_processes()
              
              new_pcb->p = NULL;
              
-            new_pcb->state = READY;
+             new_pcb->state = READY;
                           
              new_pcb->pid = itable[k].pid;
              

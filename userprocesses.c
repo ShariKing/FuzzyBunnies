@@ -64,7 +64,7 @@ void ProcessC(){
         printf("You're in ProcessC\n");
     // init the local queue
     struct envQ* localQ = (struct envQ *) malloc (sizeof (struct envQ));
-    if (!localQ) {
+    if (localQ==NULL) {
         printf("localQ in Proc C not created properly");
         return;
     } // can we use the queue on the proc pcb instead?
