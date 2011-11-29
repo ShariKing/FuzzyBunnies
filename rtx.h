@@ -19,7 +19,7 @@
 
 
 // *** CONSTANTS ***
-#define SIZE 128
+#define SIZE 2048
 #define STACKSIZE 4096 // size of stack pointer
 #define TOTAL_NUM_PROC 5 //total number of processes, will change
 #define TOTAL_NUM_IPROC 3 //total number of i-processes
@@ -71,7 +71,7 @@ typedef struct clock clk;
 struct messageTrace {
        int sender_id;
        int target_id;
-       char* msg_type;
+       int msg_type;
        clk timestamp;
 };
 typedef struct messageTrace msg_trace;

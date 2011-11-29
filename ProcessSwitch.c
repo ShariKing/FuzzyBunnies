@@ -44,7 +44,7 @@ void process_switch() {
          //printf("q3\n");
         }
     else {
-        printf("EMPTY\n");
+        printf("All queues are empty\n");
         return;
         }
     if (old_pcb->state == RUNNING){
@@ -70,7 +70,7 @@ void context_switch(jmp_buf previous, jmp_buf next) {
     printf("You're in context_switch\n");
     // int return_code = setjmp(previous);
      if (setjmp(previous) == 0) {
-        printf("No previous context to switch to, start from beginning of process\n");
+        printf("No previous context saved, starting from beginning of process\n");
         longjmp(next,1);
      }
      else{ 

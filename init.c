@@ -213,29 +213,26 @@ int init_queues( )
 int init_msg_trace(){
     int i;
     for(i=0; i<16; i++){
-             char* send_temp_msg_type = (char *) malloc (sizeof (SIZE));
-             if(!send_temp_msg_type){
-                                     printf("Error allocating memory to send_trace.msg_type");
-                                     return 0;           //FAIL!!
-             }
-             strcpy(send_temp_msg_type,"AHHHHH, I'm empty\0");
-             //printf("%s\n",send_temp_msg_type);
-             send_trace[i].msg_type = send_temp_msg_type;
-             //printf("%s\n",send_temp_msg_type);
+        
+             send_trace[i].msg_type = 3;
+             send_trace[i].sender_id = -1;
+             send_trace[i].target_id = -1;
+             send_trace[i].timestamp.hh = -1;
+             send_trace[i].timestamp.mm = -1;
+             send_trace[i].timestamp.ss = -1;
              
-             char* receive_temp_msg_type = (char *) malloc (sizeof (SIZE));
-             if(!receive_temp_msg_type){
-                                     printf("Error allocating memory to receive_trace.msg_type");
-                                     return 0;           //FAIL!!
-             }
-             //strcpy(receive_temp_msg_type,"AHHHHH, I'm empty");
-             receive_trace[i].msg_type = receive_temp_msg_type;
+             receive_trace[i].msg_type = 3;
+             receive_trace[i].sender_id = -1;
+             receive_trace[i].target_id = -1;
+             receive_trace[i].timestamp.hh = -1;
+             receive_trace[i].timestamp.mm = -1;
+             receive_trace[i].timestamp.ss = -1;
     }
     
     send_counter = -1;                //so that the first send/receive will set it to 0;
-    receive_counter = -1;
     send_start = -1;
     send_end = -1;
+    receive_counter = -1;
     receive_start = -1;
     receive_end = -1;
 }
@@ -257,15 +254,7 @@ int init_env()
         new_env->p = NULL;
         new_env->sender_id = -1; //setting the id to an int of -1 just for initialize
         new_env->target_id = -1; //setting the id to an int of -1 just for initialize
-        
-        char* tempMsgType = (char *) malloc (sizeof (SIZE)); //initialize the character array pointer
-        
-        // if the msg_type pointer is not created properly
-        if (!tempMsgType)
-            return 0;
-        
-        strcpy(tempMsgType, "no_type\0");
-        new_env->msg_type = tempMsgType;
+        new_env->msg_type = 3;
         
         char* tempMsgText = (char *) malloc (sizeof (SIZE)); //initialize the character array pointer
 

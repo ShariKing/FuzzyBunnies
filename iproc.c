@@ -36,11 +36,11 @@ void kbd_iproc(int sigval) {
         //dequeue env from Keyboard env queue into temp
         temp_k = env_DEQ(temp->receive_msg_Q);
 
-        // if the dequeued env is not NULL
+        // if the dequeued env is NULL, ie there is nothing for the kb iproc to do
         if (temp_k == NULL){
            curr_process = interrupted_proc;
             return;
-            }
+        }
                     
         // read buffer into the env, while we haven't reached the NULL
         do {
@@ -56,7 +56,7 @@ void kbd_iproc(int sigval) {
         *in_mem_p->ok_flag = 0;
 
         // set the env message type to 'console input'
-        strcpy(temp_k->msg_type, "console_input\0");
+        temp_k->msg_type = 0;
 
         // send env back to process
         int Z = send_message(4, temp_k); //check location being sent here!
@@ -94,7 +94,7 @@ printf("You're in crt_iproc\n");
             if (temp_c == NULL){
                curr_process = interrupted_proc;
                return;
-               }
+            }
 
              // read env into the buffer
              do {
@@ -108,7 +108,7 @@ printf("You're in crt_iproc\n");
             *out_mem_p->oc_flag = 1;
             
             // set env message type to 'display ack'
-            strcpy(temp_c->msg_type, "display_ack\0");
+            temp_c->msg_type = 1;
             
             // send env back to process
             int Z = send_message(4, temp_c); //fix this later, sender_id is 31
@@ -127,97 +127,95 @@ curr_process = interrupted_proc;
 }
 
 void timer_iproc(int sigval) {
-     printf("You're in timer_iproc\n");
+    printf("You're in timer_iproc\n");
      
-     PCB* interrupted_proc = curr_process;
-        curr_process = convert_PID (2);
-     
-        static int pulse_counter = 0;     //Dummy Pulse Counter
-        msg_env *sleeptraverse;           //Dummy envelope pointer to traverse the Sleep Queue
-        msg_env *awakened;                //Dummy envelope pointer for awakened envelopes
-        int removeid;                     //id to extract, if extraction necessary
-        int sleeptime;                    //Dummy integer to use for string conversion
-        
-        //printf("\nClock Signal Received.   Incrementing pulse counter from %i ", pulse_counter);
-        //increment the pulse counter
-  		pulse_counter++;     
-        //printf("to %i ...\n", pulse_counter);  		
-  		
-          //when pulse counter hits ten (one second)
-		if(pulse_counter == 10)
-        {
-            //printf("%p wallclock pointer .... %p system clock pointer\n\n", wallclock, systemclock);
-			clock_increment(systemclock, 0);
-			clock_increment(wallclock, 1);
-                        
-                        // if cd has been inputted, print the clock. when ct is input it will reset the wallclockout variable and not get here
-                        if (wallClockOut == 1)
-                            clock_out(wallclock);
-                        
-			pulse_counter = 0;
-		}
+    PCB* interrupted_proc = curr_process;
+    curr_process = convert_PID (2);
+
+    static int pulse_counter = 0;     //Dummy Pulse Counter
+    msg_env *sleeptraverse;           //Dummy envelope pointer to traverse the Sleep Queue
+    msg_env *awakened;                //Dummy envelope pointer for awakened envelopes
+    int removeid;                     //id to extract, if extraction necessary
+    int sleeptime;                    //Dummy integer to use for string conversion
+
+    //increment the pulse counter
+    pulse_counter++;     
+    
+    //when pulse counter hits ten (one second)
+            if(pulse_counter == 10)
+    {
+            clock_increment(systemclock, 0);
+            clock_increment(wallclock, 1);
+
+            // if cd has been inputted, print the clock. when ct is input it will reset the wallclockout variable and not get here
+            if (wallClockOut == 1)
+                clock_out(wallclock);
+
+            pulse_counter = 0;
+    }
 		
 //==========CODE TO HANDLE REQUEST DELAY=============		
-		msg_env *delayRequest;
-		delayRequest = receive_message();              //Receive Message for Delays
-		if(delayRequest)
-            env_ENQ(delayRequest, sleep_Q);            //Enqueue delay requests onto the sleep Q
+    msg_env *delayRequest;
+    delayRequest = receive_message();              //Receive Message for Delays
+    if(delayRequest)
+    env_ENQ(delayRequest, sleep_Q);            //Enqueue delay requests onto the sleep Q
+
+    if(sleep_Q->head) {    //if the sleep queue is not empty
         
-       	if(sleep_Q->head)     //if the sleep queue is not empty
-  		{
-             sleeptraverse = sleep_Q->head;        //Point Sleeptraverse at the head to begin
-             sleeptime = atoi(sleeptraverse->msg_text);              //Convert the delay time text to an integer
-             sleeptime = sleeptime - 100;                                //Decrement the sleeptime
-             if(sleeptime <= 0)           //Check if the head env has finished sleeping
+         sleeptraverse = sleep_Q->head;        //Point Sleeptraverse at the head to begin
+         sleeptime = atoi(sleeptraverse->msg_text);              //Convert the delay time text to an integer
+         sleeptime = sleeptime - 100;                                //Decrement the sleeptime
+         
+         if(sleeptime <= 0)           //Check if the head env has finished sleeping
+         {
+              awakened = sleeptraverse;          //awakened now points to what sleeptraverse did before
+
+              if(sleeptraverse->p)                   //Move the pointer to the next so we don't lose it after Dequeueing
+                   sleeptraverse = sleeptraverse->p;
+              else                                   //If this is the only envelope in the sleep queue, set sleeptraverse to NULL.
+                   sleeptraverse = NULL;
+
+              awakened = env_DEQ(sleep_Q);           //Dequeue awakened from the head
+              send_message(awakened->sender_id, awakened);     //send awakened back to its sender id, which should be blocked_on_receive
+         }
+         else     //If head process is not awake yet, check for others in the queue and traverse
+         {
+              sprintf(sleeptraverse->msg_text, "%d\0", sleeptime);    //copy the new sleeptime back into a string and put it back in the envelope
+              if(sleeptraverse->p)                            //traverse
+                   sleeptraverse = sleeptraverse->p;
+              else
+                   sleeptraverse = NULL;
+         }
+    }
+         while(sleeptraverse)    //If there are no others, sleeptraverse will be NULL and skip this. Otherwise, sleeptraverse
+         {                       // will be the next, undecremented envelope, and will loop.
+             removeid = sleeptraverse->sender_id;     //Extracting the id to use with env_remove to remove the envelope from the queue
+
+             sleeptime = atoi(sleeptraverse->msg_text);            //Convert the delay time text to an integer
+             sleeptime = sleeptime - 100;                          //decrement the delay time
+             if(sleeptime <= 0)           //Check if the env has finished sleeping
              {
                   awakened = sleeptraverse;          //awakened now points to what sleeptraverse did before
-                  
+
                   if(sleeptraverse->p)                   //Move the pointer to the next so we don't lose it after Dequeueing
                        sleeptraverse = sleeptraverse->p;
                   else                                   //If this is the only envelope in the sleep queue, set sleeptraverse to NULL.
                        sleeptraverse = NULL;
-                  
-                  awakened = env_DEQ(sleep_Q);           //Dequeue awakened from the head
-                  send_message(awakened->sender_id, awakened);     //send awakened back to its sender id, which should be blocked_on_receive
+
+
+                  awakened = env_REMOVE(sleep_Q, removeid);   //Remove awakened from the sleep queue without losing any links
+                  send_message(awakened->sender_id, awakened); //send awakened back to its sender id, which should be blocked_on_receive
              }
-             else     //If head process is not awake yet, check for others in the queue and traverse
+             else     //If current decrementing process is not awake yet, check for others in the queue and traverse
              {
                   sprintf(sleeptraverse->msg_text, "%d\0", sleeptime);    //copy the new sleeptime back into a string and put it back in the envelope
-                  if(sleeptraverse->p)                            //traverse
+                  if(sleeptraverse->p)                                  //traverse
                        sleeptraverse = sleeptraverse->p;
                   else
                        sleeptraverse = NULL;
              }
-        }
-             while(sleeptraverse)    //If there are no others, sleeptraverse will be NULL and skip this. Otherwise, sleeptraverse
-             {                       // will be the next, undecremented envelope, and will loop.
-                 removeid = sleeptraverse->sender_id;     //Extracting the id to use with env_remove to remove the envelope from the queue
-                 
-                 sleeptime = atoi(sleeptraverse->msg_text);            //Convert the delay time text to an integer
-                 sleeptime = sleeptime - 100;                          //decrement the delay time
-                 if(sleeptime <= 0)           //Check if the env has finished sleeping
-                 {
-                      awakened = sleeptraverse;          //awakened now points to what sleeptraverse did before
-                  
-                      if(sleeptraverse->p)                   //Move the pointer to the next so we don't lose it after Dequeueing
-                           sleeptraverse = sleeptraverse->p;
-                      else                                   //If this is the only envelope in the sleep queue, set sleeptraverse to NULL.
-                           sleeptraverse = NULL;
-                      
-                      
-                      awakened = env_REMOVE(sleep_Q, removeid);   //Remove awakened from the sleep queue without losing any links
-                      send_message(awakened->sender_id, awakened); //send awakened back to its sender id, which should be blocked_on_receive
-                 }
-                 else     //If current decrementing process is not awake yet, check for others in the queue and traverse
-                 {
-                      sprintf(sleeptraverse->msg_text, "%d\0", sleeptime);    //copy the new sleeptime back into a string and put it back in the envelope
-                      if(sleeptraverse->p)                                  //traverse
-                           sleeptraverse = sleeptraverse->p;
-                      else
-                           sleeptraverse = NULL;
-                 }
-             }        
-             curr_process = interrupted_proc;
+         }        
+         curr_process = interrupted_proc;
 }
 
 //==========    CODE BELOW THIS LINE IS FUNCTIONAL, BUT DOES NOT FIT THE STANDARD DESIGN. LEAVE AS BACKUP     ===================//

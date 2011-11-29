@@ -31,7 +31,7 @@ void ProcessA(){
         msg_env* tempEnv = request_msg_env();
         
         // set the env type and text
-        strcpy(tempEnv->msg_type, "count_report\0");
+        tempEnv->msg_type = 2;
         tempEnv->msg_text[1] = num;
         
         // send to ProcessB
@@ -88,14 +88,14 @@ void ProcessC(){
             envC = env_DEQ(localQ);
             
         // if the message type is count report, and the value in msg_text is evenly divisible by 20, display "Process C"
-        if (strcmp(envC->msg_type,"count_report")==0 && NUM % 20 == 0){
+        if (envC->msg_type == 2 && NUM % 20 == 0){
   
             // send the display message
             strcpy(envC->msg_text, "Process C\0");
             int W = send_console_chars(envC); // Returns confirmation of sending
             if (W==1) {
                 // if it is the ack message request a delay of 10s, with wakeup code "wakeup10"
-                int R = request_delay(10000, "wakeup10", envC); // request_delay returns an int
+                int R = request_delay(10000, 4, envC); // request_delay returns an int
                 if (R==0)
                    printf("Error with request_delay");
                    
@@ -103,7 +103,7 @@ void ProcessC(){
                 envC = receive_message();
     
                 // if its not the wakeup message put it on the local Q
-                while (strcmp (envC->msg_type,"wakeup10")!=0){
+                while (envC->msg_type != 4){
                     envC = receive_message();
                     int XX = env_ENQ(envC,localQ);
                     if (XX==0)

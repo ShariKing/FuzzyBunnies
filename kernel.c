@@ -93,8 +93,7 @@ PCB *PCB_DEQ(PCB_Q *queue) {
 printf("You're in PCB_DEQ\n");
     // if queue is empty
     if (queue->head == NULL) {
-        printf("Queue is empty");
-        
+        //printf("Queue is empty");        
         // return a NULL pointer
         return NULL;
     }
@@ -130,7 +129,7 @@ printf("You're in PCB_DEQ\n");
 PCB *PCB_REMOVE(PCB_Q *q, int id){
     printf("You're in PCB_REMOVE\n");
     if(q->head == NULL){              //if queue is empty
-                   printf("Queue is empty");
+                   //printf("Queue is empty");
                    return NULL;
     }
     PCB *index = q->head;           //create a pointer that starts at the head
@@ -150,7 +149,7 @@ PCB *PCB_REMOVE(PCB_Q *q, int id){
                 index = index->p;    //move on to the next PCB
     }
     
-    printf("Cannot find PCB in queue");
+    printf("Cannot find PCB in queue\n");
     return NULL;
 }
 
@@ -206,7 +205,7 @@ msg_env *env_DEQ(env_Q *queue) {
     // if the queue is NOT empty
     // point the temp to the head of the queue
     temp = queue->head;
-    printf("%p\n", queue->head);
+   //printf("%p\n", queue->head);
     tempNext = queue->head->p;
     // point the new head of the queue to the 'next' pointer of the old head
     queue->head = tempNext;
@@ -246,7 +245,7 @@ msg_env *env_REMOVE(env_Q *q, int senderid){
                 index = index->p;    //move on to the next PCB
     }
     
-    printf("Cannot find env in queue");
+    printf("Cannot find env in queue\n);
     return NULL;
 }
 
@@ -290,7 +289,7 @@ int k_send_message(int dest_id, msg_env *e) {
     
     // if the PCB ID is not valid
     if (dest_id > (TOTAL_NUM_PROC - 1 || dest_id < 0) )  { 
-        printf("dest ID not in range");
+        printf("dest ID not in range\n");
         return 0;
     }
     
@@ -325,7 +324,7 @@ int k_send_message(int dest_id, msg_env *e) {
         
         send_trace[send_end].sender_id = curr_process->pid;                //set the sender_id
         send_trace[send_end].target_id = dest_id;                          //set the target_id
-        strcpy(send_trace[send_end].msg_type, e->msg_type);         //set the msg_type
+        send_trace[send_end].msg_type = e->msg_type;         //set the msg_type
         send_trace[send_end].timestamp.hh = systemclock->hh;          //set the timestamp
         send_trace[send_end].timestamp.mm = systemclock->mm;
         send_trace[send_end].timestamp.ss = systemclock->ss;
@@ -383,7 +382,7 @@ msg_env *k_receive_message() { //Doesn't take the PCB as a parameter. Dealt with
         
         receive_trace[receive_end].sender_id = env->sender_id;               //set the sender_id
         receive_trace[receive_end].target_id = curr_process->pid;           //set the target_id
-        strcpy(receive_trace[receive_end].msg_type, env->msg_type);          //set the msg_type
+        receive_trace[receive_end].msg_type = env->msg_type;          //set the msg_type
         receive_trace[receive_end].timestamp.hh = systemclock->hh;          //set the timestamp
         receive_trace[receive_end].timestamp.mm = systemclock->mm;
         receive_trace[receive_end].timestamp.ss = systemclock->ss;
@@ -422,7 +421,7 @@ int k_send_console_chars(msg_env *env) {
     
     // if sending fails
     if (Z == 0){
-        printf("Error with sending");
+        printf("Error with sending\n");
         return 0;
     }
 
@@ -453,7 +452,7 @@ int k_get_console_chars(msg_env * env) {
 
     // incorrect return from send_message
     if(Z == 0) {
-            printf("Error with sending");
+            printf("Error with sending\n");
             return 0;
     }
     
@@ -561,17 +560,17 @@ int release_msg_env(msg_env *env){
 int k_change_priority(int new_priority, int target_process_id){
    printf("You're in k_change_priority\n");
     if(new_priority>3 || new_priority<0){
-                      printf("invalid priority");
+                      printf("invalid priority\n");
                       return 0;
     }
     if(target_process_id > TOTAL_NUM_PROC || target_process_id < TOTAL_NUM_IPROC){
-                           printf("Invalid ID");
+                           printf("Invalid ID\n");
                            return 0;
     }
     PCB *target = convert_PID(target_process_id);              //create a pointer that points to the PCB
     int old_priority = target->priority;                       //need the old one for later
     if(old_priority == new_priority){
-                    printf("Old priority same as new one");
+                    printf("Old priority same as new one\n");
                     return 1;                                  //success I guess?
     }
     target->priority = new_priority;                                     //change the priority
@@ -595,11 +594,11 @@ int change_priority (int new_priority, int target_process_id){
 int k_request_process_status(msg_env *env){
     printf("You're in k_request_process_status\n");
     if (!env){                                    //if no envelope was passed
-              printf("No envelope was passed");
+              printf("No envelope was passed\n");
               return 0;
     }
     char* temp = (char*) malloc(sizeof(SIZE));    //make an char array and allocate memory
-    strcpy(env->msg_text, "proc_id    status   priority \n\n\0");        //write the headers in the env
+    strcpy(env->msg_text, "proc_id    status   priority \n\n");        //write the headers in the env
     int i;
     for(i=0; i<TOTAL_NUM_PROC; i++){
              sprintf(temp, "%i      %i        %i \n", pointer_2_PCB[i]->pid,pointer_2_PCB[i]->state, pointer_2_PCB[i]->priority);//write the id status and priority in temp
@@ -620,7 +619,7 @@ int request_process_status(msg_env *env){
 } 
 
 //***KERNEL REQUEST DELAY***
-int k_request_delay(int time_delay, char* wakeup_code, msg_env *m)
+int k_request_delay(int time_delay, int wakeup_code, msg_env *m)
 {
     printf("You're in k_request_delay\n");
     int RequestingPID = curr_process->pid;         //Temporary PID holder
@@ -629,8 +628,10 @@ int k_request_delay(int time_delay, char* wakeup_code, msg_env *m)
     
     m->sender_id = RequestingPID;
     m->target_id = TIMERIPROCPID;                  //Set Target ID to the Timer Iproc
-    sprintf(m->msg_type, wakeup_code, "\0");       //Set the message type to wakeup code and the text to the delay,
-    sprintf(m->msg_text, "%d", time_delay, "\0");        //in order to send both wakeup code and time delay in one envelope.
+    
+    m->msg_type = wakeup_code;       //Set the message type to wakeup code and the text to the delay,
+    sprintf(m->msg_text, "%d\0", time_delay);        //in order to send both wakeup code and time delay in one envelope.
+    
     k_send_message(TIMERIPROCPID, m);              //Send the envelope to the timer iproc
     m = k_receive_message();                       //Invoke receive message, which blocks the invoking process until delay is over
     if(m)
@@ -645,7 +646,7 @@ int k_request_delay(int time_delay, char* wakeup_code, msg_env *m)
 }
 
 //***USER REQUEST DELAY***
-int request_delay(int time_delay, char* wakeup_code, msg_env *m){
+int request_delay(int time_delay, int wakeup_code, msg_env *m){
     printf("You're in request_delay\n");
     atomic_on();
     int z = k_request_delay(time_delay, wakeup_code, m);
@@ -719,43 +720,41 @@ int k_terminate(){
 int k_get_trace_buffers(msg_env* env){
    printf("You're in k_get_trace_buffers\n");
     if(!env){
-             printf("No envelope was passed");
+             printf("No envelope was passed\n");
              return 0;
     }
     
-    strcpy(env->msg_text, "send trace buffer (from oldest to newest) \n No.    sender_id    target_id    msg_type    time stamp    \n\n\0");
+    strcpy(env->msg_text, "send trace buffer (from oldest to newest) \n No.    sender_id    target_id    msg_type    time stamp    \n\n");
     
     int i;
     int j = 1;
     char* temp = (char*) malloc(sizeof(SIZE));
     
-    if(send_counter < 0)
-                    strcat(env->msg_text, "Send trace buffer empty \n");
+    if(send_counter < 0){
+         strcat(env->msg_text, "Send trace buffer empty \n");
+    }
     else{
          for(i = send_start; i == send_end; i = (i+1)%16){
-                             sprintf(temp, "%i    %i    %i    %s    %i:%i:%i    \n",
-                               j, send_trace[i].sender_id, send_trace[i].target_id, send_trace[i].msg_type, send_trace[i].timestamp.hh,
-                               send_trace[i].timestamp.mm, send_trace[i].timestamp.ss);
+                             sprintf(temp, "%i    %i    %i    %i:%i:%i    \n", j, send_trace[i].sender_id, send_trace[i].target_id, send_trace[i].msg_type, send_trace[i].timestamp.hh, send_trace[i].timestamp.mm, send_trace[i].timestamp.ss);
                              strcat(env->msg_text, temp);
                              j++;
          }
-         strcat(env->msg_text, "\0");
     }
     
     j = 1;
     
     strcat(env->msg_text, "\n\n receive trace buffer (from oldest to newest) \n No.    sender_id    target_id    msg_type    time stamp    \n\n");
     
-    if(receive_counter < 0)
-                       strcat(env->msg_text, "Receive trace buffer empty \n");
+    if(receive_counter < 0){
+            strcat(env->msg_text, "Receive trace buffer empty \n");
+    }
     else{
          for(i = receive_start; i == receive_end; i = (i+1)%16){
-            sprintf(temp, "%i    %i    %i    %s    %i:%i:%i    \n",
-                        j, receive_trace[i].sender_id, receive_trace[i].target_id, receive_trace[i].msg_type, receive_trace[i].timestamp.hh,
-                        receive_trace[i].timestamp.mm, receive_trace[i].timestamp.ss);
+            sprintf(temp, "%i    %i    %i    %i:%i:%i    \n", j, receive_trace[i].sender_id, receive_trace[i].target_id, receive_trace[i].msg_type, receive_trace[i].timestamp.hh, receive_trace[i].timestamp.mm, receive_trace[i].timestamp.ss);
             strcat(env->msg_text, temp);
             j++;
          }
+    
          strcat(env->msg_text, "\0");
     return 1;
     }
