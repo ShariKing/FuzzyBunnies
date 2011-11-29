@@ -70,12 +70,12 @@ void context_switch(jmp_buf previous, jmp_buf next) {
     printf("You're in context_switch\n");
     // int return_code = setjmp(previous);
      if (setjmp(previous) == 0) {
-        printf("No previous context saved, starting from beginning of process\n");
+        printf("Context of prev saved, switching to next\n");
         longjmp(next,1);
      }
      /*
      else{ 
-         printf("Context existed to switch to\n");                                   
+         printf("What does this mean\n");                                   
         // curr_process = new_pcb; // sets the new pcb to be the current process
          void (*fpTmp)();
          (fpTmp) = (void *)curr_process->PC; //gets address of process code

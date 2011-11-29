@@ -132,17 +132,11 @@ void timer_iproc(int sigval) {
     PCB* interrupted_proc = curr_process;
     curr_process = convert_PID (2);
 
-    static int pulse_counter = 0;     //Dummy Pulse Counter
-    msg_env *sleeptraverse;           //Dummy envelope pointer to traverse the Sleep Queue
-    msg_env *awakened;                //Dummy envelope pointer for awakened envelopes
-    int removeid;                     //id to extract, if extraction necessary
-    int sleeptime;                    //Dummy integer to use for string conversion
-
     //increment the pulse counter
     pulse_counter++;     
     
     //when pulse counter hits ten (one second)
-            if(pulse_counter == 10)
+    if(pulse_counter == 10)
     {
             clock_increment(systemclock, 0);
             clock_increment(wallclock, 1);
@@ -154,14 +148,19 @@ void timer_iproc(int sigval) {
             pulse_counter = 0;
     }
 		
-//==========CODE TO HANDLE REQUEST DELAY=============		
+//==========CODE TO HANDLE REQUEST DELAY=============	
+    
+    msg_env *sleeptraverse;           //Dummy envelope pointer to traverse the Sleep Queue
+    msg_env *awakened;                //Dummy envelope pointer for awakened envelopes
     msg_env *delayRequest;
+    int removeid;                     //id to extract, if extraction necessary
+    int sleeptime;                    //Dummy integer to use for string conversion
+    
     delayRequest = receive_message();              //Receive Message for Delays
-   
-    if(delayRequest != NULL)
+    if(delayRequest != NULL && delayRequest->msg_type == 4)
          env_ENQ(delayRequest, sleep_Q);            //Enqueue delay requests onto the sleep Q
 
-    if(sleep_Q->head) {    //if the sleep queue is not empty
+    if(sleep_Q->head != NULL) {    //if the sleep queue is not empty
         
          sleeptraverse = sleep_Q->head;        //Point Sleeptraverse at the head to begin
          sleeptime = atoi(sleeptraverse->msg_text);              //Convert the delay time text to an integer
