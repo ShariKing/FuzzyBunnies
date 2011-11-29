@@ -164,7 +164,7 @@ void timer_iproc(int sigval) {
              }
              else     //If head process is not awake yet, check for others in the queue and traverse
              {
-                  sprintf(sleeptraverse->msg_text, "%d", sleeptime);    //copy the new sleeptime back into a string and put it back in the envelope
+                  sprintf(sleeptraverse->msg_text, "%d\0", sleeptime);    //copy the new sleeptime back into a string and put it back in the envelope
                   if(sleeptraverse->p)                            //traverse
                        sleeptraverse = sleeptraverse->p;
                   else
@@ -192,7 +192,7 @@ void timer_iproc(int sigval) {
                  }
                  else     //If current decrementing process is not awake yet, check for others in the queue and traverse
                  {
-                      sprintf(sleeptraverse->msg_text, "%d", sleeptime);    //copy the new sleeptime back into a string and put it back in the envelope
+                      sprintf(sleeptraverse->msg_text, "%d\0", sleeptime);    //copy the new sleeptime back into a string and put it back in the envelope
                       if(sleeptraverse->p)                                  //traverse
                            sleeptraverse = sleeptraverse->p;
                       else

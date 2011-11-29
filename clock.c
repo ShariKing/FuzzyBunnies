@@ -79,7 +79,7 @@ int clock_out(clk* clock){
      strcat(timewords, ":");
      sprintf(temptime, "%d", clock->ss);
 //     itoa(clock->ss, temptime, 10);  //convert the values in seconds into characters and write them into the temporary holding variable
-     strcat(timewords, temptime);    //concatenate the hours into timewords. Timewords should now contain the properly formatted time.
+     strcat(timewords, temptime, "\0");    //concatenate the hours into timewords. Timewords should now contain the properly formatted time.
      
      //If envelope is not empty, output an error message
      //if(e->msg_text != NULL)

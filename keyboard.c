@@ -79,7 +79,7 @@ int main(int argc, char * argv[]) {
             c = getchar(); //*** SITS HERE AND WAITS FOR INPUT, OKAY
 
             // if there's still input (ie not NULL)
-            if (c != '\n') {
+            if (c != '\0') {
 
                 if (buf_index < MAXCHAR - 1) {
                     in_mem_p->indata[ buf_index++ ] = c;

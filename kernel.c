@@ -369,7 +369,7 @@ msg_env *k_receive_message() { //Doesn't take the PCB as a parameter. Dealt with
         
         // if it's a normal process, block it on receive
         strcpy(curr_process->state, "BLK_ON_RCV\0"); //*********Doesn't need to be put in a queue, and don't care about process switch now********* FIX THIS
-    printf("in k_rec before proc switch pid %d, %s\n", curr_process->pid, curr_process->state);
+    //printf("in k_rec before proc switch pid %d, %s\n", curr_process->pid, curr_process->state);
         process_switch(); // Fixed it. Used to be return NULL.
     }
     
@@ -391,7 +391,7 @@ msg_env *k_receive_message() { //Doesn't take the PCB as a parameter. Dealt with
         
         return env;
         }
-        printf("in k_rec after proc switch pid %d, %s\n", curr_process->pid, curr_process->state);
+        //printf("in k_rec after proc switch pid %d, %s\n", curr_process->pid, curr_process->state);
 }
 
 // ***USER RECEIVE MESSAGE***
@@ -605,7 +605,9 @@ int k_request_process_status(msg_env *env){
              sprintf(temp, "%i      %s        %i \n", pointer_2_PCB[i]->pid,pointer_2_PCB[i]->state, pointer_2_PCB[i]->priority);//write the id status and priority in temp
              strcat(env->msg_text, temp);                                      //cat temp with the envelope
     }
-    return 1;
+    strcat(env->msg_text, "\0");
+    int worked = send_console_chars(env);
+    return worked;
 }
 
 //***USER GET PROCESS STATUS***
@@ -625,8 +627,8 @@ int k_request_delay(int time_delay, char* wakeup_code, msg_env *m)
     strcpy(curr_process->state, "SLEEP\0");          
     m->sender_id = RequestingPID;
     m->target_id = TIMERIPROCPID;                  //Set Target ID to the Timer Iproc
-    sprintf(m->msg_type, wakeup_code);       //Set the message type to wakeup code and the text to the delay,
-    sprintf(m->msg_text, "%d", time_delay);        //in order to send both wakeup code and time delay in one envelope.
+    sprintf(m->msg_type, wakeup_code, "\0");       //Set the message type to wakeup code and the text to the delay,
+    sprintf(m->msg_text, "%d", time_delay, "\0");        //in order to send both wakeup code and time delay in one envelope.
     k_send_message(TIMERIPROCPID, m);              //Send the envelope to the timer iproc
     m = k_receive_message();                       //Invoke receive message, which blocks the invoking process until delay is over
     if(m)
@@ -735,6 +737,7 @@ int k_get_trace_buffers(msg_env* env){
                              strcat(env->msg_text, temp);
                              j++;
          }
+         strcat(env->msg_text, "\0");
     }
     
     j = 1;
@@ -751,6 +754,7 @@ int k_get_trace_buffers(msg_env* env){
             strcat(env->msg_text, temp);
             j++;
          }
+         strcat(env->msg_text, "\0");
     return 1;
     }
 }
