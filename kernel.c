@@ -59,7 +59,7 @@ void atomic_off() {
 int PCB_ENQ(PCB *r, PCB_Q *queue) {
 printf("You're in PCB_ENQ\n");
     /// if either the PCB pointer or the queue pointer are NULL don't do anything
-    if (!r || !queue)
+    if (r ==NULL || queue==NULL)
         return 0;
     
     // if queue is empty
@@ -157,7 +157,7 @@ PCB *PCB_REMOVE(PCB_Q *q, int id){
 // ***ENVELOPE ENQUEUE***
 int env_ENQ(msg_env *e, env_Q *queue) {
    printf("You're in env_ENQ\n");
-    if (!e || !queue)
+    if (e==NULL || queue==NULL)
         return 0;
     
     //if queue is empty
@@ -190,7 +190,7 @@ int env_ENQ(msg_env *e, env_Q *queue) {
 msg_env *env_DEQ(env_Q *queue) {
     printf("You're in env_DEQ\n");
     // if the queue doesn't exist
-    if (!queue)
+    if (queue ==NULL)
         return NULL;
     
     // create a temp env pointer
@@ -285,7 +285,7 @@ int free_PCB_queue(PCB_Q* Qu){
 int k_send_message(int dest_id, msg_env *e) {
     printf("You're in k_send_message\n");
     // if the env is NULL
-    if (!e)                             //is this right?
+    if (e==NULL)                             //is this right?
         return 0;
     
     // if the PCB ID is not valid
@@ -414,7 +414,7 @@ msg_env *receive_message() {
 int k_send_console_chars(msg_env *env) {
     printf("You're in send_console_chars\n");
     // if the env is NULL
-    if (!env)
+    if (env==NULL)
         return 0;
     
     // relay the env to the crt i-process using send_message
@@ -443,7 +443,7 @@ int send_console_chars(msg_env *env) {
 int k_get_console_chars(msg_env * env) {
     printf("You're in k_get_console_chars\n");
     // if the env is NULL
-    if (!env)
+    if (env==NULL)
         return 0;
     
     int Z;
@@ -594,7 +594,7 @@ int change_priority (int new_priority, int target_process_id){
 //***KERENEL GET PROCESS STATUS***
 int k_request_process_status(msg_env *env){
     printf("You're in k_request_process_status\n");
-    if (!env){                                    //if no envelope was passed
+    if (env==NULL){                                    //if no envelope was passed
               printf("No envelope was passed");
               return 0;
     }
@@ -718,7 +718,7 @@ int k_terminate(){
 // ***KERNEL GET TRACE BUFFERS
 int k_get_trace_buffers(msg_env* env){
    printf("You're in k_get_trace_buffers\n");
-    if(!env){
+    if(env==NULL){
              printf("No envelope was passed");
              return 0;
     }
