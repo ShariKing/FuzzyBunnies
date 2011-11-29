@@ -21,7 +21,7 @@
 // *** CONSTANTS ***
 #define SIZE 128
 #define STACKSIZE 4096 // size of stack pointer
-#define TOTAL_NUM_PROC 8 //total number of processes, will change
+#define TOTAL_NUM_PROC 5 //total number of processes, will change
 #define TOTAL_NUM_IPROC 3 //total number of i-processes
 #define TIMERIPROCPID 2
 
@@ -184,7 +184,7 @@ PCB* curr_process;
 
 clk* systemclock;
 clk* wallclock;     //Global Clock Variables
-int wallClockOut = 0;
+int wallClockOut;
 
 msg_trace send_trace[16];                   //went with arrays instead of queues
 msg_trace receive_trace[16];
