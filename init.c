@@ -787,6 +787,13 @@ int main ()
                 terminate(0);
         }
 
+    
+        // set the current process to the NULL process
+        // ***** should be the first process in the first ready queue? does that mean we can just hardcode this since it will be the same every time?
+        curr_process = convert_PID(7);
+        
+        strcpy(curr_process->state,"RUNNING\0");
+        
         // if init_msg_trace returned 1
         if (init_msg_trace())
                 printf("Initialized msg_trace correctly\n");
@@ -821,12 +828,7 @@ int main ()
         if(alarmstatus != 0)
              printf("Error: Something is wrong with the system timer!\n");
         
-    
-        // set the current process to the NULL process
-        // ***** should be the first process in the first ready queue? does that mean we can just hardcode this since it will be the same every time?
-        curr_process = convert_PID(7);
-        
-        strcpy(curr_process->state,"RUNNING\0");
+
       
 
         //*** BACK TO MAIN RTOS STUFF ***
