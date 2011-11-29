@@ -23,7 +23,7 @@ void atomic_on() {
         static sigset_t oldmask;
         sigset_t newmask;
         sigemptyset(&newmask);
-        sigaddset(&newmask, SIGALRM); //the alarm signal
+        //sigaddset(&newmask, SIGALRM); //the alarm signal
         //sigaddset(&newmask, SIGINT); // the CNTRL-C
         sigaddset(&newmask, SIGUSR1); // the CRT signal
         sigaddset(&newmask, SIGUSR2); // the KB signal
@@ -192,7 +192,8 @@ msg_env *env_DEQ(env_Q *queue) {
         return NULL;
     
     // create a temp env pointer
-    msg_env *t = NULL;
+    msg_env *temp = request_msg_env();
+    msg_env *tempNext = request_msg_env();
         
     // if queue is empty    
     if (queue->head == NULL) { 
@@ -202,18 +203,20 @@ msg_env *env_DEQ(env_Q *queue) {
 
     // if the queue is NOT empty
     // point the temp to the head of the queue
-    t = queue->head;
-
+    temp = queue->head;
+    printf("%p\n", queue->head);
+    tempNext = queue->head->p;
     // point the new head of the queue to the 'next' pointer of the old head
-    queue->head = queue->head->p;
+    queue->head = tempNext;
 
-    // if the queue now only has one env, set the tail = head = sole env
-    if (queue->head == NULL) 
-        queue->tail = queue->head;
+    if(queue->head) {        
+        // if the queue now only has one env, set the tail = head = sole env
+        if (queue->head == NULL) 
+            queue->tail = queue->head;
+        }
+    temp->p = NULL;    //set the pointer of the dequeued envelope to NULL
     
-    t->p = NULL;    //set the pointer of the dequeued envelope to NULL
-    
-    return t;
+    return temp;
 }
 
 

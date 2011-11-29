@@ -219,16 +219,16 @@ int init_msg_trace(){
                                      return 0;           //FAIL!!
              }
              strcpy(send_temp_msg_type,"AHHHHH, I'm empty");
-             printf("%s\n",send_temp_msg_type);
+             //printf("%s\n",send_temp_msg_type);
              send_trace[i].msg_type = send_temp_msg_type;
-             printf("%s\n",send_temp_msg_type);
+             //printf("%s\n",send_temp_msg_type);
              
              char* receive_temp_msg_type = (char *) malloc (sizeof (SIZE));
              if(!receive_temp_msg_type){
                                      printf("Error allocating memory to receive_trace.msg_type");
                                      return 0;           //FAIL!!
              }
-             strcpy(receive_temp_msg_type,"AHHHHH, I'm empty");
+             //strcpy(receive_temp_msg_type,"AHHHHH, I'm empty");
              receive_trace[i].msg_type = receive_temp_msg_type;
     }
     
@@ -502,9 +502,9 @@ int init_i_processes()
              
              new_pcb->p = NULL;
              
+             strcpy(tempState,"READY"); //This is how you set the state
              new_pcb->state = tempState;
-             strcpy(new_pcb->state,"READY"); //This is how you set the state
-             
+                          
              new_pcb->pid = itable[k].pid;
              
              new_pcb->priority = itable[k].priority;
