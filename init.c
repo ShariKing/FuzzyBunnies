@@ -237,6 +237,48 @@ int init_msg_trace(){
 }
 
 
+int init_env()
+{
+     int i;
+     for(i = 0; i < 128; i++)
+     {
+        // create temp env to be enqueued
+        struct msgenv* new_env = (struct msgenv *) malloc (sizeof (struct msgenv));
+        
+        // if the new_env is not created properly
+        if (!new_env)
+            return 0;
+        
+        // initialize env parameters
+        new_env->p = NULL;
+        new_env->sender_id = -1; //setting the id to an int of -1 just for initialize
+        new_env->target_id = -1; //setting the id to an int of -1 just for initialize
+        
+        char* tempMsgType = (char *) malloc (sizeof (SIZE)); //initialize the character array pointer
+        
+        // if the msg_type pointer is not created properly
+        if (!tempMsgType)
+            return 0;
+        
+        
+        new_env->msg_type = tempMsgType;
+        
+        char* tempMsgText = (char *) malloc (sizeof (SIZE)); //initialize the character array pointer
+
+        // if the msg_text pointer is not created properly
+        if (!tempMsgText)
+            return 0;
+            
+        new_env->msg_text = tempMsgText;
+        
+        // enqueue the new env on the free env queue
+        env_ENQ(new_env, envelope_q);
+      }
+     
+      // if everything worked okay
+      return 1;
+}
+
 // *** INITIALIZE Non-I PROCESSES ****
 int init_processes ( )
 {
@@ -365,7 +407,7 @@ int init_processes ( )
             new_pcb->receive_msg_Q = create_env_Q();
             
             // create a pointer to the pcb, based on its PID, and save it in the array
-            pointer_2_PCB[TOTAL_NUM_IPROC + j] = new_pcb;
+            pointer_2_PCB[j] = new_pcb;
 
 
             //-------- From initialization pdf on Ace-----
@@ -419,48 +461,6 @@ int init_processes ( )
    
    // if we get here, success!
    return 1;
-}
-
-int init_env()
-{
-     int i;
-     for(i = 0; i < 128; i++)
-     {
-        // create temp env to be enqueued
-        struct msgenv* new_env = (struct msgenv *) malloc (sizeof (struct msgenv));
-        
-        // if the new_env is not created properly
-        if (!new_env)
-            return 0;
-        
-        // initialize env parameters
-        new_env->p = NULL;
-        new_env->sender_id = -1; //setting the id to an int of -1 just for initialize
-        new_env->target_id = -1; //setting the id to an int of -1 just for initialize
-        
-        char* tempMsgType = (char *) malloc (sizeof (SIZE)); //initialize the character array pointer
-        
-        // if the msg_type pointer is not created properly
-        if (!tempMsgType)
-            return 0;
-        
-        
-        new_env->msg_type = tempMsgType;
-        
-        char* tempMsgText = (char *) malloc (sizeof (SIZE)); //initialize the character array pointer
-
-        // if the msg_text pointer is not created properly
-        if (!tempMsgText)
-            return 0;
-            
-        new_env->msg_text = tempMsgText;
-        
-        // enqueue the new env on the free env queue
-        env_ENQ(new_env, envelope_q);
-      }
-     
-      // if everything worked okay
-      return 1;
 }
 
 int init_i_processes()
@@ -763,6 +763,15 @@ int main ()
                 printf("Error, envelope initialization failed!!!\n");
                 terminate(0);
         }
+       
+        // if init_i_processes returned 1
+        if (init_i_processes())
+                printf("Initialized I-processes correctly\n");
+        // if init_-_processes failed
+        else {
+                printf("Error, i-process initialization failed!!!\n");
+                terminate(0);
+        }
         
         // if init_processes returned 1
         if (init_processes())
@@ -770,15 +779,6 @@ int main ()
         // if init_processes failed
         else {
                 printf("Error, process initialization failed!!!\n");
-                terminate(0);
-        }
-
-        // if init_i_processes returned 1
-        if (init_i_processes())
-                printf("Initialized I-processes correctly\n");
-        // if init_-_processes failed
-        else {
-                printf("Error, i-process initialization failed!!!\n");
                 terminate(0);
         }
 
