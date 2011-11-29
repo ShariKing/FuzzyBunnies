@@ -53,7 +53,8 @@ void process_switch() {
     strcpy(new_pcb->state, "RUNNING"); //set new proc state to running
     //printf("%d\n",curr_process->pid);   
     curr_process = new_pcb; //make the next_pcb the current process
-    //printf("%d\n",curr_process->pid);
+    printf("%d\n",old_pcb->pcb_buf);
+    printf("%d\n",new_pcb->pcb_buf);
     context_switch( old_pcb->pcb_buf, new_pcb->pcb_buf );
     //printf("%d\n",curr_process->pid);
     atomic_off();

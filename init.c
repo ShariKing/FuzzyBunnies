@@ -552,14 +552,14 @@ void kb_crt_start(){
     k_fid = open(k_sfilename, O_RDWR | O_CREAT | O_EXCL, (mode_t) 0755);
     if (k_fid < 0) {
         printf("Bad open of mmap file <%s> %i\n", k_sfilename, k_fid);
-        exit(1);
+        terminate(0);
     };
 
     // make the file the same size as the buffer 
     k_status = ftruncate(k_fid, k_bufsize);
     if (k_status) {
         printf("Failed to ftruncate the file <%s>, status = %d\n", k_sfilename, k_status);
-        exit(1);
+        terminate(0);
     }
    
     // pass parent's process id and the file id to child
@@ -582,7 +582,7 @@ void kb_crt_start(){
             // should never reach here
             fprintf(stderr,"Can't exec keyboard, errno %d\n",errno);
             cleanup();
-            exit(1);
+            terminate(0);
     };
     // the parent process continues executing here
 
@@ -601,7 +601,7 @@ void kb_crt_start(){
 
     if (k_mmap_ptr == MAP_FAILED){
         printf("Parent's memory map has failed, about to quit!\n");
-	exit(1);  // do cleanup and terminate
+	terminate(0);  // do cleanup and terminate
     };
 
     // create the shared memory pointer
@@ -633,14 +633,14 @@ void kb_crt_start(){
     c_fid = open(c_sfilename, O_RDWR | O_CREAT | O_EXCL, (mode_t) 0755);
     if (c_fid < 0) {
         printf("Bad open of mmap file <%s>\n", c_sfilename);
-        exit(1);
+        terminate(0);
     };
 
     // make the file the same size as the buffer 
     c_status = ftruncate(c_fid, c_bufsize);
     if (c_status) {
         printf("Failed to ftruncate the file <%s>, status = %d\n", c_sfilename, c_status);
-        exit(1);
+        terminate(0);
     }
     
     // pass parent's process id and the file id to child
@@ -662,7 +662,7 @@ void kb_crt_start(){
             // should never reach here
             fprintf(stderr,"Can't exec crt, errno %d\n",errno);
             cleanup();
-            exit(1);
+            terminate(0);
     };
     // the parent process continues executing here
 
@@ -742,7 +742,7 @@ int main ()
              printf("Wall clock & System clock created successfully\n", wallclock);
          else {
              printf("Error, wallclock or systemclock initialization failed!!!\n");
-             exit(1);
+             terminate(0);
          }
         
         // if init_queues returned 1
@@ -751,7 +751,7 @@ int main ()
         // if init_queues dropped the ball
         else {
                 printf("Error, queue initialization failed!!!\n");
-                exit(1);
+                terminate(0);
         }
         
         // if init_env returned 1
@@ -760,7 +760,7 @@ int main ()
         // if init_env is dumb
         else {
                 printf("Error, envelope initialization failed!!!\n");
-                exit(1);
+                terminate(0);
         }
         
         // if init_processes returned 1
@@ -769,7 +769,7 @@ int main ()
         // if init_processes failed
         else {
                 printf("Error, process initialization failed!!!\n");
-                exit(1);
+                terminate(0);
         }
 
         // if init_i_processes returned 1
@@ -778,7 +778,7 @@ int main ()
         // if init_-_processes failed
         else {
                 printf("Error, i-process initialization failed!!!\n");
-                exit(1);
+                terminate(0);
         }
 
         // *****CODE FROM HERE TO THE BOTTOM WAS TAKEN FROM DEMO.C*****
