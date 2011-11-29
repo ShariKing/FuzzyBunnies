@@ -31,7 +31,7 @@ struct msgenv {
 	struct msgenv *p;	     //pointer to the next env in the queue this env resides in
 	int sender_id;
 	int target_id;
-	char* msg_type;         //type and text are char pointers, which are essentially arrays
+	int msg_type;         //type and text are char pointers, which are essentially arrays<- WRONG NOW
 	char* msg_text;         //we can call a location of the pointer and it will work like an array
 };
 typedef struct msgenv msg_env;
@@ -80,6 +80,7 @@ struct init_table {
        int pid;
        int priority;
        int stack_size;
+       int process_type;
        void* address;
 };
 typedef struct init_table init_table;
