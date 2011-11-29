@@ -381,18 +381,16 @@ int init_processes ( )
         
             //create tempState and malloc size of char array
            char* tempStack = (char*) malloc(sizeof (itable[j].stack_size));
-           char* tempState = (char*) malloc(sizeof (SIZE));
            
            //return 0 if it didn't malloc right
-           if (!tempStack || !tempState) 
+           if (tempStack == NULL) 
               return 0;
                           
             // initialize the 'next' pointer (for queues) to NULL
             new_pcb->p = NULL;
 
             // set all processes to the READY state
-            strcpy(tempState, "READY\0");//set tempstate to the pcb
-            new_pcb->state = tempState;
+            new_pcb->state = READY;
                         
             // set the PID for the appropriate process from the table
             new_pcb->pid = itable[j].pid;
@@ -495,15 +493,13 @@ int init_i_processes()
      {
          struct pcb* new_pcb = (struct pcb *) malloc (sizeof (struct pcb));
          char* tempStack = (char*) malloc(sizeof (STACKSIZE));
-         char* tempState = (char*) malloc(sizeof (SIZE));
-             
+         
          // if the PCB pointer is cool
          if (new_pcb && tempStack){
              
              new_pcb->p = NULL;
              
-             strcpy(tempState,"READY\0"); //This is how you set the state
-             new_pcb->state = tempState;
+            new_pcb->state = READY;
                           
              new_pcb->pid = itable[k].pid;
              
@@ -739,15 +735,54 @@ int init_clocks(){
         
         return 1;        
      }
+
+int init_states (){
+    
+        char* tempState0 = (struct char *) malloc (sizeof (STATESIZE));
+        char* tempState1 = (struct char *) malloc (sizeof (STATESIZE));
+        char* tempState2 = (struct char *) malloc (sizeof (STATESIZE));
+        char* tempState3 = (struct char *) malloc (sizeof (STATESIZE));
+        char* tempState4 = (struct char *) malloc (sizeof (STATESIZE));
+        
+        if (tempState0 == NULL || tempState1 == NULL || tempState2 == NULL || tempState3 == NULL || tempState4 == NULL)
+        {
+            return 0;
+        }
+        
+        sprintf(tempState0, "RUNNING");
+        sprintf(tempState1, "READY");
+        sprintf(tempState2, "BLK_ON_ENV");
+        sprintf(tempState3, "BLK_ON_RCV");
+        sprintf(tempState4, "SLEEP");
+        
+        stateType[0] = tempState0;
+        stateType[1] = tempState1;
+        stateType[2] = tempState2;
+        stateType[3] = tempState3;
+        stateType[4] = tempState4;
+        
+        return 1;    
+}
      
 /*******************************************************************/
 // ***** THE MAIN MAIN MAIN RTOS FUNCTION *****
 int main ()
 {
+        // if init_clocks returns 1
         if (init_clocks())
-             printf("Wall clock & System clock created successfully\n", wallclock);
+             printf("Wall clock & System clock created successfully\n");
+        // if init_clocks returns 0
          else {
              printf("Error, wallclock or systemclock initialization failed!!!\n");
+             terminate(0);
+         }
+        
+        // if init_states returns 1
+        if (init_states())
+             printf("States initialized successfully\n");
+        // if init_states returns 0
+         else {
+             printf("Error, state initialization failed!!!\n");
              terminate(0);
          }
         
@@ -792,7 +827,7 @@ int main ()
         // ***** should be the first process in the first ready queue? does that mean we can just hardcode this since it will be the same every time?
         curr_process = convert_PID(7);
         
-        strcpy(curr_process->state,"RUNNING\0");
+        curr_process->state = RUNNING;
         
         // if init_msg_trace returned 1
         if (init_msg_trace())

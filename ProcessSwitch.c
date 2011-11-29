@@ -47,12 +47,12 @@ void process_switch() {
         printf("EMPTY\n");
         return;
         }
-    if (strcmp(old_pcb->state,"RUNNING")==0){
+    if (old_pcb->state == RUNNING){
        //printf("AHDSHDSDLKJDFSKJFDF\n");
-        strcpy(old_pcb->state, "READY\0"); //set old proc state to ready
+        old_pcb->state = READY; //set old proc state to ready
     }
     //printf("next........\n");
-    strcpy(new_pcb->state, "RUNNING\0"); //set new proc state to running
+    new_pcb->state = RUNNING; //set new proc state to running
     //printf("%d\n",curr_process->pid);   
     curr_process = new_pcb; //make the next_pcb the current process
     //printf("%d\n",old_pcb->pcb_buf);

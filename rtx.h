@@ -25,6 +25,7 @@
 #define TOTAL_NUM_IPROC 3 //total number of i-processes
 #define TIMERIPROCPID 2
 
+
 // *** STRUCTS ***
 struct msgenv {
 	struct msgenv *p;	     //pointer to the next env in the queue this env resides in
@@ -43,7 +44,7 @@ typedef struct envQ env_Q;
 
 struct pcb {
 	struct pcb *p;		// pointer to next PCB in the queue that this PCB resides in
-	char* state;
+	int state;
 	int pid;
 	int priority;
 	void* PC;			//I'm guessing since it's a counter
@@ -205,5 +206,15 @@ PCB_Q* ready_q_priority3;
 PCB_Q* blocked_on_envelope;
 env_Q* sleep_Q;
 env_Q* envelope_q;
+
+// STATES
+char * stateType[5];
+#define STATESIZE 15
+
+#define RUNNING 0
+#define READY 1
+#define BLK_ON_ENV 2
+#define BLK_ON_RCV 3
+#define SLEEP 4
 
 #endif

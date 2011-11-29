@@ -250,6 +250,7 @@ msg_env *env_REMOVE(env_Q *q, int senderid){
     return NULL;
 }
 
+/*
 //*** FREE ENVELOPE QUEUE
 int free_env_queue(env_Q* Q){
     msg_env* willy;                       // hehehehe wait for it
@@ -278,7 +279,7 @@ int free_PCB_queue(PCB_Q* Qu){
     }
     free(Qu);
 }
-          
+   */       
 
 // *** KERNEL SEND MESSAGE ***
 int k_send_message(int dest_id, msg_env *e) {
@@ -306,12 +307,12 @@ int k_send_message(int dest_id, msg_env *e) {
 
         /*unblock the target process if necessary*/
         // if the target's blocked on env
-        if (strcmp(target->state, "BLOCKED_ON_ENV")==0) { 
+        if (target->state == BLK_ON_ENV) { 
 
             // enqueue the PCB of the process on the appropriate ready queue
             PCB_ENQ(target, convert_priority(target->priority)); //*****not sure if need to put a '&' before convert_priority
             // set the target state to 'ready'
-            strcpy(target->state, "READY\0");
+            target->state = READY;
         }
 
         // enqueue the env on the target's receive queue
@@ -366,7 +367,7 @@ msg_env *k_receive_message() { //Doesn't take the PCB as a parameter. Dealt with
             return NULL;
         
         // if it's a normal process, block it on receive
-        strcpy(curr_process->state, "BLK_ON_RCV\0"); //*********Doesn't need to be put in a queue, and don't care about process switch now********* FIX THIS
+        curr_process->state = BLK_ON_RCV; //*********Doesn't need to be put in a queue, and don't care about process switch now********* FIX THIS
     //printf("in k_rec before proc switch pid %d, %s\n", curr_process->pid, curr_process->state);
         process_switch(); // Fixed it. Used to be return NULL.
     }
@@ -501,7 +502,7 @@ PCB_Q *convert_priority(int pri) {
 void k_release_processor() {                //should be an int but we'll figure it later
     printf("You're in k_release_processor\n");
         //printf ("curr_process:%i\n", curr_process->pid);
-    strcpy (curr_process->state, "READY\0");  //Change current process state to "ready"
+    curr_process->state = READY;  //Change current process state to "ready"
     PCB_ENQ(curr_process, convert_priority(curr_process->priority));       //Enqueue PCB into a rpq
     process_switch();                       //Shari is taking care of process switch.
 }    
@@ -519,7 +520,7 @@ msg_env *k_request_msg_env() {
         printf("You're in k_request_msg_env\n");
     while (envelope_q->head == NULL){        //while envelope q is empty
               PCB_ENQ(curr_process, blocked_on_envelope);     //enqueue on blocked_on_env q
-              strcpy(curr_process->state,"BLOCKED_ON_ENV\0");         // change state to blocked on env
+              curr_process->state = BLK_ON_ENV;         // change state to blocked on env
               process_switch();
         }
         msg_env *temp = env_DEQ(envelope_q);            //make a temp pointer that points to the dequeued envelope from the free env q
@@ -541,7 +542,7 @@ int k_release_msg_env(msg_env *env){
     env_ENQ(env, envelope_q);                      //enqueue the envelope to the envelope queue
     if (blocked_on_envelope->head != NULL){        //if there's a blocked process
        PCB *temp = PCB_DEQ(blocked_on_envelope);   //dequeue the first process from the blocked_on_env and make a temp pointer to the PCB
-       strcpy(temp->state,"READY\0");                //set the process state to ready
+       temp->state = READY;                //set the process state to ready
        PCB_ENQ(temp, convert_priority(temp->priority));      //ENQ PCB in the appropriate rpq
     }
     return 1;
@@ -574,7 +575,7 @@ int k_change_priority(int new_priority, int target_process_id){
                     return 1;                                  //success I guess?
     }
     target->priority = new_priority;                                     //change the priority
-    if(strcmp(target->state,"READY")==0){
+    if(target->state == READY){
                      PCB_REMOVE(convert_priority(old_priority), target_process_id);      //remove PCB from old rpq
                      PCB_ENQ(target, convert_priority(new_priority));                    //Enqueue it to the new rpq
                      return 1;
@@ -601,7 +602,7 @@ int k_request_process_status(msg_env *env){
     strcpy(env->msg_text, "proc_id    status   priority \n\n\0");        //write the headers in the env
     int i;
     for(i=0; i<TOTAL_NUM_PROC; i++){
-             sprintf(temp, "%i      %s        %i \n", pointer_2_PCB[i]->pid,pointer_2_PCB[i]->state, pointer_2_PCB[i]->priority);//write the id status and priority in temp
+             sprintf(temp, "%i      %i        %i \n", pointer_2_PCB[i]->pid,pointer_2_PCB[i]->state, pointer_2_PCB[i]->priority);//write the id status and priority in temp
              strcat(env->msg_text, temp);                                      //cat temp with the envelope
     }
     strcat(env->msg_text, "\0");
@@ -623,7 +624,9 @@ int k_request_delay(int time_delay, char* wakeup_code, msg_env *m)
 {
     printf("You're in k_request_delay\n");
     int RequestingPID = curr_process->pid;         //Temporary PID holder
-    strcpy(curr_process->state, "SLEEP\0");          
+    
+    curr_process->state = SLEEP; 
+    
     m->sender_id = RequestingPID;
     m->target_id = TIMERIPROCPID;                  //Set Target ID to the Timer Iproc
     sprintf(m->msg_type, wakeup_code, "\0");       //Set the message type to wakeup code and the text to the delay,
