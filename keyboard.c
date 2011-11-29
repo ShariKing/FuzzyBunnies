@@ -107,7 +107,7 @@ int main(int argc, char * argv[]) {
     
     // if the shared memory pointer is stupid and is NULL
     else {
-        printf("KB shared memory pointer not initialized");
+        printf("KB shared memory pointer not initialized\n");
         exit(0);
     }   
 }

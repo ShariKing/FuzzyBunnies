@@ -170,7 +170,7 @@ int init_queues( )
      }
      
      else {
-          printf("Error Creating Sleep Queue \n");
+          printf("Error Creating Sleep Queue\n");
           return 0;
      }
      
@@ -509,7 +509,7 @@ int init_i_processes()
                     longjmp(kernel_buf,1); 
     
                  else{ 
-                    printf("MADE IT HERE");                                 
+                    printf("Previous context existed for process %i during initialization\n", itable[k].pid);                                 
                     // curr_process = new_pcb; // sets the new pcb to be the current process
                     void (*fpTmp)();
                     (fpTmp) = (void *)curr_process->PC; //gets address of process code

@@ -119,7 +119,7 @@ int main(int argc, char * argv[]) {
     
     // if the shared pointer is initialized as NULL
     else{
-        printf("CRT shared memory pointer initialization failed");
+        printf("CRT shared memory pointer initialization failed\n");
     }
 }
 

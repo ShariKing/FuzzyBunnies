@@ -168,20 +168,20 @@ void timer_iproc(int sigval) {
          
          if(sleeptime <= 0)           //Check if the head env has finished sleeping
          {
-              awakened = sleeptraverse;          //awakened now points to what sleeptraverse did before
+              /*awakened = sleeptraverse;          //awakened now points to what sleeptraverse did before
 
-              if(sleeptraverse->p)                   //Move the pointer to the next so we don't lose it after Dequeueing
+              if(sleeptraverse->p != NULL)                   //Move the pointer to the next so we don't lose it after Dequeueing
                    sleeptraverse = sleeptraverse->p;
               else                                   //If this is the only envelope in the sleep queue, set sleeptraverse to NULL.
                    sleeptraverse = NULL;
-
+              */
               awakened = env_DEQ(sleep_Q);           //Dequeue awakened from the head
               send_message(awakened->sender_id, awakened);     //send awakened back to its sender id, which should be blocked_on_receive
          }
          else     //If head process is not awake yet, check for others in the queue and traverse
          {
               sprintf(sleeptraverse->msg_text, "%d\0", sleeptime);    //copy the new sleeptime back into a string and put it back in the envelope
-              if(sleeptraverse->p)                            //traverse
+              if(sleeptraverse->p != NULL)                            //traverse
                    sleeptraverse = sleeptraverse->p;
               else
                    sleeptraverse = NULL;

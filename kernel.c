@@ -598,14 +598,18 @@ int k_request_process_status(msg_env *env){
               printf("No envelope was passed\n");
               return 0;
     }
+    
     char* temp = (char*) malloc(sizeof(SIZE));    //make an char array and allocate memory
     strcpy(env->msg_text, "proc_id    status   priority \n\n");        //write the headers in the env
+    
     int i;
     for(i=0; i<TOTAL_NUM_PROC; i++){
              sprintf(temp, "%i      %i        %i \n", pointer_2_PCB[i]->pid,pointer_2_PCB[i]->state, pointer_2_PCB[i]->priority);//write the id status and priority in temp
              strcat(env->msg_text, temp);                                      //cat temp with the envelope
     }
+    
     strcat(env->msg_text, "\0");
+    
     int worked = send_console_chars(env);
     return worked;
 }
@@ -720,13 +724,9 @@ int k_terminate(){
 // ***KERNEL GET TRACE BUFFERS
 int k_get_trace_buffers(msg_env* env){
    printf("You're in k_get_trace_buffers\n");
-<<<<<<< HEAD
-    if(!env){
-             printf("No envelope was passed\n");
-=======
+
     if(env==NULL){
-             printf("No envelope was passed");
->>>>>>> 42386e614bf5eae14a5a9307c2924e1c60c193d5
+             printf("No envelope was passed\n");
              return 0;
     }
     
