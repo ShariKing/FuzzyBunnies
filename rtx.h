@@ -143,8 +143,8 @@ int k_request_process_status(msg_env *env);
 void k_release_processor();
 void release_processor();
 
-int request_delay(int time_delay, char* wakeup_code, msg_env *m);
-int k_request_delay(int time_delay, char* wakeup_code, msg_env *m);
+int request_delay(int time_delay, int wakeup_code, msg_env *m);
+int k_request_delay(int time_delay, int wakeup_code, msg_env *m);
 
 void process_switch();
 void context_switch(jmp_buf previous, jmp_buf next);
