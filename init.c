@@ -218,7 +218,7 @@ int init_msg_trace(){
                                      printf("Error allocating memory to send_trace.msg_type");
                                      return 0;           //FAIL!!
              }
-             strcpy(send_temp_msg_type,"AHHHHH, I'm empty");
+             strcpy(send_temp_msg_type,"AHHHHH, I'm empty\0");
              //printf("%s\n",send_temp_msg_type);
              send_trace[i].msg_type = send_temp_msg_type;
              //printf("%s\n",send_temp_msg_type);
@@ -264,7 +264,7 @@ int init_env()
         if (!tempMsgType)
             return 0;
         
-        strcpy(tempMsgType, "no_type");
+        strcpy(tempMsgType, "no_type\0");
         new_env->msg_type = tempMsgType;
         
         char* tempMsgText = (char *) malloc (sizeof (SIZE)); //initialize the character array pointer
@@ -273,7 +273,7 @@ int init_env()
         if (!tempMsgText)
             return 0;
             
-        strcpy(tempMsgText, "no_test");
+        strcpy(tempMsgText, "no_text\0");
         new_env->msg_text = tempMsgText;
         
         // enqueue the new env on the free env queue
@@ -391,7 +391,7 @@ int init_processes ( )
             new_pcb->p = NULL;
 
             // set all processes to the READY state
-            strcpy(tempState, "READY");//set tempstate to the pcb
+            strcpy(tempState, "READY\0");//set tempstate to the pcb
             new_pcb->state = tempState;
                         
             // set the PID for the appropriate process from the table
@@ -502,7 +502,7 @@ int init_i_processes()
              
              new_pcb->p = NULL;
              
-             strcpy(tempState,"READY"); //This is how you set the state
+             strcpy(tempState,"READY\0"); //This is how you set the state
              new_pcb->state = tempState;
                           
              new_pcb->pid = itable[k].pid;
@@ -826,7 +826,7 @@ int main ()
         // ***** should be the first process in the first ready queue? does that mean we can just hardcode this since it will be the same every time?
         curr_process = convert_PID(7);
         
-        strcpy(curr_process->state,"RUNNING");
+        strcpy(curr_process->state,"RUNNING\0");
       
 
         //*** BACK TO MAIN RTOS STUFF ***

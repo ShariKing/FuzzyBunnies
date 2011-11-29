@@ -50,7 +50,7 @@ void kbd_iproc(int sigval) {
         *in_mem_p->ok_flag = 0;
 
         // set the env message type to 'console input'
-        strcpy(temp_k->msg_type, "console_input");
+        strcpy(temp_k->msg_type, "console_input\0");
 
         // send env back to process
         int Z = send_message(4, temp_k); //check location being sent here!
@@ -95,7 +95,7 @@ printf("You're in crt_iproc\n");
             *out_mem_p->oc_flag = 1;
             
             // set env message type to 'display ack'
-            strcpy(temp_c->msg_type, "display_ack");
+            strcpy(temp_c->msg_type, "display_ack\0");
             
             // send env back to process
             int Z = send_message(4, temp_c); //fix this later, sender_id is 31

@@ -313,7 +313,7 @@ int k_send_message(int dest_id, msg_env *e) {
             // enqueue the PCB of the process on the appropriate ready queue
             PCB_ENQ(target, convert_priority(target->priority)); //*****not sure if need to put a '&' before convert_priority
             // set the target state to 'ready'
-            strcpy(target->state, "READY");
+            strcpy(target->state, "READY\0");
         }
 
         // enqueue the env on the target's receive queue
@@ -368,7 +368,7 @@ msg_env *k_receive_message() { //Doesn't take the PCB as a parameter. Dealt with
             return NULL;
         
         // if it's a normal process, block it on receive
-        strcpy(curr_process->state, "BLK_ON_RCV"); //*********Doesn't need to be put in a queue, and don't care about process switch now********* FIX THIS
+        strcpy(curr_process->state, "BLK_ON_RCV\0"); //*********Doesn't need to be put in a queue, and don't care about process switch now********* FIX THIS
     printf("in k_rec before proc switch pid %d, %s\n", curr_process->pid, curr_process->state);
         process_switch(); // Fixed it. Used to be return NULL.
     }
@@ -502,7 +502,7 @@ PCB_Q *convert_priority(int pri) {
 // ***KERNEL RELEASE PROCESSOR***
 void k_release_processor() {                //should be an int but we'll figure it later
     printf("You're in k_release_processor\n");
-    strcpy (curr_process->state, "READY");  //Change current process state to "ready"
+    strcpy (curr_process->state, "READY\0");  //Change current process state to "ready"
     PCB_ENQ(curr_process, convert_priority(curr_process->priority));       //Enqueue PCB into a rpq
     process_switch();                       //Shari is taking care of process switch.
 }    
@@ -520,7 +520,7 @@ msg_env *k_request_msg_env() {
         printf("You're in k_request_msg_env\n");
     while (envelope_q->head == NULL){        //while envelope q is empty
               PCB_ENQ(curr_process, blocked_on_envelope);     //enqueue on blocked_on_env q
-              strcpy(curr_process->state,"BLOCKED_ON_ENV");         // change state to blocked on env
+              strcpy(curr_process->state,"BLOCKED_ON_ENV\0");         // change state to blocked on env
               process_switch();
         }
         msg_env *temp = env_DEQ(envelope_q);            //make a temp pointer that points to the dequeued envelope from the free env q
@@ -542,7 +542,7 @@ int k_release_msg_env(msg_env *env){
     env_ENQ(env, envelope_q);                      //enqueue the envelope to the envelope queue
     if (blocked_on_envelope->head != NULL){        //if there's a blocked process
        PCB *temp = PCB_DEQ(blocked_on_envelope);   //dequeue the first process from the blocked_on_env and make a temp pointer to the PCB
-       strcpy(temp->state,"READY");                //set the process state to ready
+       strcpy(temp->state,"READY\0");                //set the process state to ready
        PCB_ENQ(temp, convert_priority(temp->priority));      //ENQ PCB in the appropriate rpq
     }
     return 1;
@@ -599,7 +599,7 @@ int k_request_process_status(msg_env *env){
               return 0;
     }
     char* temp = (char*) malloc(sizeof(SIZE));    //make an char array and allocate memory
-    strcpy(env->msg_text, "proc_id    status   priority \n\n");        //write the headers in the env
+    strcpy(env->msg_text, "proc_id    status   priority \n\n\0");        //write the headers in the env
     int i;
     for(i=0; i<TOTAL_NUM_PROC; i++){
              sprintf(temp, "%i      %s        %i \n", pointer_2_PCB[i]->pid,pointer_2_PCB[i]->state, pointer_2_PCB[i]->priority);//write the id status and priority in temp
@@ -622,7 +622,7 @@ int k_request_delay(int time_delay, char* wakeup_code, msg_env *m)
 {
     printf("You're in k_request_delay\n");
     int RequestingPID = curr_process->pid;         //Temporary PID holder
-    strcpy(curr_process->state, "SLEEP");          
+    strcpy(curr_process->state, "SLEEP\0");          
     m->sender_id = RequestingPID;
     m->target_id = TIMERIPROCPID;                  //Set Target ID to the Timer Iproc
     sprintf(m->msg_type, wakeup_code);       //Set the message type to wakeup code and the text to the delay,
@@ -719,7 +719,7 @@ int k_get_trace_buffers(msg_env* env){
              return 0;
     }
     
-    strcpy(env->msg_text, "send trace buffer (from oldest to newest) \n No.    sender_id    target_id    msg_type    time stamp    \n\n");
+    strcpy(env->msg_text, "send trace buffer (from oldest to newest) \n No.    sender_id    target_id    msg_type    time stamp    \n\n\0");
     
     int i;
     int j = 1;
