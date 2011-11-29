@@ -219,6 +219,6 @@ env_Q* envelope_q;
 #define CONSOLE_INPUT 0
 #define DISPLAY_ACK 1
 #define NO_TYPE 3
-#define WAKEUP10 4
+#define WAKEUP 4
 
 #endif

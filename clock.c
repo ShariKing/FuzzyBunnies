@@ -41,7 +41,7 @@ void clock_increment(clk* clock, int system_or_wall) {
 		
         if(clock->ss < 0 || clock->ss > 60 || clock->mm < 0 ||
                      clock->mm > 60 || clock->hh < 0)
-             printf("YOU BROKE TIIIIIIIIIME\n");
+             printf("Clock was incremented to an invalid time\n");
 }
 
 int clock_set(clk* clock, int hours, int minutes, int seconds) {
@@ -56,7 +56,7 @@ int clock_set(clk* clock, int hours, int minutes, int seconds) {
                        }
              }
         }
-        printf("Entered time invalid or in incorrect format.\n");
+        printf("Entered time is invalid or in an incorrect format\n");
         return 0; //Return a zero if there is a problem with setting the clock
 }
 
@@ -90,7 +90,7 @@ int clock_out(clk* clock){
           strcpy(e->msg_text, timewords);    //put the formatted time text into the envelope
           int Z = send_console_chars(e);
           if (Z==0) {
-             printf("Send console chars in clock has error");
+             printf("Send console chars in clock has error\n");
              return 0;
              }
           else

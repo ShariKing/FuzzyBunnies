@@ -71,7 +71,7 @@ void cleanup() {
     // unlink (i.e. delete) the temporary mmap file
     c_status = unlink(c_sfilename);
     if (c_status == -1) {
-        printf("Bad unlink during CRT cleanup.\n");
+        printf("Bad unlink during CRT cleanup\n");
     }
 }
 
