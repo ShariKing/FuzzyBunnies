@@ -47,7 +47,7 @@ void process_switch() {
         printf("EMPTY\n");
         return;
         }
-    if (old_pcb->state == "RUNNING"){
+    if (strcmp(old_pcb->state,"RUNNING")==0){
        //printf("AHDSHDSDLKJDFSKJFDF\n");
         strcpy(old_pcb->state, "READY"); //set old proc state to ready
     }

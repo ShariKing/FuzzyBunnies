@@ -194,8 +194,8 @@ msg_env *env_DEQ(env_Q *queue) {
         return NULL;
     
     // create a temp env pointer
-    msg_env *temp = request_msg_env();
-    msg_env *tempNext = request_msg_env();
+    msg_env *temp;
+    msg_env *tempNext;
         
     // if queue is empty    
     if (queue->head == NULL) { 
@@ -308,7 +308,7 @@ int k_send_message(int dest_id, msg_env *e) {
 
         /*unblock the target process if necessary*/
         // if the target's blocked on env
-        if (target->state == "BLOCKED_ON_ENV") { 
+        if (strcmp(target->state, "BLOCKED_ON_ENV")==0) { 
 
             // enqueue the PCB of the process on the appropriate ready queue
             PCB_ENQ(target, convert_priority(target->priority)); //*****not sure if need to put a '&' before convert_priority
@@ -575,7 +575,7 @@ int k_change_priority(int new_priority, int target_process_id){
                     return 1;                                  //success I guess?
     }
     target->priority = new_priority;                                     //change the priority
-    if(target->state == "READY"){
+    if(strcmp(target->state,"READY")==0){
                      PCB_REMOVE(convert_priority(old_priority), target_process_id);      //remove PCB from old rpq
                      PCB_ENQ(target, convert_priority(new_priority));                    //Enqueue it to the new rpq
                      return 1;
