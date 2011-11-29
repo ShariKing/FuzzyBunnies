@@ -577,7 +577,7 @@ int k_change_priority(int new_priority, int target_process_id){
                       printf("invalid priority\n");
                       return 0;
     }
-    if(target_process_id > TOTAL_NUM_PROC || target_process_id < TOTAL_NUM_IPROC){
+    if(target_process_id > TOTAL_NUM_PROC || target_process_id < TOTAL_NUM_IPROC || target_process_id == 7){
                            printf("Invalid ID\n");
                            return 0;
     }
