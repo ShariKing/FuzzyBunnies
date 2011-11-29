@@ -25,24 +25,38 @@ void process_switch() {
     printf("You're in process_switch\n");
     PCB* new_pcb;
     PCB* old_pcb = curr_process;
-    
-    if(ready_q_priority0 != NULL) // If highest priority queue isn't empty
+    //printf("%d\n",curr_process->pid);
+    if(ready_q_priority0->head != NULL) {// If highest priority queue isn't empty
         new_pcb = PCB_DEQ(ready_q_priority0); //get ptr to highest priority ready process
-    else if (ready_q_priority1 != NULL)
+        //printf("q0");
+        }
+    else if (ready_q_priority1->head != NULL){
          new_pcb = PCB_DEQ(ready_q_priority1); //get ptr to highest priority ready process
-    else if (ready_q_priority2 != NULL)
+        // printf("q1");
+        }
+    else if (ready_q_priority2->head != NULL){
          new_pcb = PCB_DEQ(ready_q_priority2); //get ptr to highest priority ready process
-    else 
+        // printf("q2");
+        }
+    else if (ready_q_priority3->head != NULL){
          new_pcb = PCB_DEQ(ready_q_priority3); //only for null process
-    
+         //printf("q3");
+        }
+    else {
+        printf("EMPTY\n");
+        return;
+        }
     if (old_pcb->state == "RUNNING"){
         strcpy(old_pcb->state, "READY"); //set old proc state to ready
     }
     
     strcpy(new_pcb->state, "RUNNING"); //set new proc state to running
-    
+    //printf("%d\n",curr_process->pid);   
     curr_process = new_pcb; //make the next_pcb the current process
+    printf("%d\n",old_pcb->pcb_buf);
+    printf("%d\n",new_pcb->pcb_buf);
     context_switch( old_pcb->pcb_buf, new_pcb->pcb_buf );
+    //printf("%d\n",curr_process->pid);
     atomic_off();
 }
 
@@ -54,8 +68,16 @@ void context_switch(jmp_buf previous, jmp_buf next) {
     printf("You're in context_switch\n");
     // int return_code = setjmp(previous);
      if (setjmp(previous) == 0) {
+        printf("MAYBE HERE?????");
         longjmp(next,1);
      }
+     else{ 
+         printf("WHATS HERE?");                                   
+        // curr_process = new_pcb; // sets the new pcb to be the current process
+         void (*fpTmp)();
+         (fpTmp) = (void *)curr_process->PC; //gets address of process code
+         fpTmp(); 
+         }
 }
 
 

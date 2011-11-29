@@ -24,10 +24,10 @@ void atomic_on() {
         sigset_t newmask;
         sigemptyset(&newmask);
         sigaddset(&newmask, SIGALRM); //the alarm signal
-        sigaddset(&newmask, SIGINT); // the CNTRL-C
+        //sigaddset(&newmask, SIGINT); // the CNTRL-C
         sigaddset(&newmask, SIGUSR1); // the CRT signal
         sigaddset(&newmask, SIGUSR2); // the KB signal
-        sigaddset(&newmask, SIGTTIN); // random signal that breaks things!!!!!!!!
+        //sigaddset(&newmask, SIGTTIN); // random signal that breaks things!!!!!!!!
         sigprocmask(SIG_BLOCK, &newmask, &oldmask);
         Atom ++;
         printf("Atomic on\n");
@@ -697,13 +697,6 @@ int k_terminate(){
   return 1;
 }
 */
-// ***USER TERMINATE***
-void terminate(int signal){
-    printf("You're in terminate\n");
-    //atomic_on();
-    k_terminate(signal);
-    //atomic_off();
-}
 
 // ***KERNEL GET TRACE BUFFERS
 int k_get_trace_buffers(msg_env* env){

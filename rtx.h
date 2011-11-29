@@ -85,7 +85,6 @@ typedef struct init_table init_table;
 
 // *** FUNCTION DECLARATIONS ***
 
-void k_terminate(int signal);
 void cleanup();
 
 // PROCESSES
@@ -123,7 +122,6 @@ int get_console_chars(msg_env* env);
 int k_get_console_chars(msg_env* env);
 
 void terminate(int signal);
-//int k_terminate();
 
 int get_trace_buffers(msg_env* env);
 int k_get_trace_buffers(msg_env* env);
@@ -149,6 +147,13 @@ int k_request_delay(int time_delay, char* wakeup_code, msg_env *m);
 void ProcessA();
 void ProcessB();
 void ProcessC();
+void CCI();
+void null_process();
+void process_switch();
+void context_switch(jmp_buf previous, jmp_buf next);
+void kbd_iproc(int sigval);
+void crt_iproc(int sigval);
+void timer_iproc(int sigval);
 
 PCB* convert_PID(int PID);
 PCB_Q* convert_priority(int pri);	

@@ -14,16 +14,13 @@
 
 #include "rtx.h"
 #include "kbcrt.h"
-#include "CCI.c"
-#include "ProcessSwitch.c"
-#include "iproc.c"
 
 init_table itable[TOTAL_NUM_PROC + TOTAL_NUM_IPROC];
 
 // *** FUNCTION TO CLEAN UP PARENT PROCESSES***
-void k_terminate(int signal)
+void terminate(int signal)
 {
-    printf("You're in k_terminate\n");
+    printf("You're in terminate\n");
     cleanup();
     printf("\n\nSignal %i Received.   Leaving RTOS ...\n", signal);
     exit(0);
@@ -283,7 +280,7 @@ int init_processes ( )
        itable[7].address = &null_process;
 
                
-    curr_process = NULL;          //Initialize the current process to be null
+    //curr_process = NULL;          //Initialize the current process to be null
     /*
     // read in file for itable
     FILE* itablefile;
@@ -328,7 +325,7 @@ int init_processes ( )
 */
     
     int j;
-    for (j = 0; j < TOTAL_NUM_PROC; j++) {
+    for (j = TOTAL_NUM_IPROC; j < (TOTAL_NUM_IPROC + TOTAL_NUM_PROC); j++) {
         
         // create temp pcb struct to put on appropriate queue
         struct pcb* new_pcb = (struct pcb *) malloc(sizeof (struct pcb));
@@ -382,15 +379,16 @@ int init_processes ( )
                __asm__ ("movl %0,%%esp" :"=m" (jmpsp)); // if Linux i386 target
                //#endif // line 2
 
-               if ( setjmp(new_pcb->pcb_buf ) == 0) // if first time
+               //if ( setjmp(new_pcb->pcb_buf ) == 0) // if first time
                   longjmp(kernel_buf,1); 
-               
+               /*
                else{                                  
                 // curr_process = new_pcb; // sets the new pcb to be the current process
                  void (*fpTmp)();
                  (fpTmp) = (void *)curr_process->PC; //gets address of process code
                  fpTmp(); 
                  }
+                 */
               }
 
             // enqueue the process on the appropriate ready queue
@@ -526,13 +524,14 @@ int init_i_processes()
     
                  if ( setjmp(new_pcb->pcb_buf ) == 0) // if first time
                     longjmp(kernel_buf,1); 
-    
+    /*
                  else{                                  
                     // curr_process = new_pcb; // sets the new pcb to be the current process
                     void (*fpTmp)();
                     (fpTmp) = (void *)curr_process->PC; //gets address of process code
                     fpTmp(); 
                  }
+                 */
             }
          }
          
@@ -553,14 +552,14 @@ void kb_crt_start(){
     k_fid = open(k_sfilename, O_RDWR | O_CREAT | O_EXCL, (mode_t) 0755);
     if (k_fid < 0) {
         printf("Bad open of mmap file <%s> %i\n", k_sfilename, k_fid);
-        exit(1);
+        terminate(0);
     };
 
     // make the file the same size as the buffer 
     k_status = ftruncate(k_fid, k_bufsize);
     if (k_status) {
         printf("Failed to ftruncate the file <%s>, status = %d\n", k_sfilename, k_status);
-        exit(1);
+        terminate(0);
     }
    
     // pass parent's process id and the file id to child
@@ -583,7 +582,7 @@ void kb_crt_start(){
             // should never reach here
             fprintf(stderr,"Can't exec keyboard, errno %d\n",errno);
             cleanup();
-            exit(1);
+            terminate(0);
     };
     // the parent process continues executing here
 
@@ -602,7 +601,7 @@ void kb_crt_start(){
 
     if (k_mmap_ptr == MAP_FAILED){
         printf("Parent's memory map has failed, about to quit!\n");
-	exit(1);  // do cleanup and terminate
+	terminate(0);  // do cleanup and terminate
     };
 
     // create the shared memory pointer
@@ -634,14 +633,14 @@ void kb_crt_start(){
     c_fid = open(c_sfilename, O_RDWR | O_CREAT | O_EXCL, (mode_t) 0755);
     if (c_fid < 0) {
         printf("Bad open of mmap file <%s>\n", c_sfilename);
-        exit(1);
+        terminate(0);
     };
 
     // make the file the same size as the buffer 
     c_status = ftruncate(c_fid, c_bufsize);
     if (c_status) {
         printf("Failed to ftruncate the file <%s>, status = %d\n", c_sfilename, c_status);
-        exit(1);
+        terminate(0);
     }
     
     // pass parent's process id and the file id to child
@@ -663,7 +662,7 @@ void kb_crt_start(){
             // should never reach here
             fprintf(stderr,"Can't exec crt, errno %d\n",errno);
             cleanup();
-            exit(1);
+            terminate(0);
     };
     // the parent process continues executing here
 
@@ -743,7 +742,7 @@ int main ()
              printf("Wall clock & System clock created successfully\n", wallclock);
          else {
              printf("Error, wallclock or systemclock initialization failed!!!\n");
-             exit(1);
+             terminate(0);
          }
         
         // if init_queues returned 1
@@ -752,7 +751,7 @@ int main ()
         // if init_queues dropped the ball
         else {
                 printf("Error, queue initialization failed!!!\n");
-                exit(1);
+                terminate(0);
         }
         
         // if init_env returned 1
@@ -761,7 +760,7 @@ int main ()
         // if init_env is dumb
         else {
                 printf("Error, envelope initialization failed!!!\n");
-                exit(1);
+                terminate(0);
         }
         
         // if init_processes returned 1
@@ -770,7 +769,7 @@ int main ()
         // if init_processes failed
         else {
                 printf("Error, process initialization failed!!!\n");
-                exit(1);
+                terminate(0);
         }
 
         // if init_i_processes returned 1
@@ -779,7 +778,7 @@ int main ()
         // if init_-_processes failed
         else {
                 printf("Error, i-process initialization failed!!!\n");
-                exit(1);
+                terminate(0);
         }
 
         // *****CODE FROM HERE TO THE BOTTOM WAS TAKEN FROM DEMO.C*****
@@ -811,7 +810,7 @@ int main ()
     
         // set the current process to the NULL process
         // ***** should be the first process in the first ready queue? does that mean we can just hardcode this since it will be the same every time?
-        curr_process = convert_PID(3);
+        curr_process = convert_PID(7);
         
         strcpy(curr_process->state,"RUNNING");
         
