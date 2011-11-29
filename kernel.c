@@ -211,13 +211,11 @@ msg_env *env_DEQ(env_Q *queue) {
     // point the new head of the queue to the 'next' pointer of the old head
     queue->head = tempNext;
 
-    if(queue->head) {        
+    if(queue->head == NULL) {        
         // if the queue now only has one env, set the tail = head = sole env
-        if (queue->head == NULL) 
-            queue->tail = queue->head;
+            queue->tail = NULL;
     }
-    else 
-         queue->tail = NULL;
+    
     temp->p = NULL;    //set the pointer of the dequeued envelope to NULL
     
     return temp;
@@ -502,6 +500,7 @@ PCB_Q *convert_priority(int pri) {
 // ***KERNEL RELEASE PROCESSOR***
 void k_release_processor() {                //should be an int but we'll figure it later
     printf("You're in k_release_processor\n");
+        //printf ("curr_process:%i\n", curr_process->pid);
     strcpy (curr_process->state, "READY\0");  //Change current process state to "ready"
     PCB_ENQ(curr_process, convert_priority(curr_process->priority));       //Enqueue PCB into a rpq
     process_switch();                       //Shari is taking care of process switch.

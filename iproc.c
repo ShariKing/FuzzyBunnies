@@ -18,6 +18,10 @@
 void kbd_iproc(int sigval) {
     printf("You're in kbd_iproc\n");
     // temporary env pointer
+    
+    PCB* interrupted_proc = curr_process;
+    curr_process = convert_PID (0);
+    
     msg_env *temp_k = NULL;
 
     // only continue if the flag is 1, ie there's stuff in the buffer
@@ -33,8 +37,10 @@ void kbd_iproc(int sigval) {
         temp_k = env_DEQ(temp->receive_msg_Q);
 
         // if the dequeued env is not NULL
-        if (temp_k == NULL)
+        if (temp_k == NULL){
+           curr_process = interrupted_proc;
             return;
+            }
                     
         // read buffer into the env, while we haven't reached the NULL
         do {
@@ -60,6 +66,7 @@ void kbd_iproc(int sigval) {
             printf("Error with sending\n");
     }
     
+    curr_process = interrupted_proc;
     /* if the buffer was empty (ie flag != 1)
     else
         printf("There is no input in the memory to read in!\n"); */
@@ -70,6 +77,10 @@ void kbd_iproc(int sigval) {
 void crt_iproc(int sigval) {
 printf("You're in crt_iproc\n");
         // temporary env pointer
+        
+        PCB* interrupted_proc = curr_process;
+        curr_process = convert_PID (1);
+        
         msg_env *temp_c = NULL;
 
         // put stuff in buffer only if the buffer is empty
@@ -80,8 +91,10 @@ printf("You're in crt_iproc\n");
             temp_c = env_DEQ(convert_PID(1)->receive_msg_Q); 
 
             // if the envelope is NULL don't continue
-            if (temp_c == NULL)
+            if (temp_c == NULL){
+               curr_process = interrupted_proc;
                return;
+               }
 
              // read env into the buffer
              do {
@@ -106,6 +119,7 @@ printf("You're in crt_iproc\n");
         
         }
 
+curr_process = interrupted_proc;
         /* if memory is full (ie. flag != 0)
         else{
             printf("fix the function!!!!\n"); */
@@ -114,6 +128,10 @@ printf("You're in crt_iproc\n");
 
 void timer_iproc(int sigval) {
      printf("You're in timer_iproc\n");
+     
+     PCB* interrupted_proc = curr_process;
+        curr_process = convert_PID (2);
+     
         static int pulse_counter = 0;     //Dummy Pulse Counter
         msg_env *sleeptraverse;           //Dummy envelope pointer to traverse the Sleep Queue
         msg_env *awakened;                //Dummy envelope pointer for awakened envelopes
@@ -199,6 +217,7 @@ void timer_iproc(int sigval) {
                            sleeptraverse = NULL;
                  }
              }        
+             curr_process = interrupted_proc;
 }
 
 //==========    CODE BELOW THIS LINE IS FUNCTIONAL, BUT DOES NOT FIT THE STANDARD DESIGN. LEAVE AS BACKUP     ===================//
