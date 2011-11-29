@@ -59,7 +59,7 @@ void CCI()
                      }
                 // allows time to be displayed on console and halts if getting ct
                 else if (input_txt == "cd") { 
-                     msg_env* e = request_msg_env();
+                     /*msg_env* e = request_msg_env();
                      if (input_txt != "ct") {
                          int R = clock_out(wallclock, e);
                          if (R==0)
@@ -69,8 +69,12 @@ void CCI()
                          int L = release_msg_env(e);
                          if (L==0)
                             printf("Message not released in clock displaying in CCI");
-                         }
-                     }
+                         }*/
+                    wallClockOut = 1;
+                }
+                else if (input_txt == "ct")
+                    wallClockOut = 0;
+                
                 // b displays past instances of send and receive messages
                 else if (input_txt == "b") { 
                     msg_env* env1=request_msg_env();

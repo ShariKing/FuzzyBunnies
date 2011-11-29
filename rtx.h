@@ -91,11 +91,11 @@ void cleanup();
 void kbd_iproc(int sigval);
 void crt_iproc(int sigval);
 void timer_iproc(int sigval);
-
-void process_switch();
-void context_switch(jmp_buf previous, jmp_buf next);
-void atomic_off();
-void atomic_on();
+void ProcessA();
+void ProcessB();
+void ProcessC();
+void CCI();
+void null_process();
 
 // PRIMITIVES
 int PCB_ENQ(PCB* r, PCB_Q* queue);
@@ -144,23 +144,17 @@ void release_processor();
 int request_delay(int time_delay, char* wakeup_code, msg_env *m);
 int k_request_delay(int time_delay, char* wakeup_code, msg_env *m);
 
-void ProcessA();
-void ProcessB();
-void ProcessC();
-void CCI();
-void null_process();
 void process_switch();
 void context_switch(jmp_buf previous, jmp_buf next);
-void kbd_iproc(int sigval);
-void crt_iproc(int sigval);
-void timer_iproc(int sigval);
-
-PCB* convert_PID(int PID);
-PCB_Q* convert_priority(int pri);	
+void atomic_off();
+void atomic_on();	
 
 void clock_increment(clk* clock, int system_or_wall);
 int clock_set(clk* clock, int hours, int minutes, int seconds);
-int clock_out(clk* clock, msg_env *e);
+int clock_out(clk* clock);
+
+PCB* convert_PID(int PID);
+PCB_Q* convert_priority(int pri);
 
 void ClockTest(clk *clock);
 
@@ -190,6 +184,7 @@ PCB* curr_process;
 
 clk* systemclock;
 clk* wallclock;     //Global Clock Variables
+int wallClockOut = 0;
 
 msg_trace send_trace[16];                   //went with arrays instead of queues
 msg_trace receive_trace[16];

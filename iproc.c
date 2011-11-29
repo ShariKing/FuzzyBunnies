@@ -131,6 +131,11 @@ void timer_iproc(int sigval) {
             //printf("%p wallclock pointer .... %p system clock pointer\n\n", wallclock, systemclock);
 			clock_increment(systemclock, 0);
 			clock_increment(wallclock, 1);
+                        
+                        // if cd has been inputted, print the clock. when ct is input it will reset the wallclockout variable and not get here
+                        if (wallClockOut == 1)
+                            clock_out(wallclock);
+                        
 			pulse_counter = 0;
 		}
 		

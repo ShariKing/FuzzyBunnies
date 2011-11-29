@@ -60,10 +60,11 @@ int clock_set(clk* clock, int hours, int minutes, int seconds) {
         return 0; //Return a zero if there is a problem with setting the clock
 }
 
-int clock_out(clk* clock, msg_env *e){
+int clock_out(clk* clock){
      printf("You're in clock_out\n");
      char* temptime = (char *) malloc (sizeof (SIZE)); //temporary holding variable
      char* timewords = (char *) malloc (sizeof (SIZE));  //Temporary character pointer
+     msg_env e = request_msg_env();     
      
      if(!temptime || !timewords)
           return 0; //Error with clock printing
