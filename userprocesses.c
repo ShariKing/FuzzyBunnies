@@ -31,7 +31,7 @@ void ProcessA(){
         msg_env* tempEnv = request_msg_env();
         
         // set the env type and text
-        strcpy(tempEnv->msg_type, "count_report");
+        strcpy(tempEnv->msg_type, "count_report\0");
         tempEnv->msg_text[1] = num;
         
         // send to ProcessB
@@ -88,10 +88,10 @@ void ProcessC(){
             envC = env_DEQ(localQ);
             
         // if the message type is count report, and the value in msg_text is evenly divisible by 20, display "Process C"
-        if (envC->msg_type == "count_report" && NUM % 20 == 0){
+        if (strcmp(envC->msg_type,"count_report")==0 && NUM % 20 == 0){
   
             // send the display message
-            strcpy(envC->msg_text, "Process C");
+            strcpy(envC->msg_text, "Process C\0");
             int W = send_console_chars(envC); // Returns confirmation of sending
             if (W==1) {
                 // if it is the ack message request a delay of 10s, with wakeup code "wakeup10"

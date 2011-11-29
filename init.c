@@ -827,7 +827,7 @@ int main ()
         curr_process = convert_PID(7);
         
         strcpy(curr_process->state,"RUNNING");
-        
+      
 
         //*** BACK TO MAIN RTOS STUFF ***
 
