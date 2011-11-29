@@ -93,7 +93,7 @@ PCB *PCB_DEQ(PCB_Q *queue) {
 printf("You're in PCB_DEQ\n");
     // if queue is empty
     if (queue->head == NULL) {
-        //printf("Queue is empty");
+        printf("Queue is empty");
         
         // return a NULL pointer
         return NULL;
@@ -101,21 +101,27 @@ printf("You're in PCB_DEQ\n");
 
     // if the queue is NOT empty
     // create a temp pointer to a PCB
-    PCB *t;
+    PCB* temp;
+    PCB* tempNext;
 
     // set temp to point to the head of the queue
-    t = queue->head;
-
+    temp = queue->head;
+    tempNext = queue->head->p;
+    
     // set the new head of the queue to the 'next' PCB (ie. second in queue) of the old head
-    queue->head = queue->head->p;
+    queue->head = tempNext;
+    
+    // if the new head is not null
+    if (queue->head) {    
+                        
+        //if the new queue only has one PCB, set the tail = head = PCB
+        if (queue->head->p == NULL)
+            queue->tail = queue->head;
+    }        
 
-    //if the new queue only has one PCB, set the tail = head = PCB
-    if (queue->head->p == NULL)
-        queue->tail = queue->head;
-
-    t->p = NULL;    //set the pointer of the dequeued PCB to NULL 
+    temp->p = NULL;    //set the pointer of the dequeued PCB to NULL 
     // return the pointer to the dequeued PCB
-    return t;
+    return temp;
 }
 
 //***REMOVE PCB FROM MIDDLE OF QUEUE***

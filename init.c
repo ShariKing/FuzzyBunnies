@@ -218,13 +218,17 @@ int init_msg_trace(){
                                      printf("Error allocating memory to send_trace.msg_type");
                                      return 0;           //FAIL!!
              }
+             strcpy(send_temp_msg_type,"AHHHHH, I'm empty");
+             printf("&s\n",send_temp_msg_type);
              send_trace[i].msg_type = send_temp_msg_type;
+             printf("&s\n",send_temp_msg_type);
              
              char* receive_temp_msg_type = (char *) malloc (sizeof (SIZE));
              if(!receive_temp_msg_type){
                                      printf("Error allocating memory to receive_trace.msg_type");
                                      return 0;           //FAIL!!
              }
+             strcpy(receive_temp_msg_type,"AHHHHH, I'm empty");
              receive_trace[i].msg_type = receive_temp_msg_type;
     }
     
@@ -260,7 +264,7 @@ int init_env()
         if (!tempMsgType)
             return 0;
         
-        
+        strcpy(tempMsgType, "no_type");
         new_env->msg_type = tempMsgType;
         
         char* tempMsgText = (char *) malloc (sizeof (SIZE)); //initialize the character array pointer
@@ -269,6 +273,7 @@ int init_env()
         if (!tempMsgText)
             return 0;
             
+        strcpy(tempMsgText, "no_test");
         new_env->msg_text = tempMsgText;
         
         // enqueue the new env on the free env queue
@@ -386,9 +391,9 @@ int init_processes ( )
             new_pcb->p = NULL;
 
             // set all processes to the READY state
+            strcpy(tempState, "READY");//set tempstate to the pcb
             new_pcb->state = tempState;
-            strcpy(new_pcb->state, "READY");//set tempstate to the pcb
-            
+                        
             // set the PID for the appropriate process from the table
             new_pcb->pid = itable[j].pid;
             
