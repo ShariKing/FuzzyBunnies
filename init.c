@@ -219,9 +219,9 @@ int init_msg_trace(){
                                      return 0;           //FAIL!!
              }
              strcpy(send_temp_msg_type,"AHHHHH, I'm empty");
-             printf("&s\n",send_temp_msg_type);
+             printf("%s\n",send_temp_msg_type);
              send_trace[i].msg_type = send_temp_msg_type;
-             printf("&s\n",send_temp_msg_type);
+             printf("%s\n",send_temp_msg_type);
              
              char* receive_temp_msg_type = (char *) malloc (sizeof (SIZE));
              if(!receive_temp_msg_type){
@@ -787,6 +787,14 @@ int main ()
                 terminate(0);
         }
 
+        // if init_msg_trace returned 1
+        if (init_msg_trace())
+                printf("Initialized msg_trace correctly\n");
+        // if init_msg_trace failed
+        else {
+                printf("Error, msg_trace initialization failed!!!\n");
+                terminate(0);
+        }
         // *****CODE FROM HERE TO THE BOTTOM WAS TAKEN FROM DEMO.C*****
 
         // catch signals so we can clean up everything before exiting
