@@ -103,7 +103,7 @@ void ProcessC(){
                 envC = receive_message();
     
                 // if its not the wakeup message put it on the local Q
-                while (envC->msg_type != "wakeup10"){
+                while (strcmp (envC->msg_type,"wakeup10")!=0){
                     envC = receive_message();
                     int XX = env_ENQ(envC,localQ);
                     if (XX==0)

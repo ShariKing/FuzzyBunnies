@@ -39,29 +39,29 @@ void CCI()
                     */
                     char* input_txt = env->msg_text;
                     // send envelope to Process A
-                    if (input_txt == "s") { //if the text in the field is "s"
+                    if (strcmp(input_txt,"s")==0) { //if the text in the field is "s"
                           msg_env *env2 = request_msg_env(); //request an envelope
                           int Z =0;
                           Z = send_message(3,env2); // send message to Process A
                           }
                     // display process status of all processes
-                    else if (input_txt == "ps") { 
+                    else if (strcmp(input_txt,"ps")==0) { 
                          msg_env* env_ps;
                          int J=request_process_status(env_ps);
                          if (J==0)
                             printf("Error with getting Process Status");                  
                          }
                     // set clock to any valid 24hr time
-                    else if (input_txt == "c", HH,MM,SS) { 
-                         int HH;
-                         int MM;
-                         int SS;
+                    else if (strncmp(input_txt,"c",1)==0, HH,MM,SS) { 
+                         int HH = atoi(input_txt+2);
+                         int MM = atoi(input_txt+5);
+                         int SS = atoi(input_txt+8);
                          int R = clock_set(wallclock, HH, MM, SS);
                          if (R==0)
                             printf("Error with setting clock in CCI");
                          }
                     // allows time to be displayed on console and halts if getting ct
-                    else if (input_txt == "cd") { 
+                    else if (strcmp(input_txt,"cd")==0) { 
                          /*msg_env* e = request_msg_env();
                          if (input_txt != "ct") {
                              int R = clock_out(wallclock, e);
@@ -75,24 +75,24 @@ void CCI()
                              }*/
                         wallClockOut = 1;
                     }
-                    else if (input_txt == "ct")
+                    else if (strcmp(input_txt,"ct")==0)
                         wallClockOut = 0;
                     
                     // b displays past instances of send and receive messages
-                    else if (input_txt == "b") { 
+                    else if (strcmp(input_txt,"b")==0) { 
                         msg_env* env1=request_msg_env();
                         int U=get_trace_buffers(env1);
                         if (U==0)
                            printf("Error performing call on Trace Buffers");
                          }
                     // terminates RTX
-                    else if (input_txt == "t") { 
+                    else if (strcmp(input_txt,"t")==0) { 
                          terminate(0);
                          }
                     // changes priority
-                    else if (input_txt == "n",pri,id) { 
-                         int ID = id;
-                         int new_pri = pri;
+                    else if (strcmp(input_txt,"n")==0,pri,id) { 
+                         int new_pri = atoi(input_txt+2);
+                         int ID = atoi(input_txt+4);
                          int R = change_priority(new_pri, ID);
                          if (R==0)
                                 printf("Error with changing priority in CCI");
