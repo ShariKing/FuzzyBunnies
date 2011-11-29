@@ -1,7 +1,7 @@
 ALL: RTX crt_child kbd_child
 
-RTX: init.o iproc.o kernel.o ProcessP.o userprocesses.o CCI.o ProcessSwitch.o ClockTest.o clock.o
-	gcc -g init.o iproc.o kernel.o ProcessP.o userprocesses.o CCI.o ProcessSwitch.o ClockTest.o clock.o -o RTX
+RTX: init.o iproc.o kernel.o userprocesses.o CCI.o ProcessSwitch.o clock.o
+	gcc -g init.o iproc.o kernel.o userprocesses.o CCI.o ProcessSwitch.o clock.o -o RTX
 
 crt_child: crt.o
 	gcc -g crt.o -o crt_child
@@ -27,18 +27,12 @@ iproc.o: iproc.c rtx.h
 kernel.o: kernel.c rtx.h
 	gcc -g -c kernel.c
 
-ProcessP.o: ProcessP.c rtx.h
-	gcc -g -c ProcessP.c
-
 userprocesses.o: userprocesses.c rtx.h
 	gcc -g -c userprocesses.c
 
 CCI.o: CCI.c rtx.h
 	gcc -g -c CCI.c
 
-ClockTest.o: ClockTest.c rtx.h
-	gcc -g -c ClockTest.c
-	
 clock.o: clock.c rtx.h
 	gcc -g -c clock.c
 	
