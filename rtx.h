@@ -209,9 +209,6 @@ env_Q* sleep_Q;
 env_Q* envelope_q;
 
 // STATES
-char * stateType[5];
-#define STATESIZE 15
-
 #define RUNNING 0
 #define READY 1
 #define BLK_ON_ENV 2
