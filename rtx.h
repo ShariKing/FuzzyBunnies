@@ -142,6 +142,7 @@ int request_process_status(msg_env *env);
 int k_request_process_status(msg_env *env);
 
 void release_processor();
+void k_release_processor();
 
 int request_delay(int time_delay, int wakeup_code, msg_env *m);
 int k_request_delay(int time_delay, int wakeup_code, msg_env *m);
@@ -220,9 +221,9 @@ env_Q* envelope_q;
 #define BLK_ON_RCV 3
 #define SLEEP 4
 
-#define COUNT_REPORT 2
 #define CONSOLE_INPUT 0
 #define DISPLAY_ACK 1
+#define COUNT_REPORT 2
 #define NO_TYPE 3
 #define WAKEUP 4
 #define TRACE_BUFFER 5

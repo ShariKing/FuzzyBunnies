@@ -19,11 +19,12 @@ void atomic(int a){
      // a is 1 for on, 0 for off
      static sigset_t oldmask;
      sigset_t newmask;
+     sigset_t maskforoffingthemask;
      
     // if (a == 1 && Atom == 0) {
      if (a == 1) {
         sigemptyset(&newmask);
-        //sigaddset(&newmask, SIGALRM); //the alarm signal
+        sigaddset(&newmask, SIGALRM); //the alarm signal
         //sigaddset(&newmask, SIGINT); // the CNTRL-C
         sigaddset(&newmask, SIGUSR1); // the CRT signal
         sigaddset(&newmask, SIGUSR2); // the KB signal
@@ -34,7 +35,8 @@ void atomic(int a){
      //else if (a == 0 && Atom == 1){
      else {
           //unblock the signals
-          sigprocmask(SIG_SETMASK, &oldmask, NULL);
+          sigemptyset(&maskforoffingthemask);
+          sigprocmask(SIG_SETMASK, &maskforoffingthemask, NULL);
           Atom = 0;
      }
      
@@ -300,8 +302,8 @@ int k_send_message(int dest_id, msg_env *e) {
         return 0;
     
     // if the PCB ID is not valid
-    if (dest_id > ( (TOTAL_NUM_PROC + TOTAL_NUM_IPROC) - 1 || dest_id < 0) )  { 
-        printf("dest ID not in range\n");
+    if (dest_id > ( (TOTAL_NUM_PROC + TOTAL_NUM_IPROC) - 1 ) || dest_id < 0 )  { 
+        printf("dest ID %d not in range\n", dest_id);
         return 0;
     }
     
@@ -509,10 +511,16 @@ PCB_Q *convert_priority(int pri) {
 }
 
 // RELEASE PROCESSOR***
-void release_processor() {
+void k_release_processor() {
     curr_process->state = READY;  //Change current process state to "ready"
     PCB_ENQ(curr_process, convert_priority(curr_process->priority));       //Enqueue PCB into a rpq
-    process_switch();                       //Shari is taking care of process switch.
+    process_switch();                       
+}
+
+void release_processor() {
+    atomic(ON);
+    k_release_processor();
+    atomic(OFF);
 }
 
 // ***KERNEL GET ENVELOPE***

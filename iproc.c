@@ -16,31 +16,31 @@
 
 // ***KEYBOARD I-PROCESS priority 0***
 void kbd_iproc(int sigval) {
-    //printf("You're in kbd_iproc\n");
+    printf("You're in kbd_iproc\n");
     // temporary env pointer
+    printf ("flag:%i\n", *in_mem_p->ok_flag);
+    printf ("queue:%p\n", pointer_2_PCB[0]->receive_msg_Q->head);
     
     PCB* interrupted_proc = curr_process;
     curr_process = convert_PID (0);
     
-    msg_env *temp_k = NULL;
+    msg_env *temp_k = receive_message();
 
+    // if the dequeued env is NULL, ie there is nothing for the kb iproc to do
+    if (temp_k == NULL){
+        *in_mem_p->ok_flag = 0;   
+        curr_process = interrupted_proc;
+        return;
+    }
+    
     // only continue if the flag is 1, ie there's stuff in the buffer
     if (*in_mem_p->ok_flag == 1) {
         
         // start at the beginning of the buffer
         buf_index = 0;
 
-        // get a pointer to the kb-iprocess PCB
-        PCB * temp = convert_PID(0);
-
         //dequeue env from Keyboard env queue into temp
-        temp_k = env_DEQ(temp->receive_msg_Q);
-
-        // if the dequeued env is NULL, ie there is nothing for the kb iproc to do
-        if (temp_k == NULL){
-           curr_process = interrupted_proc;
-            return;
-        }
+        //temp_k = env_DEQ(temp->receive_msg_Q);
                     
         // read buffer into the env, while we haven't reached the NULL
         do {
@@ -56,10 +56,10 @@ void kbd_iproc(int sigval) {
         *in_mem_p->ok_flag = 0;
 
         // set the env message type to 'console input'
-        temp_k->msg_type = 0;
+        temp_k->msg_type = CONSOLE_INPUT;
 
         // send env back to process
-        int Z = send_message(4, temp_k); //check location being sent here!
+        int Z = send_message(temp_k->sender_id, temp_k); //check location being sent here!
 
         // if it didn't send like it should have
         if (Z == 0)
@@ -81,20 +81,18 @@ void crt_iproc(int sigval) {
         PCB* interrupted_proc = curr_process;
         curr_process = convert_PID (1);
         
-        msg_env *temp_c = NULL;
+        msg_env *temp_c = receive_message();
+        
+        // if the envelope is NULL don't continue
+        if (temp_c == NULL){
+           *out_mem_p->oc_flag = 0;
+           curr_process = interrupted_proc;
+           return;
+        }
 
         // put stuff in buffer only if the buffer is empty
         if (*out_mem_p->oc_flag == 0) { 
             buf_index = 0;
-
-            // dequeue env into msg_env
-            temp_c = env_DEQ(convert_PID(1)->receive_msg_Q); 
-
-            // if the envelope is NULL don't continue
-            if (temp_c == NULL){
-               curr_process = interrupted_proc;
-               return;
-            }
 
              // read env into the buffer
              do {
@@ -111,7 +109,7 @@ void crt_iproc(int sigval) {
             temp_c->msg_type = 1;
             
             // send env back to process
-            int Z = send_message(4, temp_c); //fix this later, sender_id is 31
+            int Z = send_message(temp_c->sender_id, temp_c); //fix this later, sender_id is 31
             
             // if sending is stupid
             if (Z == 0)
@@ -119,7 +117,7 @@ void crt_iproc(int sigval) {
         
         }
 
-curr_process = interrupted_proc;
+        curr_process = interrupted_proc;
         /* if memory is full (ie. flag != 0)
         else{
             printf("fix the function!!!!\n"); */

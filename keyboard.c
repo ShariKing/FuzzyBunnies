@@ -81,7 +81,7 @@ int main(int argc, char * argv[]) {
             // if there's still input (ie not NULL)
             if (c != '\n') {
 
-                if (buf_index < MAXCHAR - 1) {
+                if (buf_index < k_bufsize + 1) {
                     in_mem_p->indata[ buf_index++ ] = c;
                 }
             }
@@ -93,6 +93,7 @@ int main(int argc, char * argv[]) {
                 // reset flag and array start point
                 *in_mem_p->ok_flag = 1;
                 buf_index = 0;
+printf ("flag:%i\n", *in_mem_p->ok_flag);
 
                 //send a signal to parent to start handler to start kbd_iproc
                 kill(parent_pid, SIGUSR1);
@@ -100,7 +101,7 @@ int main(int argc, char * argv[]) {
                 // infinite cycle until the buffer has been emptied
                 while (*in_mem_p->ok_flag == 1)
                     usleep(100000);
-                }
+             }
 
         } while (1);
     }

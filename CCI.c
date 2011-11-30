@@ -60,7 +60,7 @@ void CCI()
                 }
                 
                 // set clock to any valid 24hr time
-                else if (strncmp(input_txt,"c",1)==0, HH,MM,SS) { 
+                else if (strncmp(input_txt,"c",1)==0) { 
                      int HH = atoi(input_txt+2);
                      int MM = atoi(input_txt+5);
                      int SS = atoi(input_txt+8);
@@ -100,7 +100,7 @@ void CCI()
                      terminate(0);
                      }
                 // changes priority
-                else if (strcmp(input_txt,"n")==0,pri,id) { 
+                else if (strcmp(input_txt,"n")==0) { 
                      int new_pri = atoi(input_txt+2);
                      int ID = atoi(input_txt+4);
                      int R = change_priority(new_pri, ID);
