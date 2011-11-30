@@ -20,7 +20,7 @@ init_table itable[TOTAL_NUM_PROC + TOTAL_NUM_IPROC];
 // *** FUNCTION TO CLEAN UP PARENT PROCESSES***
 void terminate(int signal)
 {
-    printf("You're in terminate\n");
+   // printf("You're in terminate\n");
     cleanup();
     printf("\n\nSignal %i Received.   Leaving RTOS ...\n", signal);
     exit(0);
@@ -31,7 +31,7 @@ void terminate(int signal)
 // This stuff must be cleaned up or we have child processes and shared
 // memory hanging around after the main process terminates
 void cleanup() {
-    printf("You're in cleanup\n");
+    //printf("You're in cleanup\n");
     // terminate child process(es)
     kill(in_pid, SIGINT);
     kill(out_pid, SIGINT);
@@ -727,6 +727,8 @@ int main ()
         curr_process = convert_PID(7);
         
         curr_process->state = RUNNING;
+        
+        Atom = 0;
         
         // if init_msg_trace returned 1
         if (init_msg_trace())

@@ -14,16 +14,17 @@
 #include "rtx.h"
 
 void null_process() {
-    printf("You're in null_process\n");
+    //printf("You're in null_process\n");
 		while(1) {
+            usleep(100000);
             //printf("IN NULLLLLLLLLL!");      
 			release_processor();
 		}
 }
 
 void process_switch() {
-    atomic_on();
-    printf("You're in process_switch\n");
+    //atomic_on();
+    //printf("You're in process_switch\n");
     PCB* new_pcb;
     PCB* old_pcb = curr_process;
     //printf("%d\n",curr_process->pid);
@@ -54,12 +55,12 @@ void process_switch() {
     //printf("next........\n");
     new_pcb->state = RUNNING; //set new proc state to running
     //printf("%d\n",curr_process->pid);   
-    curr_process = new_pcb; //make the next_pcb the current process
+    curr_process = pointer_2_PCB[new_pcb->pid]; //make the next_pcb the current process
     //printf("%d\n",old_pcb->pcb_buf);
     //printf("%d\n",new_pcb->pcb_buf);
     context_switch( old_pcb->pcb_buf, new_pcb->pcb_buf );
     //printf("%d\n",curr_process->pid);
-    atomic_off();
+    //atomic_off();
 }
 
 // context_switch() - performs the context switch between two user processes
@@ -67,21 +68,14 @@ void process_switch() {
 // at the point where its context was last saved with a setjmp(). */
 
 void context_switch(jmp_buf previous, jmp_buf next) {
-    printf("You're in context_switch\n");
+    //printf("You're in context_switch\n");
     // int return_code = setjmp(previous);
      if (setjmp(previous) == 0) {
-        printf("Context of prev saved, switching to next\n");
+        //printf("Context of prev saved, switching to next\n");
         longjmp(next,1);
      }
-     /*
-     else{ 
-         printf("What does this mean\n");                                   
-        // curr_process = new_pcb; // sets the new pcb to be the current process
-         void (*fpTmp)();
-         (fpTmp) = (void *)curr_process->PC; //gets address of process code
-         fpTmp(); 
-         }
-         */
+
+         
 }
 
 

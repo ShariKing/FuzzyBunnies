@@ -18,8 +18,9 @@
 
 // check the logic on these, as to whether the static variable holds between the two like this
 void atomic_on() { 
-    printf("You're in atomic_on\n");
-    if (Atom == 0){
+    //printf("You're in atomic_on\n");
+    Atom ++;
+    if (Atom > 0){
         static sigset_t oldmask;
         sigset_t newmask;
         sigemptyset(&newmask);
@@ -29,35 +30,33 @@ void atomic_on() {
         sigaddset(&newmask, SIGUSR2); // the KB signal
         //sigaddset(&newmask, SIGTTIN); // random signal that breaks things!!!!!!!!
         sigprocmask(SIG_BLOCK, &newmask, &oldmask);
-        Atom ++;
-        printf("Atomic on\n");
+        //printf("Atomic on, count is %d\n", Atom);
     }
-    else if (Atom == 1)
-        printf("Atomic already on, count is %d\n", Atom);
     else
-        printf("Atomic error, RUN! (atomicity is %d", Atom);
+        printf("Atomic error, RUN! (atomicity is %d)\n", Atom);
 }
 
 void atomic_off() {
-    printf("You're in atomic_off\n");
-    if (Atom == 1){
+    //printf("You're in atomic_off\n");
+    Atom --;
+    if (Atom >0)
+       return;
+       //printf("Atomic still on, but decremented, count is %d\n",Atom);
+    else if (Atom ==0){
         static sigset_t oldmask;
         sigset_t newmask;
         //unblock the signals
         sigprocmask(SIG_SETMASK, &oldmask, NULL);
-        printf("Atomic off\n");
-        Atom --;
+        //printf("Atomic already off, count is %d\n", Atom);
     }
-    else if (Atom == 0)
-        printf("Atomic already off, count is %d\n", Atom);
     else
-        printf("Atomic error, RUN! (atomicity is %d", Atom);
+        printf("Atomic error, RUN! (atomicity is %d)\n", Atom);
 }
 
 
 // *** PCB ENQUEUE ***
 int PCB_ENQ(PCB *r, PCB_Q *queue) {
-printf("You're in PCB_ENQ\n");
+//printf("You're in PCB_ENQ\n");
     /// if either the PCB pointer or the queue pointer are NULL don't do anything
     if (r ==NULL || queue==NULL)
         return 0;
@@ -90,7 +89,7 @@ printf("You're in PCB_ENQ\n");
 
 // *** PCB DEQUEUE ***
 PCB *PCB_DEQ(PCB_Q *queue) {
-printf("You're in PCB_DEQ\n");
+//printf("You're in PCB_DEQ\n");
     // if queue is empty
     if (queue->head == NULL) {
         //printf("Queue is empty");        
@@ -127,7 +126,7 @@ printf("You're in PCB_DEQ\n");
 
 //***REMOVE PCB FROM MIDDLE OF QUEUE***
 PCB *PCB_REMOVE(PCB_Q *q, int id){
-    printf("You're in PCB_REMOVE\n");
+    //printf("You're in PCB_REMOVE\n");
     
     if(q->head == NULL){              //if queue is empty
                    //printf("Queue is empty");
@@ -163,7 +162,7 @@ PCB *PCB_REMOVE(PCB_Q *q, int id){
 
 // ***ENVELOPE ENQUEUE***
 int env_ENQ(msg_env *e, env_Q *queue) {
-   printf("You're in env_ENQ\n");
+   //printf("You're in env_ENQ\n");
     if (e==NULL || queue==NULL)
         return 0;
     
@@ -195,7 +194,7 @@ int env_ENQ(msg_env *e, env_Q *queue) {
 
 // *** ENVELOPE DEQUEUE ***
 msg_env *env_DEQ(env_Q *queue) {
-    printf("You're in env_DEQ\n");
+    //printf("You're in env_DEQ\n");
     // if the queue doesn't exist
     if (queue ==NULL)
         return NULL;
@@ -231,7 +230,7 @@ msg_env *env_DEQ(env_Q *queue) {
 
 //***REMOVE ENV FROM MIDDLE OF QUEUE***
 msg_env *env_REMOVE(env_Q *q, int senderid){
-    printf("You're in env_REMOVE\n");
+    //printf("You're in env_REMOVE\n");
     
     if(q->head == NULL){              //if queue is empty
                    //printf("Queue is empty");
@@ -265,7 +264,7 @@ msg_env *env_REMOVE(env_Q *q, int senderid){
 
 // *** KERNEL SEND MESSAGE ***
 int k_send_message(int dest_id, msg_env *e) {
-    printf("You're in k_send_message\n");
+    //printf("You're in k_send_message\n");
     // if the env is NULL
     if (e==NULL)                             //is this right?
         return 0;
@@ -324,7 +323,7 @@ int k_send_message(int dest_id, msg_env *e) {
 
 // ***USER SEND MESSAGE***
 int send_message(int dest_id, msg_env *e) {
-    printf("You're in send_message\n");
+    //printf("You're in send_message\n");
     // turn atomicity on
     atomic_on();
     
@@ -340,13 +339,13 @@ int send_message(int dest_id, msg_env *e) {
 
 // ***KERNEL RECEIVE MESSAGE***
 msg_env *k_receive_message() { //Doesn't take the PCB as a parameter. Dealt with using curr_process
-    printf("You're in k_receive_message\n");
+    //printf("You're in k_receive_message\n");
     // if the receive message queue is empty
     if (curr_process->receive_msg_Q->head == NULL) {
         
         // if the process is an iprocess or should never be blocked, return a NULL pointer (ie. no env)
         if (curr_process->priority < 0){
-            printf("Can't block an Iprocess\n");
+           // printf("Can't block an Iprocess\n");
             return NULL;
         }
         // if it's a normal process, block it on receive
@@ -378,7 +377,7 @@ msg_env *k_receive_message() { //Doesn't take the PCB as a parameter. Dealt with
 
 // ***USER RECEIVE MESSAGE***
 msg_env *receive_message() {
-    printf("You're in receive_message\n");
+    //printf("You're in receive_message\n");
         // turn atomicity on
         atomic_on();
         
@@ -389,13 +388,13 @@ msg_env *receive_message() {
         atomic_off();
         
         // return the pointer to the message envelope
-        if (temp)
-                return temp;
+
+        return temp;
 }
 
 // *** KERNEL SEND CONSOLE CHARS***
 int k_send_console_chars(msg_env *env) {
-    printf("You're in send_console_chars\n");
+    //printf("You're in send_console_chars\n");
     // if the env is NULL
     if (env==NULL)
         return 0;
@@ -405,7 +404,7 @@ int k_send_console_chars(msg_env *env) {
     
     // if sending fails
     if (Z == 0){
-        printf("Error with sending\n");
+        //printf("Error with sending\n");
         return 0;
     }
 
@@ -414,7 +413,7 @@ int k_send_console_chars(msg_env *env) {
 
 // *** USER SEND MESSAGE CHARS***
 int send_console_chars(msg_env *env) {
-    printf("You're in send_console_chars\n");
+    //printf("You're in send_console_chars\n");
     atomic_on();
     int z = k_send_console_chars(env);
     atomic_off();
@@ -424,7 +423,7 @@ int send_console_chars(msg_env *env) {
 
 // ***KERNEL GET CONSOLE CHARS***
 int k_get_console_chars(msg_env * env) {
-    printf("You're in k_get_console_chars\n");
+    //printf("You're in k_get_console_chars\n");
     // if the env is NULL
     if (env==NULL)
         return 0;
@@ -436,7 +435,7 @@ int k_get_console_chars(msg_env * env) {
 
     // incorrect return from send_message
     if(Z == 0) {
-            printf("Error with sending\n");
+            //printf("Error with sending\n");
             return 0;
     }
     
@@ -445,7 +444,7 @@ int k_get_console_chars(msg_env * env) {
 
 // ***USER GET CONSOLE CHARS***
 int get_console_chars(msg_env * env) {
-    printf("You're in get_console_chars\n");
+    //printf("You're in get_console_chars\n");
     atomic_on();
     int z = k_get_console_chars(env);
     atomic_off();
@@ -454,7 +453,7 @@ int get_console_chars(msg_env * env) {
     
 // ***GIVE A PROCESS ID AND RETURN IT'S PCB POINTER***
 PCB *convert_PID(int PID) {
-    printf("You're in convert_PID\n");
+    //printf("You're in convert_PID\n");
     // if the process ID is invalid
     if (PID > (TOTAL_NUM_PROC + TOTAL_NUM_IPROC - 1) || PID < 0) {
         // printf("invalid ID");
@@ -468,7 +467,7 @@ PCB *convert_PID(int PID) {
 
 // ***GET A PROIRITY AND RETURN A POINTER TO THE RPQ***
 PCB_Q *convert_priority(int pri) {
-    printf("You're in convert_priority\n");
+    //printf("You're in convert_priority\n");
     // if the new priority is not valid (1-3)
     if (pri > 3 || pri < 0) {           
         //printf("Invalid priority!!!!!");
@@ -479,29 +478,19 @@ PCB_Q *convert_priority(int pri) {
     return pointer_2_RPQ[pri];
 }
 
-// ***KERNEL RELEASE PROCESSOR***
-void k_release_processor() {                //should be an int but we'll figure it later
-    printf("You're in k_release_processor\n");
-        //printf ("curr_process:%i\n", curr_process->pid);
+// RELEASE PROCESSOR***
+void release_processor() {
     curr_process->state = READY;  //Change current process state to "ready"
     PCB_ENQ(curr_process, convert_priority(curr_process->priority));       //Enqueue PCB into a rpq
     process_switch();                       //Shari is taking care of process switch.
-}    
-
-// ***USER RELEASE PROCESSOR***
-void release_processor() {
-    printf("You're in release_processor\n"); 
-    atomic_on();                //turn atomicity on
-     k_release_processor();     //call the kernel function
-     atomic_off();              //turn atomic off
 }
 
 // ***KERNEL GET ENVELOPE***
 msg_env *k_request_msg_env() {
-        printf("You're in k_request_msg_env\n");
-    while (envelope_q->head == NULL){        //while envelope q is empty
-              PCB_ENQ(curr_process, blocked_on_envelope);     //enqueue on blocked_on_env q
+        // printf("You're in k_request_msg_env\n");
+        while (envelope_q->head == NULL){        //while envelope q is empty
               curr_process->state = BLK_ON_ENV;         // change state to blocked on env
+              PCB_ENQ(curr_process, blocked_on_envelope);     //enqueue on blocked_on_env q
               process_switch();
         }
         msg_env *temp = env_DEQ(envelope_q);            //make a temp pointer that points to the dequeued envelope from the free env q
@@ -510,7 +499,7 @@ msg_env *k_request_msg_env() {
 
 //***USER GET ENVELOPE***
 msg_env *request_msg_env(){
-    printf("You're in request_msg_env\n");    
+    //printf("You're in request_msg_env\n");    
     atomic_on();
         msg_env *tep = k_request_msg_env();
         atomic_off();
@@ -519,7 +508,7 @@ msg_env *request_msg_env(){
 
 //***KERNEL RELEASE ENVELOPE***
 int k_release_msg_env(msg_env *env){
-    printf("You're in k_release_msg_env\n");
+    //printf("You're in k_release_msg_env\n");
     env_ENQ(env, envelope_q);                      //enqueue the envelope to the envelope queue
     if (blocked_on_envelope->head != NULL){        //if there's a blocked process
        PCB *temp = PCB_DEQ(blocked_on_envelope);   //dequeue the first process from the blocked_on_env and make a temp pointer to the PCB
@@ -531,7 +520,7 @@ int k_release_msg_env(msg_env *env){
 
 //***USER RELEASE ENV***
 int release_msg_env(msg_env *env){
-   printf("You're in release_msg_env\n");
+   //printf("You're in release_msg_env\n");
     atomic_on();
     int z = k_release_msg_env(env);
     atomic_off();
@@ -540,7 +529,7 @@ int release_msg_env(msg_env *env){
 
 //***KERNEL CHANGE PRIOIRTY***
 int k_change_priority(int new_priority, int target_process_id){
-   printf("You're in k_change_priority\n");
+   //printf("You're in k_change_priority\n");
    
     if(new_priority > 3 || new_priority < 0){
                       printf("invalid priority\n");
@@ -572,7 +561,7 @@ int k_change_priority(int new_priority, int target_process_id){
 
 //***USER CHANGE PRIORITY***
 int change_priority (int new_priority, int target_process_id){
-    printf("You're in change_priority\n");
+    //printf("You're in change_priority\n");
     atomic_on();
     int z = k_change_priority(new_priority, target_process_id);
     atomic_off();
@@ -581,7 +570,7 @@ int change_priority (int new_priority, int target_process_id){
 
 //***KERENEL GET PROCESS STATUS***
 int k_request_process_status(msg_env *env){
-    printf("You're in k_request_process_status\n");
+    //printf("You're in k_request_process_status\n");
 
     if (env==NULL){                                    //if no envelope was passed
               printf("No envelope was passed\n");
@@ -605,7 +594,7 @@ int k_request_process_status(msg_env *env){
 
 //***USER GET PROCESS STATUS***
 int request_process_status(msg_env *env){
-    printf("You're in request_process_status\n");
+    //printf("You're in request_process_status\n");
     atomic_on();
     int z = k_request_process_status(env);
     atomic_off();
@@ -615,7 +604,7 @@ int request_process_status(msg_env *env){
 //***KERNEL REQUEST DELAY***
 int k_request_delay(int time_delay, int wakeup_code, msg_env *m)
 {
-    printf("You're in k_request_delay\n");
+    //printf("You're in k_request_delay\n");
     int RequestingPID = curr_process->pid;         //Temporary PID holder
     
     curr_process->state = SLEEP; 
@@ -643,7 +632,7 @@ int k_request_delay(int time_delay, int wakeup_code, msg_env *m)
 
 //***USER REQUEST DELAY***
 int request_delay(int time_delay, int wakeup_code, msg_env *m){
-    printf("You're in request_delay\n");
+   // printf("You're in request_delay\n");
     atomic_on();
     int z = k_request_delay(time_delay, wakeup_code, m);
     atomic_off();
@@ -668,7 +657,7 @@ int request_delay(int msecDelay) {
 
 // ***KERNEL GET TRACE BUFFERS
 int k_get_trace_buffers(msg_env* env){
-   printf("You're in k_get_trace_buffers\n");
+   //printf("You're in k_get_trace_buffers\n");
 
     if(env==NULL){
              printf("No envelope was passed\n");

@@ -24,7 +24,7 @@ void CCI()
         int U = 0;
         
         printf("Welcome to the RTOS that works.\nPlease input something in our CCI:\n");
-        //sleep (5);
+        //sleep (5); //note: sleep won't work cuz any interrupt will stop it.
         //getchar();
         msg_env* env = request_msg_env();
 

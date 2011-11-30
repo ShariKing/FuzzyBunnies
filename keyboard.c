@@ -26,13 +26,13 @@
 
 // ***FUNCTION TO CLEAN UP CHILD PROCESSES***
 void k_child_die(int signal) {
-    printf("You're in k_child_die\n");
+    //printf("You're in k_child_die\n");
     exit(0);
 }
 
 // ***KEYBOARD UART SIMULATION***
 int main(int argc, char * argv[]) {
-     printf("You're in keyboard main\n");
+     //printf("You're in keyboard main\n");
     // delay after being forked from parent
     usleep(1000000);
      
@@ -79,7 +79,7 @@ int main(int argc, char * argv[]) {
             c = getchar(); //*** SITS HERE AND WAITS FOR INPUT, OKAY
 
             // if there's still input (ie not NULL)
-            if (c != '\0') {
+            if (c != '\n') {
 
                 if (buf_index < MAXCHAR - 1) {
                     in_mem_p->indata[ buf_index++ ] = c;

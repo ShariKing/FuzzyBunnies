@@ -51,7 +51,7 @@ struct pcb {
 	char *SP;		
 	env_Q *receive_msg_Q;
 	jmp_buf pcb_buf;
-        int process_type;
+    int process_type;
 };
 typedef struct pcb PCB;	//use PCB
 
@@ -137,7 +137,6 @@ int release_msg_env(msg_env *env);
 int request_process_status(msg_env *env);
 int k_request_process_status(msg_env *env);
 
-void k_release_processor();
 void release_processor();
 
 int request_delay(int time_delay, int wakeup_code, msg_env *m);
