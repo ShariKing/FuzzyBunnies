@@ -1,7 +1,7 @@
-ALL: RTX crt_child kbd_child
+ALL: RTX-G11 crt_child kbd_child
 
-RTX: init.o iproc.o kernel.o userprocesses.o CCI.o ProcessSwitch.o clock.o
-	gcc -g init.o iproc.o kernel.o userprocesses.o CCI.o ProcessSwitch.o clock.o -o RTX
+RTX-G11: init.o iproc.o kernel.o userprocesses.o CCI.o ProcessSwitch.o clock.o
+	gcc -g init.o iproc.o kernel.o userprocesses.o CCI.o ProcessSwitch.o clock.o -o RTX-G11
 
 crt_child: crt.o
 	gcc -g crt.o -o crt_child
@@ -38,7 +38,7 @@ clock.o: clock.c rtx.h
 	
 clean:
 	rm *.o 
-	rm RTX 
+	rm RTX-G11 
 	rm crt_child 
 	rm kbd_child
 	rm KBjunkDemo
