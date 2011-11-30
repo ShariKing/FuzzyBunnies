@@ -256,7 +256,7 @@ int init_env()
         new_env->msg_type = 3;
 
         
-        char* tempMsgText = (char *) malloc (sizeof (SIZE)); //initialize the character array pointer
+        char* tempMsgText = (char *) malloc ((sizeof (SIZE))*4); //initialize the character array pointer
 
         // if the msg_text pointer is not created properly
         if (tempMsgText==NULL)
@@ -550,15 +550,17 @@ void kb_crt_start(){
 
     // if the pointer is created successfully
     if (in_mem_p){
-
-        in_mem_p->indata = (char *) k_mmap_ptr;
-          // pointer to shared memory
-          // we can now use 'in_mem_p' as a standard C pointer to access the created shared memory segment
+        in_mem_p->indata = (char *) malloc(sizeof (k_bufsize+1));
+        in_mem_p->indata = k_mmap_ptr; // pointer to shared memory
+        buf_index = 0;
+        
+        // we can now use 'in_mem_p' as a standard C pointer to access the created shared memory segment
 
         // now start doing whatever work you are supposed to do
         // in this case, do nothing; only the keyboard handler will do work
 
-        // link the flag to the end of the buffer and set it 
+        // link the flag to the end of the buffer and set it  
+        in_mem_p->ok_flag = (char *) malloc(sizeof (char));
         in_mem_p->ok_flag = &in_mem_p->indata[k_bufsize + 1];
         *in_mem_p->ok_flag = 0;
      }
@@ -631,15 +633,20 @@ void kb_crt_start(){
     // if the pointer rocks out
     if (out_mem_p){
 
-        out_mem_p->outdata = (char *) c_mmap_ptr;   // pointer to shared memory
-      // we can now use 'in_mem_p' as a standard C pointer to access the created shared memory segment
+        out_mem_p->outdata = (char *) malloc(sizeof (c_bufsize+1));
+        out_mem_p->outdata = c_mmap_ptr;  // pointer to shared memory
+        buf_index = 0;
+          
+    // we can now use 'in_mem_p' as a standard C pointer to access the created shared memory segment
 
     // now start doing whatever work you are supposed to do
     // in this case, do nothing; only the keyboard handler will do work
     
     // link the flag to the end of the shared memory and set it
-    out_mem_p->oc_flag = &out_mem_p->outdata[c_bufsize + 1];
-    *out_mem_p->oc_flag = 0;
+ 
+        out_mem_p->oc_flag = (char *) malloc(sizeof (char));
+        out_mem_p->oc_flag = &out_mem_p->outdata[c_bufsize + 1];
+        *out_mem_p->oc_flag = 0;
     }
     
     // if the shared pointer needs help
@@ -746,7 +753,7 @@ int main ()
 
         // catch signals so we can clean up everything before exiting
         // signals defined in /usr/include/signal.h
-        /*
+        
         sigset(SIGINT,terminate);	// catch kill signals 
         sigset(SIGBUS,terminate);	// catch bus errors
         sigset(SIGHUP,terminate);		
@@ -755,7 +762,7 @@ int main ()
         sigset(SIGABRT,terminate);
         sigset(SIGTERM,terminate);
         sigset(SIGSEGV,terminate);	// catch segmentation faults
-        */
+        
         sigset(SIGUSR1,kbd_iproc);
         sigset(SIGUSR2,crt_iproc);
         sigset(SIGALRM,timer_iproc); //Catch clock ticks

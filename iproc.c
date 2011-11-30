@@ -16,6 +16,7 @@
 
 // ***KEYBOARD I-PROCESS priority 0***
 void kbd_iproc(int sigval) {
+     int Z =0;
     printf("You're in kbd_iproc\n");
     // temporary env pointer
     printf ("flag:%i\n", *in_mem_p->ok_flag);
@@ -35,7 +36,7 @@ printf ("temp_k:%p\n", temp_k);
     
     // only continue if the flag is 1, ie there's stuff in the buffer
     if (*in_mem_p->ok_flag == 1) {
-        
+            printf ("flag:%i\n", *in_mem_p->ok_flag);
         // start at the beginning of the buffer
         buf_index = 0;
 
@@ -54,19 +55,25 @@ printf ("temp_k:%p\n", temp_k);
 
         // reset flag
         *in_mem_p->ok_flag = 0;
-
+            printf ("flag:%i\n", *in_mem_p->ok_flag);
+printf ("temp_k:%p\n", temp_k);
         // set the env message type to 'console input'
         temp_k->msg_type = CONSOLE_INPUT;
-
+        printf ("temp_k:%p\n", temp_k);
+printf("%s\n",temp_k->msg_text);
         // send env back to process
-        int Z = send_message(temp_k->sender_id, temp_k); //check location being sent here!
-
+        printf ("sender_id: %i\n", temp_k->sender_id);
+        Z = send_message(temp_k->sender_id, temp_k); //check location being sent here!
+        
+printf ("temp_k:%p\n", temp_k);
+//printf ("SFAJK");
         // if it didn't send like it should have
         if (Z == 0)
             printf("Error with sending\n");
     }
-    
+    printf("as here\n");
     curr_process = interrupted_proc;
+    printf("here %p\n", pointer_2_PCB[6]->receive_msg_Q->head);
     /* if the buffer was empty (ie flag != 1)
     else
         printf("There is no input in the memory to read in!\n"); */

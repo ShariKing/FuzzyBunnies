@@ -15,6 +15,7 @@
 
 void CCI() 
 {   
+    /*
         printf("You're in the CCI\n");
         int HH=0;
         int MM=0;
@@ -36,12 +37,7 @@ void CCI()
             // only do this if there was input
             if (U==1){
                 env = receive_message(); //***STOPS HERE TO WAIT FOR INPUT
-                /*
-                while (env == NULL) {
-                        usleep(100000);
-                        env = receive_message();  
-                }
-                */
+                
                 char* input_txt = env->msg_text;
                 
                 // send envelope to Process A
@@ -71,17 +67,7 @@ void CCI()
                 
                 // allows time to be displayed on console and halts if getting ct
                 else if (strcmp(input_txt,"cd")==0) { 
-                     /*msg_env* e = request_msg_env();
-                     if (input_txt != "ct") {
-                         int R = clock_out(wallclock, e);
-                         if (R==0)
-                            printf("Error with displaying clock in CCI");
-                     }
-                     else {
-                         int L = release_msg_env(e);
-                         if (L==0)
-                            printf("Message not released in clock displaying in CCI");
-                         }*/
+                     
                     wallClockOut = 1;
                 }
                 else if (strcmp(input_txt,"ct")==0)
@@ -107,22 +93,7 @@ void CCI()
                      if (R==0)
                             printf("Error with changing priority in CCI\n");
                      }
-                /*
-                // knock knock joke
-                else if (input_txt == "knock") { 
-                     knock_knock();
-                     }
-                 * 
-                // time warp
-                else if (input_txt == "timewarp") { 
-                     Time_Warp();
-                     }
-                 * 
-                // pong
-                else if (input_txt == "pong") { 
-                     Pong();
-                     }
-                     */
+                
                 
                 else {
                      printf("Invalid CCI input. Please try again.\n");                   
@@ -135,8 +106,16 @@ void CCI()
                printf("CCI finished, I think\n");
                
             }
-        }    
+        }  
+        */  
         // if there was no input
+        printf("CCI HER\n");
+        printf("%p %p\n", in_mem_p, out_mem_p);
+        int a = 0;
+        for (a = 0; a < 8; a++){
+            printf("%i\n", pointer_2_PCB[a]->priority);
+            }
+        
         release_processor();
     
 }

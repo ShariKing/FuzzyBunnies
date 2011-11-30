@@ -64,10 +64,12 @@ int main(int argc, char * argv[]) {
     if (in_mem_p){
         
         // initialize stuff
-        in_mem_p->indata = (char *) k_mmap_ptr;
+        in_mem_p->indata = (char *) malloc(sizeof (k_bufsize+1));
+        in_mem_p->indata = k_mmap_ptr;
         buf_index = 0;
         
         // link the flag to the end of the buffer and set it 
+        in_mem_p->ok_flag = (char *) malloc(sizeof (char));
         in_mem_p->ok_flag = &in_mem_p->indata[k_bufsize + 1];
         *in_mem_p->ok_flag = 0;
         
@@ -75,7 +77,8 @@ int main(int argc, char * argv[]) {
         int c;
 
         // regular running stuff, infinite loop - exit when parent signals us
-        do {            
+        do {    
+                printf("kb");        
             c = getchar(); //*** SITS HERE AND WAITS FOR INPUT, OKAY
 
             // if there's still input (ie not NULL)

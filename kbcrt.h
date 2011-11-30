@@ -2,7 +2,7 @@
 #define KBCRT_H
 
 // ***CONSTANTS***
-#define BUFFERSIZE 128
+#define BUFFERSIZE 1028
 #define MAXCHAR 128
 
 #include <stdio.h>

@@ -361,10 +361,10 @@ int send_message(int dest_id, msg_env *e) {
     
     // call the kernel send message primitive
     int z = k_send_message(dest_id, e);
-    
+    printf("%i", z);
     // turn atomicity off
     atomic(OFF);
-    
+    printf("%i", z);
     // return the return value from the k primitive
     return z;
 }
