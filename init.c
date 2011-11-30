@@ -337,6 +337,8 @@ int init_processes ( )
             // set process counter for the appropriate process from the table
             new_pcb->PC = itable[j].address; 
             
+            new_pcb->atom = 0;
+             
             new_pcb->process_type = itable[j].process_type;
             
             new_pcb->SP = tempStack; 
@@ -443,6 +445,8 @@ int init_i_processes()
              new_pcb->PC = itable[k].address;
              
              new_pcb->process_type = itable[k].process_type;
+            
+             new_pcb->atom = 0;
             
              new_pcb->SP = tempStack; //FOR CONTEXT SWITCHING. TO BE CHANGED LATER.
              

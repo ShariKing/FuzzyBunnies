@@ -25,6 +25,9 @@
 #define TOTAL_NUM_IPROC 3 //total number of i-processes
 #define TIMERIPROCPID 2
 
+#define ON 1
+#define OFF 0
+
 
 // *** STRUCTS ***
 struct msgenv {
@@ -52,6 +55,7 @@ struct pcb {
 	env_Q *receive_msg_Q;
 	jmp_buf pcb_buf;
     int process_type;
+    int atom;
 };
 typedef struct pcb PCB;	//use PCB
 
@@ -146,6 +150,7 @@ void process_switch();
 void context_switch(jmp_buf previous, jmp_buf next);
 void atomic_off();
 void atomic_on();	
+void atomic(int a);
 
 void clock_increment(clk* clock, int system_or_wall);
 int clock_set(clk* clock, int hours, int minutes, int seconds);

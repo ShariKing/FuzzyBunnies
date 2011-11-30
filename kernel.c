@@ -15,12 +15,42 @@
 #include "rtx.h"
 
 // ******ATOMIC FUNCTION*********
+void atomic(int a){
+     // a is 1 for on, 0 for off
+     static sigset_t oldmask;
+     sigset_t newmask;
+     
+    // if (a == 1 && Atom == 0) {
+     if (a == 1) {
+        sigemptyset(&newmask);
+        //sigaddset(&newmask, SIGALRM); //the alarm signal
+        //sigaddset(&newmask, SIGINT); // the CNTRL-C
+        sigaddset(&newmask, SIGUSR1); // the CRT signal
+        sigaddset(&newmask, SIGUSR2); // the KB signal
+        sigprocmask(SIG_BLOCK, &newmask, &oldmask);
+        Atom = 1;
+     }
+     
+     //else if (a == 0 && Atom == 1){
+     else {
+          //unblock the signals
+          sigprocmask(SIG_SETMASK, &oldmask, NULL);
+          Atom = 0;
+     }
+     
+     /*if (a)
+         Atom++;
+     else
+         Atom--;
+     */
+}
 
+/*
 // check the logic on these, as to whether the static variable holds between the two like this
 void atomic_on() { 
     //printf("You're in atomic_on\n");
-    Atom ++;
-    if (Atom > 0){
+    curr_process->atom ++;
+    if (curr_process->atom > 0){
         static sigset_t oldmask;
         sigset_t newmask;
         sigemptyset(&newmask);
@@ -38,8 +68,8 @@ void atomic_on() {
 
 void atomic_off() {
     //printf("You're in atomic_off\n");
-    Atom --;
-    if (Atom >0)
+    curr_process->atom --;
+    if (curr_process->atom >0)
        return;
        //printf("Atomic still on, but decremented, count is %d\n",Atom);
     else if (Atom ==0){
@@ -52,7 +82,7 @@ void atomic_off() {
     else
         printf("Atomic error, RUN! (atomicity is %d)\n", Atom);
 }
-
+*/
 
 // *** PCB ENQUEUE ***
 int PCB_ENQ(PCB *r, PCB_Q *queue) {
@@ -270,7 +300,7 @@ int k_send_message(int dest_id, msg_env *e) {
         return 0;
     
     // if the PCB ID is not valid
-    if (dest_id > (TOTAL_NUM_PROC - 1 || dest_id < 0) )  { 
+    if (dest_id > ( (TOTAL_NUM_PROC + TOTAL_NUM_IPROC) - 1 || dest_id < 0) )  { 
         printf("dest ID not in range\n");
         return 0;
     }
@@ -325,13 +355,13 @@ int k_send_message(int dest_id, msg_env *e) {
 int send_message(int dest_id, msg_env *e) {
     //printf("You're in send_message\n");
     // turn atomicity on
-    atomic_on();
+    atomic(ON);
     
     // call the kernel send message primitive
     int z = k_send_message(dest_id, e);
     
     // turn atomicity off
-    atomic_off();
+    atomic(OFF);
     
     // return the return value from the k primitive
     return z;
@@ -379,13 +409,13 @@ msg_env *k_receive_message() { //Doesn't take the PCB as a parameter. Dealt with
 msg_env *receive_message() {
     //printf("You're in receive_message\n");
         // turn atomicity on
-        atomic_on();
+        atomic(ON);
         
         // call the kernel receive message
         msg_env *temp = k_receive_message();
         
         // turn atomicity off
-        atomic_off();
+        atomic(OFF);
         
         // return the pointer to the message envelope
 
@@ -414,9 +444,9 @@ int k_send_console_chars(msg_env *env) {
 // *** USER SEND MESSAGE CHARS***
 int send_console_chars(msg_env *env) {
     //printf("You're in send_console_chars\n");
-    atomic_on();
+    atomic(ON);
     int z = k_send_console_chars(env);
-    atomic_off();
+    atomic(OFF);
     return z;
 }
 
@@ -445,9 +475,9 @@ int k_get_console_chars(msg_env * env) {
 // ***USER GET CONSOLE CHARS***
 int get_console_chars(msg_env * env) {
     //printf("You're in get_console_chars\n");
-    atomic_on();
+    atomic(ON);
     int z = k_get_console_chars(env);
-    atomic_off();
+    atomic(OFF);
     return z;
 }
     
@@ -500,9 +530,9 @@ msg_env *k_request_msg_env() {
 //***USER GET ENVELOPE***
 msg_env *request_msg_env(){
     //printf("You're in request_msg_env\n");    
-    atomic_on();
+    atomic(ON);
         msg_env *tep = k_request_msg_env();
-        atomic_off();
+        atomic(OFF);
         return tep;
 }
 
@@ -521,9 +551,9 @@ int k_release_msg_env(msg_env *env){
 //***USER RELEASE ENV***
 int release_msg_env(msg_env *env){
    //printf("You're in release_msg_env\n");
-    atomic_on();
+    atomic(ON);
     int z = k_release_msg_env(env);
-    atomic_off();
+    atomic(OFF);
     return z;
 }
 
@@ -562,9 +592,9 @@ int k_change_priority(int new_priority, int target_process_id){
 //***USER CHANGE PRIORITY***
 int change_priority (int new_priority, int target_process_id){
     //printf("You're in change_priority\n");
-    atomic_on();
+    atomic(ON);
     int z = k_change_priority(new_priority, target_process_id);
-    atomic_off();
+    atomic(OFF);
     return z;
 }
 
@@ -595,9 +625,9 @@ int k_request_process_status(msg_env *env){
 //***USER GET PROCESS STATUS***
 int request_process_status(msg_env *env){
     //printf("You're in request_process_status\n");
-    atomic_on();
+    atomic(ON);
     int z = k_request_process_status(env);
-    atomic_off();
+    atomic(OFF);
     return z;
 } 
 
@@ -633,9 +663,9 @@ int k_request_delay(int time_delay, int wakeup_code, msg_env *m)
 //***USER REQUEST DELAY***
 int request_delay(int time_delay, int wakeup_code, msg_env *m){
    // printf("You're in request_delay\n");
-    atomic_on();
+    atomic(ON);
     int z = k_request_delay(time_delay, wakeup_code, m);
-    atomic_off();
+    atomic(OFF);
     return z;
 }
     
@@ -704,9 +734,9 @@ int k_get_trace_buffers(msg_env* env){
 
 // ***USER GET TRACE BUFFERS
 int get_trace_buffers(msg_env* env){
-    atomic_on();
+    atomic(ON);
     int z = k_get_trace_buffers(env);
-    atomic_off();
+    atomic(OFF);
     return z;
 }
 
