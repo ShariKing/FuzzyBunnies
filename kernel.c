@@ -320,7 +320,7 @@ int k_send_message(int dest_id, msg_env *e) {
 
         /*unblock the target process if necessary*/
         // if the target's blocked on env
-        if (target->state == BLK_ON_ENV) { 
+        if (target->state == BLK_ON_RCV) { 
 
             // enqueue the PCB of the process on the appropriate ready queue
             PCB_ENQ(target, convert_priority(target->priority)); //*****not sure if need to put a '&' before convert_priority

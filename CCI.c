@@ -24,7 +24,7 @@ void CCI()
         int U = 0;
         int dun = 0;
         
-        //while(1){
+        while(1){
             printf("Welcome to the RTOS that works.\nPlease input something in our CCI:\n");
             //sleep (5); //note: sleep won't work cuz any interrupt will stop it.
             //getchar();
@@ -135,7 +135,7 @@ void CCI()
                printf("CCI finished, I think\n");
                
             }
-        //}    
+        }    
         // if there was no input
         release_processor();
     

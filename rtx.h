@@ -220,7 +220,7 @@ env_Q* envelope_q;
 #define BLK_ON_ENV 2
 #define BLK_ON_RCV 3
 #define SLEEP 4
-
+// Message Type
 #define CONSOLE_INPUT 0
 #define DISPLAY_ACK 1
 #define COUNT_REPORT 2
