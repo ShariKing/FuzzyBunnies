@@ -25,7 +25,7 @@ void kbd_iproc(int sigval) {
     curr_process = convert_PID (0);
     
     msg_env *temp_k = receive_message();
-
+printf ("temp_k:%p\n", temp_k);
     // if the dequeued env is NULL, ie there is nothing for the kb iproc to do
     if (temp_k == NULL){
         *in_mem_p->ok_flag = 0;   
