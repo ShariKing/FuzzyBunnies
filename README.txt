@@ -19,3 +19,4 @@ ProcessSwitch.c:This contains the code for Process switching, context switching,
 userprocesses.c:This contains user processes A, B, and C used for the demonstration.
 
 RTX Error Description:
+Currently, the RTX compiles, makes, and executes. However, somewhere between receiving keyboard input and sending an envelope to the CCI to begin executing commands, our envelope is getting lost. We are attempting to fix the bugs and will continue to do so until our demonstration, however due to time constraints, we are submitting the code in its current state.
