@@ -36,7 +36,8 @@ struct outbuf{
 // ***GLOBALS***
 static int k_bufsize = BUFFERSIZE;
 static int c_bufsize = BUFFERSIZE;
-static int buf_index;
+static int k_buf_index;
+static int c_buf_index;
 
 static int parent_pid, k_fid, c_fid, in_pid, out_pid, k_status, c_status;
 static char * k_sfilename = "KBjunkDemo";

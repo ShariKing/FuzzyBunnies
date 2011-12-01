@@ -16,12 +16,13 @@
 
 // ***KEYBOARD I-PROCESS priority 0***
 void kbd_iproc(int sigval) {
-     int Z =0;
-    printf("You're in kbd_iproc\n");
+ 
+    //printf("You're in kbd_iproc\n");
+    atomic(ON);
     
     PCB* interrupted_proc = curr_process;
     curr_process = convert_PID (0);
-    
+    int Z = 0;
     // temporary env pointer
     msg_env *temp_k = receive_message();
 
@@ -29,6 +30,7 @@ void kbd_iproc(int sigval) {
     if (temp_k == NULL){
         *in_mem_p->ok_flag = 0;   
         curr_process = interrupted_proc;
+        atomic(OFF);
         return;
     }
     
@@ -36,18 +38,18 @@ void kbd_iproc(int sigval) {
     if (*in_mem_p->ok_flag == 1) {
 
         // start at the beginning of the buffer
-        buf_index = 0;
+        k_buf_index = 0;
 
         //dequeue env from Keyboard env queue into temp
         //temp_k = env_DEQ(temp->receive_msg_Q);
                     
         // read buffer into the env, while we haven't reached the NULL
         do {
-            temp_k->msg_text[buf_index] = in_mem_p->indata[buf_index];
+            temp_k->msg_text[k_buf_index] = in_mem_p->indata[k_buf_index];
 
-            buf_index++;
+            k_buf_index++;
 
-        } while (in_mem_p->indata[buf_index - 1] != '\0');
+        } while (in_mem_p->indata[k_buf_index - 1] != '\0');
 
        // printf("Keyboard input was: %s\n",in_mem_p->indata); //used for debugging
 
@@ -56,19 +58,22 @@ void kbd_iproc(int sigval) {
 
         // set the env message type to 'console input'
         temp_k->msg_type = CONSOLE_INPUT;
+            //printf("sender id %d,env %p\n",temp_k->sender_id, temp_k);
 
         // send env back to process
         Z = send_message(temp_k->sender_id, temp_k); //check location being sent here!
-        printf("text %s\n", pointer_2_PCB[6]->receive_msg_Q->head->msg_text);
-        printf("state %i\n", pointer_2_PCB[6]->state);
+        //printf("text %s\n", pointer_2_PCB[6]->receive_msg_Q->head->msg_text);
+        //printf("state %i\n", pointer_2_PCB[6]->state);
 //printf ("SFAJK");
         // if it didn't send like it should have
-        if (Z == 0)
+        if (Z == 0){
             printf("Error with sending\n");
+        }
     }
 
     curr_process = interrupted_proc;
-    printf("after set curr back to inter");
+    atomic(OFF);
+    //printf("here?n");
     /* if the buffer was empty (ie flag != 1)
     else
         printf("There is no input in the memory to read in!\n"); */
@@ -79,40 +84,49 @@ void kbd_iproc(int sigval) {
 void crt_iproc(int sigval) {
 //printf("You're in crt_iproc\n");
         // temporary env pointer
-        
+    atomic(ON);
+    //printf("c iproc 1\n");
         PCB* interrupted_proc = curr_process;
         curr_process = convert_PID (1);
-        
+
         msg_env *temp_c = receive_message();
-        
+
         // if the envelope is NULL don't continue
         if (temp_c == NULL){
            *out_mem_p->oc_flag = 0;
            curr_process = interrupted_proc;
+           atomic(OFF);
            return;
         }
 
         // put stuff in buffer only if the buffer is empty
         if (*out_mem_p->oc_flag == 0) { 
-            buf_index = 0;
-
+            c_buf_index = 0;
+            //printf("msg text: %s", temp_c->msg_text);
              // read env into the buffer
              do {
-                 out_mem_p->outdata[buf_index] = temp_c->msg_text[buf_index];
+                 out_mem_p->outdata[c_buf_index] = temp_c->msg_text[c_buf_index];
+//printf("c iproc 6 buf = %c\n", out_mem_p->outdata[c_buf_index]);
 
-                 buf_index++;
+                 c_buf_index++;
 
-             } while (out_mem_p->outdata[buf_index - 1] != '\0'); 
+             } while (out_mem_p->outdata[c_buf_index] != '\0'); 
+             out_mem_p->outdata[c_buf_index++] = '\0';
+//printf("c iproc 7 buf = %c\n", out_mem_p->outdata[c_buf_index]);
 
             // set flag so UART will read memory
             *out_mem_p->oc_flag = 1;
-            
+            //printf("c iproc 8 flag = %d\n", *out_mem_p->oc_flag);
+
             // set env message type to 'display ack'
-            temp_c->msg_type = 1;
-            
+            temp_c->msg_type = DISPLAY_ACK;
+            //printf("c iproc 9 type = %d\n", temp_c->msg_type);
+
+            printf("sender id %d,env %p\n",temp_c->sender_id, temp_c);
             // send env back to process
             int Z = send_message(temp_c->sender_id, temp_c); //fix this later, sender_id is 31
-            
+            //printf("c iproc 10 z = %d\n", Z);
+
             // if sending is stupid
             if (Z == 0)
                 printf("Error with sending\n");
@@ -120,6 +134,8 @@ void crt_iproc(int sigval) {
         }
 
         curr_process = interrupted_proc;
+        atomic(OFF);
+
         /* if memory is full (ie. flag != 0)
         else{
             printf("fix the function!!!!\n"); */
@@ -128,7 +144,7 @@ void crt_iproc(int sigval) {
 
 void timer_iproc(int sigval) {
     //printf("You're in timer_iproc\n");
-     
+    atomic(ON); 
     PCB* interrupted_proc = curr_process;
     curr_process = convert_PID (2);
 
@@ -221,4 +237,5 @@ void timer_iproc(int sigval) {
     }
     
     curr_process = interrupted_proc;
+    atomic(OFF);
 }

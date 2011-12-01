@@ -14,6 +14,7 @@
 #include <sys/ipc.h>
 #include <sys/shm.h>
 #include <errno.h>
+#include <ucontext.h>
 #include "kbcrt.h"
 
 
@@ -50,12 +51,13 @@ struct pcb {
 	int state;
 	int pid;
 	int priority;
-	void* PC;
-	char *SP;		
+	//void* PC;
+	//char *SP;
+        ucontext_t uc;
 	env_Q *receive_msg_Q;
-	jmp_buf pcb_buf;
+	//jmp_buf pcb_buf;
     int process_type;
-    int atom;
+    //int atom;
 };
 typedef struct pcb PCB;	//use PCB
 
@@ -203,6 +205,8 @@ int Atom;
 
 static int pulse_counter;     //Dummy Pulse Counter
 int alarmstatus;
+
+ucontext_t mainuc;
 
 // QUEUES
 PCB_Q* ready_q_priority0;

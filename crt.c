@@ -32,12 +32,12 @@ void c_child_die(int signal) {
 // ***CRT UART SIMULATION***
 int main(int argc, char * argv[]) {
     //printf("You're in crt main\n");
-    // delay after being forked from parent
-    usleep(1000000);
-
     // if parent tells us to terminate, then clean up first
     sigset(SIGINT, c_child_die);
     
+    // delay after being forked from parent
+    usleep(1000000);
+
     // get id of process to signal when we have output and the file id of the memory mapped file
     sscanf(argv[1], "%d", &parent_pid);
     sscanf(argv[2], "%d", &c_fid); // get the file id
@@ -64,7 +64,7 @@ int main(int argc, char * argv[]) {
  // initialize stuff
         //out_mem_p->outdata = (char *) malloc(sizeof (c_bufsize+1));
         out_mem_p->outdata = c_mmap_ptr;
-        buf_index = 0;
+        c_buf_index = 0;
         
         // link the flag to the end of the buffer and set it 
         //out_mem_p->oc_flag = (char *) malloc(sizeof (char));
@@ -76,25 +76,26 @@ int main(int argc, char * argv[]) {
 
         // regular running, infinite loop - exit when parent signals us
         do {
-            printf("crt\n");
+            //printf("crt 1\n");
             while(*out_mem_p->oc_flag == 0){    
-                
-                // signal the crt i-process periodically to start doing it's thing
-                kill(parent_pid,SIGUSR2);
                 
                 //wait for the iprocess to load the buffer (if applicable)
                 usleep(100000);
+                
+                // signal the crt i-process periodically to start doing it's thing
+                kill(parent_pid,SIGUSR2);
+
             }
-            
+            //printf("crt 2\n");
             // reset the buffer index to read from the beginning
-            buf_index = 0;
+            c_buf_index = 0;
         
             // while there is something in the buffer
             while(*out_mem_p->oc_flag != 0){
-                
-                if (buf_index < MAXCHAR - 1) {
-                    c = out_mem_p->outdata[buf_index];
-
+               // printf("crt 3\n");
+                if (c_buf_index < MAXCHAR - 1) {
+                    c = out_mem_p->outdata[c_buf_index];
+//printf("crt 4\n");
                     // while we're not at the end of the output (NULL character)
                     if (c != '\0')
                         printf("%c", c);
@@ -104,15 +105,15 @@ int main(int argc, char * argv[]) {
                         
                         // reset the flag and array start point
                         *out_mem_p->oc_flag = 0;
-                        buf_index = 0;
-                        printf("\n");
+                        c_buf_index = 0;
+                        //printf("crt 2\n");
                         
                         //send a signal to parent to start handler to start crt_iproc
                         // kill(parent_pid, SIGUSR2);
                     }
 
                     // increment the buffer
-                    buf_index++;
+                    c_buf_index++;
                 }
             }
 

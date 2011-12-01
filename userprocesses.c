@@ -16,29 +16,40 @@
 
 // *** PROCESS A *** PID 3
 void ProcessA(){
-    printf("You're in ProcessA\n");
+    
     // initialize return int, count
     int num = 0;
     PCB* pA_pcb = convert_PID(3);
     // receive the message from the CCI
     msg_env* envA = receive_message();
-
+    int R = 0;
+    R = get_console_chars(envA);
+    if (R==0)
+        release_processor();
+    
     // deallocate the message from Proc A's queue in its PCB
     envA= env_DEQ(pA_pcb->receive_msg_Q);
-    
+    //printf("You're in ProcessA 1\n");
     while(1){
+        //printf("You're in ProcessA\n");
+    
+       // printf("You're in ProcessA 2\n");
         // request an envelope
-        msg_env* tempEnv = request_msg_env();
+        msg_env* tempEnv  = request_msg_env();
         
-        // set the env type and text
-        tempEnv->msg_type = 2;
-        tempEnv->msg_text[1] = num;
-        
-        // send to ProcessB
-        int result = send_message(4, tempEnv);
-        
-        num++;
-        
+        if(tempEnv)
+        {
+            //printf("You're in ProcessA 3\n");
+            // set the env type and text
+            tempEnv->msg_type = 2;
+            tempEnv->msg_text[1] = num;
+            //printf("You're in ProcessA 4\n");
+            // send to ProcessB
+            int result = send_message(4, tempEnv);
+//printf("You're in ProcessA 5\n");
+            num++;
+        }
+        //printf("You're in ProcessA 6\n");
         release_processor();        
     }    
 }
@@ -46,8 +57,9 @@ void ProcessA(){
 
 // *** PROCESS B *** PID 4
 void ProcessB(){
-    printf("You're in ProcessB\n");
     while(1){
+        //printf("You're in ProcessB\n");
+    
         // receive the message from Process A
         msg_env* envB = receive_message();
         
@@ -55,13 +67,15 @@ void ProcessB(){
         int Z = send_message(5, envB);
         if (Z ==0)
            printf("Sending Failed from Proc B");
+        
+        release_processor();
      }    
 }
 
 
 // *** PROCESS C *** PID 5
 void ProcessC(){
-        printf("You're in ProcessC\n");
+    
     // init the local queue
     struct envQ* localQ = (struct envQ *) malloc (sizeof (struct envQ));
     if (localQ==NULL) {
@@ -74,18 +88,21 @@ void ProcessC(){
     msg_env* envC = request_msg_env();   
     // infinite loop of normal activity  
     while (1){
+        //printf("You're in ProcessC\n");
+        
         int NUM =envC->msg_text[1];
         // if theres nothing the localQ, receive a message and enqueue it
         if (localQ->head == NULL){
-            envC = receive_message();     
+            envC = receive_message();    
             int H = env_ENQ(envC,localQ);
             if (H ==0)
                printf("Cannot enqueue on localQ");
         }
         
         // if there is something on the localQ, dequeue it
-        else        
+        else {
             envC = env_DEQ(localQ);
+        }
             
         // if the message type is count report, and the value in msg_text is evenly divisible by 20, display "Process C"
         if (envC->msg_type == 2 && NUM % 20 == 0){

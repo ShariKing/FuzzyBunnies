@@ -17,12 +17,14 @@
 // ******ATOMIC FUNCTION*********
 void atomic(int a){
      // a is 1 for on, 0 for off
+    //printf("atomic 1, atom = %i\n", Atom);
      static sigset_t oldmask;
      sigset_t newmask;
      sigset_t maskforoffingthemask;
-     
+      //printf("atomic 1.5, atom = %i\n", Atom);
     // if (a == 1 && Atom == 0) {
      if (a == 1) {
+        //  printf("atomic 2, atom = %i\n", Atom);
         sigemptyset(&newmask);
         sigaddset(&newmask, SIGALRM); //the alarm signal
         //sigaddset(&newmask, SIGINT); // the CNTRL-C
@@ -30,16 +32,19 @@ void atomic(int a){
         sigaddset(&newmask, SIGUSR2); // the KB signal
         sigprocmask(SIG_BLOCK, &newmask, &oldmask);
         Atom = 1;
+         //printf("atomic 3, atom = %i\n", Atom);
      }
      
      //else if (a == 0 && Atom == 1){
      else {
+          //printf("atomic 4, atom = %i\n", Atom);
           //unblock the signals
           sigemptyset(&maskforoffingthemask);
           sigprocmask(SIG_SETMASK, &maskforoffingthemask, NULL);
           Atom = 0;
+          // printf("atomic 5, atom = %i\n", Atom);
      }
-     
+     // printf("atomic 6, atom = %i\n", Atom);
      /*if (a)
          Atom++;
      else
@@ -149,7 +154,7 @@ PCB *PCB_DEQ(PCB_Q *queue) {
             queue->tail = queue->head;
     } 
     else
-        queue->tail =NULL;       
+        queue->tail = NULL;       
 
     temp->p = NULL;    //set the pointer of the dequeued PCB to NULL 
     // return the pointer to the dequeued PCB
@@ -161,7 +166,7 @@ PCB *PCB_REMOVE(PCB_Q *q, int id){
     //printf("You're in PCB_REMOVE\n");
     
     if(q->head == NULL){              //if queue is empty
-                   //printf("Queue is empty");
+                   printf("Queue is empty\n");
                    return NULL;
     }
     
@@ -188,7 +193,11 @@ PCB *PCB_REMOVE(PCB_Q *q, int id){
                 index = index->p;    //move on to the next PCB
     }
     
-    printf("Cannot find PCB in queue\n");
+    //printf("queue 0 = %p, ", pointer_2_RPQ[0]);
+   // printf("queue 1 = %p, ", pointer_2_RPQ[1]);
+   // printf("queue 2 = %p, ", pointer_2_RPQ[2]);
+   // printf("queue 3 = %p\n", pointer_2_RPQ[3]);
+   // printf("Cannot find PCB %i in queue %p\n", id, q);
     return NULL;
 }
 
@@ -298,15 +307,17 @@ msg_env *env_REMOVE(env_Q *q, int senderid){
 int k_send_message(int dest_id, msg_env *e) {
     //printf("You're in k_send_message\n");
     // if the env is NULL
-    if (e==NULL)                             //is this right?
+    if (e==NULL){
+        //printf("env in ksend is %p\n", e);
         return 0;
-    
+    }
+
     // if the PCB ID is not valid
     if (dest_id > ( (TOTAL_NUM_PROC + TOTAL_NUM_IPROC) - 1 ) || dest_id < 0 )  { 
         printf("dest ID %d not in range\n", dest_id);
         return 0;
     }
-    
+
     // if the PCB ID is valid
     // set the target_id parameter of the env to dest_id
     e->target_id = dest_id;
@@ -314,24 +325,24 @@ int k_send_message(int dest_id, msg_env *e) {
 
     // create a pointer to the target PCB using the target_id
     PCB *target = convert_PID(dest_id);
-
+ 
     // if the PID converts correctly to a pointer
     if (target){
 
         /*unblock the target process if necessary*/
         // if the target's blocked on env
         if (target->state == BLK_ON_RCV) { 
-
+ 
             // enqueue the PCB of the process on the appropriate ready queue
             PCB_ENQ(target, pointer_2_RPQ[target->priority]); //*****not sure if need to put a '&' before convert_priority
             // set the target state to 'ready'
             target->state = READY;
-            printf("head %p tail %p \n", pointer_2_RPQ[target->priority]->head, pointer_2_RPQ[target->priority]->tail);
+            //printf("head %p tail %p \n", pointer_2_RPQ[target->priority]->head, pointer_2_RPQ[target->priority]->tail);
         }
-printf("line 1\n");
+//printf("line 1\n");
         // enqueue the env on the target's receive queue
         env_ENQ(e, target->receive_msg_Q);
-        printf("line 2\n");
+        //printf("line 2\n");
         send_counter++;                                          //increment the counter
         send_end = (send_end + 1) % 16;                          //traverse the end index
         if(send_counter > 15 || send_start < 0)                 //if the counter is greater than 15 (when the array  is full) or start index is -1 (ie first send) 
@@ -344,29 +355,35 @@ printf("line 1\n");
         send_trace[send_end].timestamp.mm = systemclock->mm;
         send_trace[send_end].timestamp.ss = systemclock->ss;
         
+        /*int b =0;
+        for (b = 0; b < 16; b++)
+            printf("send %d is %p\n", b, send_trace[b] );
+        */
         return 1;
     
     }
     
     // if the PID doesn't convert successfully
-    else
+    else{
+        printf("pid didnt convert\n");
         return 0;
-     
+    }
+       
 }
 
 // ***USER SEND MESSAGE***
 int send_message(int dest_id, msg_env *e) {
     //printf("You're in send_message\n");
     // turn atomicity on
-    printf("send before atom ");
+    
     atomic(ON);
     
     // call the kernel send message primitive
     int z = k_send_message(dest_id, e);
-    
+   
     // turn atomicity off
     atomic(OFF);
-    printf("send after atom %i\n", z);
+
     // return the return value from the k primitive
     return z;
 }
@@ -374,24 +391,29 @@ int send_message(int dest_id, msg_env *e) {
 // ***KERNEL RECEIVE MESSAGE***
 msg_env *k_receive_message() { //Doesn't take the PCB as a parameter. Dealt with using curr_process
     //printf("You're in k_receive_message\n");
+    PCB * static_curr = curr_process;
+    
     // if the receive message queue is empty
-    if (curr_process->receive_msg_Q->head == NULL) {
+    if (static_curr->receive_msg_Q->head == NULL) {
         
         // if the process is an iprocess or should never be blocked, return a NULL pointer (ie. no env)
-        if (curr_process->priority < 0){
-           // printf("Can't block an Iprocess\n");
+        if (static_curr->priority < 0){
+            //printf("Can't block an Iprocess\n");
+            atomic(OFF);
             return NULL;
         }
+
         // if it's a normal process, block it on receive
-        curr_process->state = BLK_ON_RCV;
-        PCB_REMOVE(pointer_2_RPQ[curr_process->priority], curr_process->pid);
-        
-    //printf("in k_rec before proc switch pid %d, %s\n", curr_process->pid, curr_process->state);
+        static_curr->state = BLK_ON_RCV;
+        //printf("ready q of prio %d has head %p\n", curr_process->priority, pointer_2_RPQ[curr_process->priority]->head);
+        PCB_DEQ(pointer_2_RPQ[static_curr->priority]);
+        //printf("curr proc is %d static is %d\n", curr_process->pid, static_curr->pid);
+  
         process_switch(); // Fixed it. Used to be return NULL.
     }
     
     // if the message queue is not empty, dequeue the first message in the queue
-    else{
+    
         msg_env* env = env_DEQ(curr_process->receive_msg_Q);           //create a pointer and point it to the dequeued envelope
          
         receive_counter++;                                             //increment the counter
@@ -407,7 +429,7 @@ msg_env *k_receive_message() { //Doesn't take the PCB as a parameter. Dealt with
         receive_trace[receive_end].timestamp.ss = systemclock->ss;
         
         return env;
-        }
+        
         //printf("in k_rec after proc switch pid %d, %s\n", curr_process->pid, curr_process->state);
 }
 
@@ -415,7 +437,7 @@ msg_env *k_receive_message() { //Doesn't take the PCB as a parameter. Dealt with
 msg_env *receive_message() {
     //printf("You're in receive_message\n");
         // turn atomicity on
-        printf("receive 1\n");
+        //printf("receive 1\n");
         atomic(ON);
        // printf("before k %d\n", curr_process->pid);
         // call the kernel receive message
@@ -424,7 +446,7 @@ msg_env *receive_message() {
         // turn atomicity off
         atomic(OFF);
       //  printf("after k %d\n", curr_process->pid);
-         printf("receive 2\n");
+         //printf("receive 2\n");
         // return the pointer to the message envelope
 
         return temp;
@@ -518,15 +540,22 @@ PCB_Q *convert_priority(int pri) {
 
 // RELEASE PROCESSOR***
 void k_release_processor() {
+   // printf("k rel proc one %i\n", curr_process->pid);
     curr_process->state = READY;  //Change current process state to "ready"
-    PCB_ENQ(curr_process, convert_priority(curr_process->priority));       //Enqueue PCB into a rpq
-    process_switch();                       
+   //printf("k rel proc two %i\n", curr_process->pid);
+     PCB_ENQ(curr_process, convert_priority(curr_process->priority));       //Enqueue PCB into a rpq
+  // printf("k rel proc three %i\n", curr_process->pid);
+     process_switch();                       
 }
 
 void release_processor() {
+    //printf("rel proc one\n");
     atomic(ON);
+    //printf("rel proc two\n");
     k_release_processor();
+    //printf("rel proc three\n");
     atomic(OFF);
+   // printf("rel proc four\n");
 }
 
 // ***KERNEL GET ENVELOPE***

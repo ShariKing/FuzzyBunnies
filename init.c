@@ -276,37 +276,38 @@ int init_env()
 // *** INITIALIZE Non-I PROCESSES ****
 int init_processes ( )
 {
-    jmp_buf kernel_buf;
+    //jmp_buf kernel_buf;
        itable[3].pid = 3;
        itable[3].priority = 2;
        itable[3].stack_size =STACKSIZE;
        itable[3].process_type = 1; //user_process is type 1
-       itable[3].address = &null_process;//A
-
+       itable[3].address = &ProcessA;//A
+       
        itable[4].pid = 4;
        itable[4].priority = 2;
        itable[4].stack_size =STACKSIZE;
        itable[4].process_type = 1;
-       itable[4].address = &null_process;//B
+       itable[4].address = &ProcessB;//B
        
        itable[5].pid = 5;
        itable[5].priority = 1;
        itable[5].stack_size =STACKSIZE;
        itable[5].process_type = 1;
-       itable[5].address = &null_process;//C
-        
+       itable[5].address = &ProcessC;//C
+       
        itable[6].pid = 6;
        itable[6].priority = 0;
        itable[6].stack_size =STACKSIZE;
        itable[6].process_type = 1;  
        itable[6].address = &CCI;
-
+       
        itable[7].pid = 7; 
        itable[7].priority = 3;
        itable[7].stack_size =STACKSIZE;
        itable[7].process_type = 2; // null proc is type 2 
        itable[7].address = &null_process;
-    
+       
+       
     int j;
     for (j = TOTAL_NUM_IPROC; j < (TOTAL_NUM_IPROC + TOTAL_NUM_PROC); j++) {
         
@@ -316,11 +317,11 @@ int init_processes ( )
         if (new_pcb){
         
             //create tempState and malloc size of char array
-           char* tempStack = (char*) malloc(sizeof (itable[j].stack_size));
+           //char* tempStack = (char*) malloc(sizeof (itable[j].stack_size));
            
            //return 0 if it didn't malloc right
-           if (tempStack == NULL) 
-              return 0;
+           //if (tempStack == NULL) 
+              //return 0;
                           
             // initialize the 'next' pointer (for queues) to NULL
             new_pcb->p = NULL;
@@ -335,13 +336,13 @@ int init_processes ( )
             new_pcb->priority = itable[j].priority;
             
             // set process counter for the appropriate process from the table
-            new_pcb->PC = itable[j].address; 
+            //new_pcb->PC = itable[j].address; 
             
-            new_pcb->atom = 0;
+           // new_pcb->atom = 0;
              
             new_pcb->process_type = itable[j].process_type;
             
-            new_pcb->SP = tempStack; 
+            //new_pcb->SP = tempStack; 
             
             // initialize the process' receiving queue
             new_pcb->receive_msg_Q = create_env_Q();
@@ -349,11 +350,18 @@ int init_processes ( )
             // create a pointer to the pcb, based on its PID, and save it in the array
             pointer_2_PCB[j] = new_pcb;
 
-
+           getcontext(&new_pcb->uc);
+           new_pcb->uc.uc_stack.ss_size = 16 * STACKSIZE;
+           if ((new_pcb->uc.uc_stack.ss_sp = malloc(new_pcb->uc.uc_stack.ss_size)) == NULL)
+           {
+                    perror("malloc"), terminate(1);
+           }
+           new_pcb->uc.uc_stack.ss_flags = 0;
+           
             //-------- From initialization pdf on Ace-----
             //-------- Initializing context of pcbs---------
 
-            if (setjmp(kernel_buf)==0){ // used for first time of initializing context
+            /*if (setjmp(kernel_buf)==0){ // used for first time of initializing context
 
                 char* jmpsp = new_pcb->SP + STACKSIZE;
 
@@ -371,7 +379,7 @@ int init_processes ( )
                  fpTmp(); 
                  }
                  
-              }
+              }*/
               
             // enqueue the process on the appropriate ready queue
             if (new_pcb->priority == 0)
@@ -398,7 +406,13 @@ int init_processes ( )
         }
         
     }
-   
+    
+    makecontext(&pointer_2_PCB[3]->uc, ProcessA, 0);
+    makecontext(&pointer_2_PCB[4]->uc, ProcessB, 0);
+    makecontext(&pointer_2_PCB[5]->uc, ProcessC, 0);
+    makecontext(&pointer_2_PCB[6]->uc, CCI, 0);
+    makecontext(&pointer_2_PCB[7]->uc, null_process, 0);
+    
    // if we get here, success!
    return 1;
 }
@@ -406,7 +420,7 @@ int init_processes ( )
 int init_i_processes()
 {
      int k;
-     jmp_buf kernel_buf;
+     //jmp_buf kernel_buf;
      
        itable[0].pid = 0;
        itable[0].priority = -1;
@@ -429,10 +443,10 @@ int init_i_processes()
      for (k = 0; k < TOTAL_NUM_IPROC; k++)
      {
          struct pcb* new_pcb = (struct pcb *) malloc (sizeof (struct pcb));
-         char* tempStack = (char*) malloc(sizeof (STACKSIZE));
+         //char* tempStack = (char*) malloc(sizeof (STACKSIZE));
          
          // if the PCB pointer is cool
-         if (new_pcb && tempStack){
+         if (new_pcb){
              
              new_pcb->p = NULL;
              
@@ -442,19 +456,27 @@ int init_i_processes()
              
              new_pcb->priority = itable[k].priority;
              
-             new_pcb->PC = itable[k].address;
+             //new_pcb->PC = itable[k].address;
              
              new_pcb->process_type = itable[k].process_type;
             
-             new_pcb->atom = 0;
+            // new_pcb->atom = 0;
             
-             new_pcb->SP = tempStack; //FOR CONTEXT SWITCHING. TO BE CHANGED LATER.
+             //new_pcb->SP = tempStack; //FOR CONTEXT SWITCHING. TO BE CHANGED LATER.
              
              new_pcb->receive_msg_Q = create_env_Q();
              
              pointer_2_PCB[k] = new_pcb;//This code creates a pointer to the pcb, based on its pid
              
-             if (setjmp(kernel_buf)==0){ // used for first time of initializing context
+             getcontext(&new_pcb->uc);
+             new_pcb->uc.uc_stack.ss_size = 16 * STACKSIZE;
+             if ((new_pcb->uc.uc_stack.ss_sp = malloc(new_pcb->uc.uc_stack.ss_size)) == NULL)
+             {
+                    perror("malloc"), terminate(1);
+             }
+             new_pcb->uc.uc_stack.ss_flags = 0;
+             
+             /*if (setjmp(kernel_buf)==0){ // used for first time of initializing context
 
                  char* jmpsp = new_pcb->SP +STACKSIZE;
     
@@ -473,7 +495,7 @@ int init_i_processes()
                     fpTmp(); 
                  }
                  
-            }
+            }*/
          }
          
          // if the PCB pointer needs to go back to school
@@ -481,6 +503,10 @@ int init_i_processes()
              return 0;
      }
      
+    makecontext(&pointer_2_PCB[0]->uc, kbd_iproc, 0);
+    makecontext(&pointer_2_PCB[1]->uc, crt_iproc, 0);
+    makecontext(&pointer_2_PCB[2]->uc, timer_iproc, 0);
+    
      // if everything jives
      return 1;
 }
@@ -552,7 +578,7 @@ void kb_crt_start(){
     if (in_mem_p){
         //in_mem_p->indata = (char *) malloc(sizeof (k_bufsize+1));
         in_mem_p->indata = k_mmap_ptr; // pointer to shared memory
-        buf_index = 0;
+        k_buf_index = 0;
         
         // we can now use 'in_mem_p' as a standard C pointer to access the created shared memory segment
 
@@ -635,7 +661,7 @@ void kb_crt_start(){
 
         //out_mem_p->outdata = (char *) malloc(sizeof (c_bufsize+1));
         out_mem_p->outdata = c_mmap_ptr;  // pointer to shared memory
-        buf_index = 0;
+        c_buf_index = 0;
           
     // we can now use 'in_mem_p' as a standard C pointer to access the created shared memory segment
 
@@ -736,7 +762,7 @@ int main ()
         // set the current process to the NULL process
         // ***** should be the first process in the first ready queue? does that mean we can just hardcode this since it will be the same every time?
         curr_process = convert_PID(7);
-        
+        PCB_DEQ(pointer_2_RPQ[curr_process->priority]);
         curr_process->state = RUNNING;
         
         Atom = 0;
@@ -761,7 +787,7 @@ int main ()
         sigset(SIGQUIT,terminate);
         sigset(SIGABRT,terminate);
         sigset(SIGTERM,terminate);
-        sigset(SIGSEGV,terminate);	// catch segmentation faults
+        //sigset(SIGSEGV,terminate);	// catch segmentation faults
         
         sigset(SIGUSR1,kbd_iproc);
         sigset(SIGUSR2,crt_iproc);
@@ -777,14 +803,29 @@ int main ()
         if(alarmstatus != 0)
              printf("Error: Something is wrong with the system timer!\n");
         
-
-      
-printf("%p %p\n", c_mmap_ptr, k_mmap_ptr);
+        // send the welcome message
+        /*msg_env* first;
+        first = request_msg_env();
+        if (first == NULL){
+            terminate(1);
+        }
+        strcpy(first->msg_text, "Enter input for the CCI to read [s ps c cd ct n t]:\n");
+        int F = 0;
+        F = send_console_chars(first);
+        if (F == 0){
+            terminate(1);
+        }
+        */
+        // switch to the null process
+        getcontext(&mainuc);
+        swapcontext(&mainuc, &pointer_2_PCB[7]->uc);
+        printf("should not be here\n");
+//printf("%p %p\n", c_mmap_ptr, k_mmap_ptr);
         //*** BACK TO MAIN RTOS STUFF ***
 
         // code to say we've started!!
         //printf("Proc A Ready! Waiting to go!\n");
-        longjmp(curr_process->pcb_buf,1);
+        //longjmp(curr_process->pcb_buf,1);
         //sleep(1000000);
         //ClockTest(systemclock); // remove later?
         

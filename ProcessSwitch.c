@@ -23,10 +23,15 @@ void null_process() {
 }
 
 void process_switch() {
-    //atomic_on();
+    atomic(ON);
     //printf("You're in process_switch\n");
+    //printf("proc switch one, curr proc = %d\n", curr_process->pid); 
     PCB* new_pcb;
-    PCB* old_pcb = curr_process;
+    //printf("curr proc %p %d %d\n", curr_process, curr_process->state, curr_process->priority);
+    //printf("point 2 pcb %p\n", pointer_2_PCB);
+    PCB* old_pcb;
+    old_pcb = pointer_2_PCB[curr_process->pid];
+    //printf("proc switch two old = %d\n", old_pcb->pid); 
     //printf("%d\n",curr_process->pid);
     if(ready_q_priority0->head != NULL) {// If highest priority queue isn't empty
         new_pcb = PCB_DEQ(ready_q_priority0); //get ptr to highest priority ready process
@@ -45,22 +50,26 @@ void process_switch() {
          //printf("q3\n");
         }
     else {
-        printf("All queues are empty\n");
+        //printf("All queues are empty\n");
         return;
         }
     if (old_pcb->state == RUNNING){
-       //printf("AHDSHDSDLKJDFSKJFDF\n");
         old_pcb->state = READY; //set old proc state to ready
+        //printf("proc switch three old = %d, new = %d\n", old_pcb->pid, new_pcb->pid); 
+    
     }
-    //printf("next........\n");
-    new_pcb->state = RUNNING; //set new proc state to running
-    //printf("%d\n",curr_process->pid);   
+    
+    new_pcb->state = RUNNING; //set new proc state to running  
     curr_process = pointer_2_PCB[new_pcb->pid]; //make the next_pcb the current process
-    //printf("%d\n",old_pcb->pcb_buf);
-    //printf("%d\n",new_pcb->pcb_buf);
-    context_switch( old_pcb->pcb_buf, new_pcb->pcb_buf );
-    //printf("%d\n",curr_process->pid);
-    //atomic_off();
+    atomic(OFF);
+    //printf("proc switch seven old = %d, new = %d\n", old_pcb->pid, new_pcb->pid); 
+    //printf("old uc %d new uc %p\n", &old_pcb->uc, &new_pcb->uc);
+    
+    swapcontext(&old_pcb->uc, &new_pcb->uc);
+    //context_switch( old_pcb->pcb_buf, new_pcb->pcb_buf );
+    //printf("after context curr is %d\n",curr_process->pid);
+    
+    atomic(OFF);
 }
 
 // context_switch() - performs the context switch between two user processes
@@ -70,9 +79,12 @@ void process_switch() {
 void context_switch(jmp_buf previous, jmp_buf next) {
     //printf("You're in context_switch\n");
     // int return_code = setjmp(previous);
+    printf("cont switch one\n");
      if (setjmp(previous) == 0) {
+         printf("cont switch two\n");
         //printf("Context of prev saved, switching to next\n");
         longjmp(next,1);
+        printf("cont switch three\n");
      }
 
          

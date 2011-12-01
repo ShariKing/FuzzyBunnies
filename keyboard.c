@@ -66,7 +66,7 @@ int main(int argc, char * argv[]) {
         // initialize stuff
         //in_mem_p->indata = (char *) malloc(sizeof (k_bufsize+1));
         in_mem_p->indata = k_mmap_ptr;
-        buf_index = 0;
+        k_buf_index = 0;
         
         // link the flag to the end of the buffer and set it 
         //in_mem_p->ok_flag = (char *) malloc(sizeof (char));
@@ -75,28 +75,29 @@ int main(int argc, char * argv[]) {
         
         // variable to copy input to buffer
         int c;
-
+        //c = 's';
         // regular running stuff, infinite loop - exit when parent signals us
         do {    
-                printf("kb");        
+                //printf("kb");        
             c = getchar(); //*** SITS HERE AND WAITS FOR INPUT, OKAY
 
             // if there's still input (ie not NULL)
             if (c != '\n') {
 
-                if (buf_index < k_bufsize + 1) {
-                    in_mem_p->indata[ buf_index++ ] = c;
+                if (k_buf_index < k_bufsize + 1) {
+                    in_mem_p->indata[ k_buf_index++ ] = c;
                 }
+               //c = '\n';
             }
             
             // when we reach the null character
             else {
-                in_mem_p->indata[buf_index++] = '\0';
+                in_mem_p->indata[k_buf_index++] = '\0';
 
                 // reset flag and array start point
                 *in_mem_p->ok_flag = 1;
-                buf_index = 0;
-printf ("flag:%i\n", *in_mem_p->ok_flag);
+                k_buf_index = 0;
+//printf ("flag:%i\n", *in_mem_p->ok_flag);
 
                 //send a signal to parent to start handler to start kbd_iproc
                 kill(parent_pid, SIGUSR1);

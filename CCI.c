@@ -16,7 +16,7 @@
 void CCI() 
 {   
     
-        printf("You're in the CCI\n");
+        //printf("You're in the CCI\n");
         int HH=0;
         int MM=0;
         int SS=0;
@@ -26,7 +26,7 @@ void CCI()
         int dun = 0;
         
         while(1){
-            printf("Welcome to the RTOS that works.\nPlease input something in our CCI:\n");
+            //printf("Welcome to the RTOS that works.\nPlease input something in our CCI:\n");
             //sleep (5); //note: sleep won't work cuz any interrupt will stop it.
             //getchar();
             msg_env* env = request_msg_env();
@@ -36,9 +36,9 @@ void CCI()
             
             // only do this if there was input
             if (U==1){
-                      printf("u second is %d\n", U);
+                      //printf("u second is %d\n", U);
                 env = receive_message(); //***STOPS HERE TO WAIT FOR INPUT
-                printf("u third is %d\n", U);
+                //printf("u third is %d\n", U);
                 char* input_txt = env->msg_text;
                 
                 // send envelope to Process A
@@ -57,7 +57,7 @@ void CCI()
                 }
                 
                 // set clock to any valid 24hr time
-                else if (strncmp(input_txt,"c",1)==0) { 
+                else if (strncmp(input_txt,"c", 1)==0) { 
                      int HH = atoi(input_txt+2);
                      int MM = atoi(input_txt+5);
                      int SS = atoi(input_txt+8);
@@ -103,8 +103,8 @@ void CCI()
             dun = release_msg_env(env);
             if (dun == 0)
                printf("ERROR IN DEALLOCATING ENVELOPE AT END OF CCI\n");
-            else
-               printf("CCI finished, I think\n");
+            //else
+             //  printf("CCI finished, I think\n");
                
             }
          
