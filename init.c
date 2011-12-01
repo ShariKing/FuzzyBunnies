@@ -281,19 +281,19 @@ int init_processes ( )
        itable[3].priority = 2;
        itable[3].stack_size =STACKSIZE;
        itable[3].process_type = 1; //user_process is type 1
-       itable[3].address = &ProcessA;
+       itable[3].address = &null_process;//A
 
        itable[4].pid = 4;
        itable[4].priority = 2;
        itable[4].stack_size =STACKSIZE;
        itable[4].process_type = 1;
-       itable[4].address = &ProcessB;
+       itable[4].address = &null_process;//B
        
        itable[5].pid = 5;
        itable[5].priority = 1;
        itable[5].stack_size =STACKSIZE;
        itable[5].process_type = 1;
-       itable[5].address = &ProcessC;
+       itable[5].address = &null_process;//C
         
        itable[6].pid = 6;
        itable[6].priority = 0;
@@ -550,7 +550,7 @@ void kb_crt_start(){
 
     // if the pointer is created successfully
     if (in_mem_p){
-        in_mem_p->indata = (char *) malloc(sizeof (k_bufsize+1));
+        //in_mem_p->indata = (char *) malloc(sizeof (k_bufsize+1));
         in_mem_p->indata = k_mmap_ptr; // pointer to shared memory
         buf_index = 0;
         
@@ -560,8 +560,8 @@ void kb_crt_start(){
         // in this case, do nothing; only the keyboard handler will do work
 
         // link the flag to the end of the buffer and set it  
-        in_mem_p->ok_flag = (char *) malloc(sizeof (char));
-        in_mem_p->ok_flag = &in_mem_p->indata[k_bufsize + 1];
+        //in_mem_p->ok_flag = (char *) malloc(sizeof (char));
+        in_mem_p->ok_flag = &in_mem_p->indata[k_bufsize];
         *in_mem_p->ok_flag = 0;
      }
     
@@ -633,7 +633,7 @@ void kb_crt_start(){
     // if the pointer rocks out
     if (out_mem_p){
 
-        out_mem_p->outdata = (char *) malloc(sizeof (c_bufsize+1));
+        //out_mem_p->outdata = (char *) malloc(sizeof (c_bufsize+1));
         out_mem_p->outdata = c_mmap_ptr;  // pointer to shared memory
         buf_index = 0;
           
@@ -644,8 +644,8 @@ void kb_crt_start(){
     
     // link the flag to the end of the shared memory and set it
  
-        out_mem_p->oc_flag = (char *) malloc(sizeof (char));
-        out_mem_p->oc_flag = &out_mem_p->outdata[c_bufsize + 1];
+        //out_mem_p->oc_flag = (char *) malloc(sizeof (char));
+        out_mem_p->oc_flag = &out_mem_p->outdata[c_bufsize];
         *out_mem_p->oc_flag = 0;
     }
     
@@ -779,7 +779,7 @@ int main ()
         
 
       
-
+printf("%p %p\n", c_mmap_ptr, k_mmap_ptr);
         //*** BACK TO MAIN RTOS STUFF ***
 
         // code to say we've started!!

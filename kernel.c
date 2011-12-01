@@ -323,14 +323,15 @@ int k_send_message(int dest_id, msg_env *e) {
         if (target->state == BLK_ON_RCV) { 
 
             // enqueue the PCB of the process on the appropriate ready queue
-            PCB_ENQ(target, convert_priority(target->priority)); //*****not sure if need to put a '&' before convert_priority
+            PCB_ENQ(target, pointer_2_RPQ[target->priority]); //*****not sure if need to put a '&' before convert_priority
             // set the target state to 'ready'
             target->state = READY;
+            printf("head %p tail %p \n", pointer_2_RPQ[target->priority]->head, pointer_2_RPQ[target->priority]->tail);
         }
-
+printf("line 1\n");
         // enqueue the env on the target's receive queue
         env_ENQ(e, target->receive_msg_Q);
-        
+        printf("line 2\n");
         send_counter++;                                          //increment the counter
         send_end = (send_end + 1) % 16;                          //traverse the end index
         if(send_counter > 15 || send_start < 0)                 //if the counter is greater than 15 (when the array  is full) or start index is -1 (ie first send) 
@@ -357,14 +358,15 @@ int k_send_message(int dest_id, msg_env *e) {
 int send_message(int dest_id, msg_env *e) {
     //printf("You're in send_message\n");
     // turn atomicity on
+    printf("send before atom ");
     atomic(ON);
     
     // call the kernel send message primitive
     int z = k_send_message(dest_id, e);
-    printf("%i", z);
+    
     // turn atomicity off
     atomic(OFF);
-    printf("%i", z);
+    printf("send after atom %i\n", z);
     // return the return value from the k primitive
     return z;
 }
@@ -381,7 +383,9 @@ msg_env *k_receive_message() { //Doesn't take the PCB as a parameter. Dealt with
             return NULL;
         }
         // if it's a normal process, block it on receive
-        curr_process->state = BLK_ON_RCV; //*********Doesn't need to be put in a queue, and don't care about process switch now********* FIX THIS
+        curr_process->state = BLK_ON_RCV;
+        PCB_REMOVE(pointer_2_RPQ[curr_process->priority], curr_process->pid);
+        
     //printf("in k_rec before proc switch pid %d, %s\n", curr_process->pid, curr_process->state);
         process_switch(); // Fixed it. Used to be return NULL.
     }
@@ -411,14 +415,16 @@ msg_env *k_receive_message() { //Doesn't take the PCB as a parameter. Dealt with
 msg_env *receive_message() {
     //printf("You're in receive_message\n");
         // turn atomicity on
+        printf("receive 1\n");
         atomic(ON);
-        
+       // printf("before k %d\n", curr_process->pid);
         // call the kernel receive message
         msg_env *temp = k_receive_message();
         
         // turn atomicity off
         atomic(OFF);
-        
+      //  printf("after k %d\n", curr_process->pid);
+         printf("receive 2\n");
         // return the pointer to the message envelope
 
         return temp;

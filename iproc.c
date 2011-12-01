@@ -18,15 +18,13 @@
 void kbd_iproc(int sigval) {
      int Z =0;
     printf("You're in kbd_iproc\n");
-    // temporary env pointer
-    printf ("flag:%i\n", *in_mem_p->ok_flag);
-    printf ("queue:%p\n", pointer_2_PCB[0]->receive_msg_Q->head);
     
     PCB* interrupted_proc = curr_process;
     curr_process = convert_PID (0);
     
+    // temporary env pointer
     msg_env *temp_k = receive_message();
-printf ("temp_k:%p\n", temp_k);
+
     // if the dequeued env is NULL, ie there is nothing for the kb iproc to do
     if (temp_k == NULL){
         *in_mem_p->ok_flag = 0;   
@@ -36,7 +34,7 @@ printf ("temp_k:%p\n", temp_k);
     
     // only continue if the flag is 1, ie there's stuff in the buffer
     if (*in_mem_p->ok_flag == 1) {
-            printf ("flag:%i\n", *in_mem_p->ok_flag);
+
         // start at the beginning of the buffer
         buf_index = 0;
 
@@ -55,25 +53,22 @@ printf ("temp_k:%p\n", temp_k);
 
         // reset flag
         *in_mem_p->ok_flag = 0;
-            printf ("flag:%i\n", *in_mem_p->ok_flag);
-printf ("temp_k:%p\n", temp_k);
+
         // set the env message type to 'console input'
         temp_k->msg_type = CONSOLE_INPUT;
-        printf ("temp_k:%p\n", temp_k);
-printf("%s\n",temp_k->msg_text);
+
         // send env back to process
-        printf ("sender_id: %i\n", temp_k->sender_id);
         Z = send_message(temp_k->sender_id, temp_k); //check location being sent here!
-        
-printf ("temp_k:%p\n", temp_k);
+        printf("text %s\n", pointer_2_PCB[6]->receive_msg_Q->head->msg_text);
+        printf("state %i\n", pointer_2_PCB[6]->state);
 //printf ("SFAJK");
         // if it didn't send like it should have
         if (Z == 0)
             printf("Error with sending\n");
     }
-    printf("as here\n");
+
     curr_process = interrupted_proc;
-    printf("here %p\n", pointer_2_PCB[6]->receive_msg_Q->head);
+    printf("after set curr back to inter");
     /* if the buffer was empty (ie flag != 1)
     else
         printf("There is no input in the memory to read in!\n"); */

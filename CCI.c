@@ -15,7 +15,7 @@
 
 void CCI() 
 {   
-    /*
+    
         printf("You're in the CCI\n");
         int HH=0;
         int MM=0;
@@ -36,8 +36,9 @@ void CCI()
             
             // only do this if there was input
             if (U==1){
+                      printf("u second is %d\n", U);
                 env = receive_message(); //***STOPS HERE TO WAIT FOR INPUT
-                
+                printf("u third is %d\n", U);
                 char* input_txt = env->msg_text;
                 
                 // send envelope to Process A
@@ -106,17 +107,10 @@ void CCI()
                printf("CCI finished, I think\n");
                
             }
-        }  
-        */  
+         
+          
         // if there was no input
-        printf("CCI HER\n");
-        printf("%p %p\n", in_mem_p, out_mem_p);
-        int a = 0;
-        for (a = 0; a < 8; a++){
-            printf("%i\n", pointer_2_PCB[a]->priority);
-            }
-        
         release_processor();
-    
+        }
 }
 

@@ -62,13 +62,13 @@ int main(int argc, char * argv[]) {
     // ensuring the pointer is not NULL
     if (out_mem_p){
  // initialize stuff
-        out_mem_p->outdata = (char *) malloc(sizeof (c_bufsize+1));
+        //out_mem_p->outdata = (char *) malloc(sizeof (c_bufsize+1));
         out_mem_p->outdata = c_mmap_ptr;
         buf_index = 0;
         
         // link the flag to the end of the buffer and set it 
-        out_mem_p->oc_flag = (char *) malloc(sizeof (char));
-        out_mem_p->oc_flag = &out_mem_p->outdata[c_bufsize + 1];
+        //out_mem_p->oc_flag = (char *) malloc(sizeof (char));
+        out_mem_p->oc_flag = &out_mem_p->outdata[c_bufsize];
         *out_mem_p->oc_flag = 0;
        
         //c is our temp character to read from the buffer
@@ -76,7 +76,7 @@ int main(int argc, char * argv[]) {
 
         // regular running, infinite loop - exit when parent signals us
         do {
-            printf("crt");
+            printf("crt\n");
             while(*out_mem_p->oc_flag == 0){    
                 
                 // signal the crt i-process periodically to start doing it's thing

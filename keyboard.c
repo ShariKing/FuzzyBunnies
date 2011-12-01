@@ -64,13 +64,13 @@ int main(int argc, char * argv[]) {
     if (in_mem_p){
         
         // initialize stuff
-        in_mem_p->indata = (char *) malloc(sizeof (k_bufsize+1));
+        //in_mem_p->indata = (char *) malloc(sizeof (k_bufsize+1));
         in_mem_p->indata = k_mmap_ptr;
         buf_index = 0;
         
         // link the flag to the end of the buffer and set it 
-        in_mem_p->ok_flag = (char *) malloc(sizeof (char));
-        in_mem_p->ok_flag = &in_mem_p->indata[k_bufsize + 1];
+        //in_mem_p->ok_flag = (char *) malloc(sizeof (char));
+        in_mem_p->ok_flag = &in_mem_p->indata[k_bufsize];
         *in_mem_p->ok_flag = 0;
         
         // variable to copy input to buffer
