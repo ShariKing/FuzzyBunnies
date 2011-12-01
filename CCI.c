@@ -139,6 +139,9 @@ void CCI()
                 { 
                    // printf("input was e\n");
                     env = request_msg_env(); //request an envelope
+                    input_txt[0] = ' ';
+                    strcat(input_txt, "\n\n");
+                    strcpy(env->msg_text, "echo is: ");
                     strcpy(env->msg_text, input_txt);
                     int R = send_console_chars(env);
                     
