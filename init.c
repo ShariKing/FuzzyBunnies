@@ -824,33 +824,13 @@ int main ()
         if(alarmstatus != 0)
              printf("Error: Something is wrong with the system timer!\n");
         
-        printf("()\nReady\n");
+        printf("()\n");
         
-        // set the current process to the NULL process
-        // ***** should be the first process in the first ready queue? does that mean we can just hardcode this since it will be the same every time?
-        curr_process = convert_PID(7);
-        
+        // set the current process to the NULL process// ***** should be the first process in the first ready queue? does that mean we can just hardcode this since it will be the same every time?
+        curr_process = convert_PID(6);
         PCB_DEQ(pointer_2_RPQ[curr_process->priority]);
         curr_process->state = RUNNING;
-        /*
-        // send the welcome message
-        msg_env* first = request_msg_env();
-       
-        if (first == NULL){
-            terminate(1);
-        }
-        strcpy(first->msg_text, "Enter input for the CCI to read [s ps c cd ct n t]:\0");
         
-        //printf("CRT queue head %p , tail %p\n", pointer_2_PCB[1]->receive_msg_Q->head, pointer_2_PCB[1]->receive_msg_Q->tail);
-        int F = 0;
-        F = send_console_chars(first);
-        //printf("CRT queue head %p , tail %p\n", pointer_2_PCB[1]->receive_msg_Q->head, pointer_2_PCB[1]->receive_msg_Q->tail);
-       
-        if (F == 0){
-            terminate(1);
-        }
-         */ 
-         
          // switch to the null process
         getcontext(&mainuc);
         //printf("after get context of main\n");

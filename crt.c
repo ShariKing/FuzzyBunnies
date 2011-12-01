@@ -132,13 +132,13 @@ int main(int argc, char * argv[]) {
             {
                 printf("%c", out_mem_p->outdata[buf_index]);
                 buf_index++;
+                fflush(stdout);
             }
 
             // when we reach the null character reset the flag and array start point
             *out_mem_p->oc_flag = 0;
             buf_index = 0;
-
-         
+ 
         }
         
     }

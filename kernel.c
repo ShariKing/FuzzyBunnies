@@ -45,11 +45,11 @@ void atomic(int a){
           // printf("atomic 5, atom = %i\n", Atom);
      }
      // printf("atomic 6, atom = %i\n", Atom);
-     if (a)
+     /*if (a)
          Atom++;
      else
          Atom--;
-     
+     */
 }
 
 /*
@@ -494,46 +494,36 @@ int k_send_message(int dest_id, msg_env *e){
         // if the target's blocked on env
         if (target->state == BLK_ON_RCV) 
         {
- 
+            send_counter++; //increment the counter
+            send_end = (send_end + 1) % 15; //traverse the end index
+
+            if(send_counter > 15 || send_start < 0) //if the counter is greater than 15 (when the array is full) or start index is -1 (ie first send)
+            {
+                send_start = (send_start + 1) % 15; //traverse the start index
+            }
+
+            send_trace[send_end].sender_id = curr_process->pid; //set the sender_id
+            send_trace[send_end].target_id = dest_id; //set the target_id
+            send_trace[send_end].msg_type = e->msg_type; //set the msg_type
+            send_trace[send_end].timestamp.hh = systemclock->hh; //set the timestamp
+            send_trace[send_end].timestamp.mm = systemclock->mm;
+            send_trace[send_end].timestamp.ss = systemclock->ss;
+            
             // enqueue the PCB of the process on the appropriate ready queue
             PCB_ENQ(target, pointer_2_RPQ[target->priority]); //*****not sure if need to put a '&' before convert_priority
             // set the target state to 'ready'
             target->state = READY;
-            //printf("head %p tail %p \n", pointer_2_RPQ[target->priority]->head, pointer_2_RPQ[target->priority]->tail);
+            
         }
-//printf("line 1\n");
+
         // enqueue the env on the target's receive queue
         env_ENQ(e, target->receive_msg_Q);
-       
-        send_counter++; //increment the counter
-        send_end = (send_end + 1) % 15; //traverse the end index
-        
-        if(send_counter > 15 || send_start < 0) //if the counter is greater than 15 (when the array is full) or start index is -1 (ie first send)
-        {
-            send_start = (send_start + 1) % 15; //traverse the start index
-        }
-        
-        send_trace[send_end].sender_id = curr_process->pid; //set the sender_id
-        send_trace[send_end].target_id = dest_id; //set the target_id
-        send_trace[send_end].msg_type = e->msg_type; //set the msg_type
-        send_trace[send_end].timestamp.hh = systemclock->hh; //set the timestamp
-        send_trace[send_end].timestamp.mm = systemclock->mm;
-        send_trace[send_end].timestamp.ss = systemclock->ss;
-      //  printf("line 3\n");
-
-/*
-int b =0;
-for (b = send_start; b < send_end; b++)
-{
-        printf("send trace %d: sender id = %d , target id = %d , type = %d , timestamp = %d:%d:%d\n", b, send_trace[b].sender_id, send_trace[b].target_id, send_trace[b].msg_type, send_trace[b].timestamp.hh = systemclock->hh, send_trace[b].timestamp.mm, send_trace[b].timestamp.ss = systemclock->ss);
-}
-*/
-
-return 1;
-        }
+        return 1;
+    }
     
     // if the PID doesn't convert successfully
-    else{
+    else
+    {
         printf("pid didnt convert\n");
         return 0;
     }
@@ -692,15 +682,15 @@ int k_request_process_status(msg_env *env){
     }
     
     char* temp = (char*) malloc(sizeof(SIZE));    //make an char array and allocate memory
-    strcpy(env->msg_text, "proc_id    status   priority \n\n");        //write the headers in the env
+    strcpy(env->msg_text, "\nproc_id    status   priority \n");        //write the headers in the env
     
     int i;
-    for(i=0; i<TOTAL_NUM_PROC; i++){
-             sprintf(temp, "%i      %i        %i \n", pointer_2_PCB[i]->pid,pointer_2_PCB[i]->state, pointer_2_PCB[i]->priority);//write the id status and priority in temp
+    for(i=0; i<TOTAL_NUM_PROC + TOTAL_NUM_IPROC; i++){
+             sprintf(temp, "%i          %i              %i \n", pointer_2_PCB[i]->pid,pointer_2_PCB[i]->state, pointer_2_PCB[i]->priority);//write the id status and priority in temp
              strcat(env->msg_text, temp);                                      //cat temp with the envelope
     }
     
-    strcat(env->msg_text, "\0");
+    strcat(env->msg_text, "\n\0");
     env->msg_type = PROCESS_STATUS;
     int worked = k_send_console_chars(env);
     return worked;
@@ -779,7 +769,7 @@ int k_get_trace_buffers(msg_env* env){
          return 0;
     }
     
-    strcpy(env->msg_text, "send trace buffer (from oldest to newest) \n No.    sender_id    target_id    msg_type    time stamp    \n\n");
+    strcpy(env->msg_text, "\nSend trace-buffer (from oldest to newest) \nNo.    sender_id    target_id    msg_type    time stamp    \n");
     
     int i;
     int j = 1;
@@ -793,7 +783,7 @@ int k_get_trace_buffers(msg_env* env){
     {
          for(i = send_start; i == send_end; i = (i+1)%16)
          {
-             sprintf(temp, "%d    %d    %d    %d:%d:%d    \n", j, send_trace[i].sender_id, send_trace[i].target_id, send_trace[i].msg_type, send_trace[i].timestamp.hh, send_trace[i].timestamp.mm, send_trace[i].timestamp.ss);
+             sprintf(temp, "%d          %d              %d              %d:%d:%d    \n", j, send_trace[i].sender_id, send_trace[i].target_id, send_trace[i].msg_type, send_trace[i].timestamp.hh, send_trace[i].timestamp.mm, send_trace[i].timestamp.ss);
              strcat(env->msg_text, temp);
              j++;
          }
@@ -801,7 +791,7 @@ int k_get_trace_buffers(msg_env* env){
     
     j = 1;
     
-    strcat(env->msg_text, "\n\n receive trace buffer (from oldest to newest) \n No.    sender_id    target_id    msg_type    time stamp    \n\n");
+    strcat(env->msg_text, "\nReceive trace-buffer (from oldest to newest) \nNo.    sender_id    target_id    msg_type    time stamp    \n");
     
     if(receive_counter < 0)
     {
@@ -811,12 +801,12 @@ int k_get_trace_buffers(msg_env* env){
     {
          for(i = receive_start; i == receive_end; i = (i+1)%16)
          {
-            sprintf(temp, "%d    %d    %d    %d:%d:%d    \n", j, receive_trace[i].sender_id, receive_trace[i].target_id, receive_trace[i].msg_type, receive_trace[i].timestamp.hh, receive_trace[i].timestamp.mm, receive_trace[i].timestamp.ss);
+            sprintf(temp, "%d           %d              %d              %d:%d:%d    \n", j, receive_trace[i].sender_id, receive_trace[i].target_id, receive_trace[i].msg_type, receive_trace[i].timestamp.hh, receive_trace[i].timestamp.mm, receive_trace[i].timestamp.ss);
             strcat(env->msg_text, temp);
             j++;
          }
     
-    strcat(env->msg_text, "\0");
+    strcat(env->msg_text, "\n\0");
     
     env->msg_type = TRACE_BUFFER;
     //printf("env text:\n %s \nenv type = %d\n", env->msg_text, env->msg_type);
