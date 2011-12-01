@@ -34,7 +34,7 @@ void CCI()
             if (first == NULL){
                 terminate(1);
             }
-            strcpy(first->msg_text, "Enter input for the CCI [s, ps, c, cd, ct, b, n [new_prio] [pid], e... , t]:\0");
+            strcpy(first->msg_text, "Enter input for the CCI [s, ps, c [##:##:##], cd, ct, b, n [new_prio] [pid], e... , t]:\0");
 
             int F = 0;
             F = send_console_chars(first);

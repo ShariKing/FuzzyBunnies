@@ -239,12 +239,12 @@ int init_msg_trace(){
              receive_trace[i].timestamp.ss = -1;
     }
     
-    send_counter = -1;                //so that the first send/receive will set it to 0;
-    send_start = -1;
-    send_end = -1;
-    receive_counter = -1;
-    receive_start = -1;
-    receive_end = -1;
+    send_counter = 0;                //so that the first send/receive will set it to 0;
+    send_start = 0;
+    send_end = 0;
+    receive_counter = 0;
+    receive_start = 0;
+    receive_end = 0;
 }
 
 
@@ -420,7 +420,7 @@ int init_processes ( )
     
     makecontext(&pointer_2_PCB[3]->uc, ProcessA, 0);
     makecontext(&pointer_2_PCB[4]->uc, ProcessB, 0);
-    makecontext(&pointer_2_PCB[5]->uc, null_process, 0);
+    makecontext(&pointer_2_PCB[5]->uc, &null_process, 0);
     makecontext(&pointer_2_PCB[6]->uc, CCI, 0);
     makecontext(&pointer_2_PCB[7]->uc, null_process, 0);
     

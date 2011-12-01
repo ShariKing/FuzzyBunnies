@@ -17,30 +17,43 @@ void clock_increment(clk* clock, int system_or_wall) {
 		//printf("You're in clock_increment\n");
         //printf("%p is the pointer %d", clock, system_or_wall);
         //printf("%d is the seconds %d is the minutes %d is the hours \n", clock->ss, clock->mm, clock->hh);
-        if (clock->ss < 60)
-			clock->ss++;
-		else
+        if (clock->ss < 59){
+            clock->ss++;
+        }
+			
+	else
         {
-			clock->ss = 0;
-			if (clock->mm < 60)
-				clock->mm++;
-			else
-            {
-				clock->mm = 0;
-				if(system_or_wall == 1)
-                {
-					if(clock->hh < 24 || clock->hh > 0)
-                         clock->hh++;
-                    else
-                         clock->hh == 0;
+                clock->ss = 0;
+	
+                if (clock->mm < 59){
+                    clock->mm++;
                 }
-                else
-                    clock->hh++;
-			}
-		}
+			
+		else
+                {
+			clock->mm = 0;
+                        
+			if(system_or_wall == 1)
+                        {
+				if(clock->hh < 23 || clock->hh > 0)
+                                {
+                                     clock->hh++;
+                                }
+                                        
+                                else
+                                {
+                                     clock->hh == 0;       
+                                }
+                        }
+                        
+                        else
+                        {
+                            clock->hh++;
+                        }
+                }
+	}
 		
-        if(clock->ss < 0 || clock->ss > 60 || clock->mm < 0 ||
-                     clock->mm > 60 || clock->hh < 0)
+        if(clock->ss < 0 || clock->ss > 59 || clock->mm < 0 || clock->mm > 59 || clock->hh < 0)
              printf("Clock was incremented to an invalid time\n");
 }
 
@@ -70,7 +83,7 @@ int clock_out(clk* clock){
           return 0; //Error with clock printing
           
      
-     sprintf(timewords, "%d", clock->hh);
+     sprintf(timewords, "\n%d", clock->hh);
 //     itoa(clock->hh, timewords, 10);            //convert and copy the values in hours into the timewords character pointer
      strcat(timewords, ":");
      sprintf(temptime, "%d", clock->mm);
@@ -80,7 +93,7 @@ int clock_out(clk* clock){
      sprintf(temptime, "%d", clock->ss);
 //     itoa(clock->ss, temptime, 10);  //convert the values in seconds into characters and write them into the temporary holding variable
      strcat(timewords, temptime);    //concatenate the hours into timewords. Timewords should now contain the properly formatted time.
-     strcat(temptime, "\0");
+     strcat(temptime, "\n\0");
      //If envelope is not empty, output an error message
      //if(e->msg_text != NULL)
           //printf("Error, clock cannot output due to non-empty envelope!\n");

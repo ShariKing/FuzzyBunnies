@@ -494,6 +494,13 @@ int k_send_message(int dest_id, msg_env *e){
         // if the target's blocked on env
         if (target->state == BLK_ON_RCV) 
         {
+            send_trace[send_end].sender_id = curr_process->pid; //set the sender_id
+            send_trace[send_end].target_id = dest_id; //set the target_id
+            send_trace[send_end].msg_type = e->msg_type; //set the msg_type
+            send_trace[send_end].timestamp.hh = systemclock->hh; //set the timestamp
+            send_trace[send_end].timestamp.mm = systemclock->mm;
+            send_trace[send_end].timestamp.ss = systemclock->ss;
+            
             send_counter++; //increment the counter
             send_end = (send_end + 1) % 15; //traverse the end index
 
@@ -502,13 +509,6 @@ int k_send_message(int dest_id, msg_env *e){
                 send_start = (send_start + 1) % 15; //traverse the start index
             }
 
-            send_trace[send_end].sender_id = curr_process->pid; //set the sender_id
-            send_trace[send_end].target_id = dest_id; //set the target_id
-            send_trace[send_end].msg_type = e->msg_type; //set the msg_type
-            send_trace[send_end].timestamp.hh = systemclock->hh; //set the timestamp
-            send_trace[send_end].timestamp.mm = systemclock->mm;
-            send_trace[send_end].timestamp.ss = systemclock->ss;
-            
             // enqueue the PCB of the process on the appropriate ready queue
             PCB_ENQ(target, pointer_2_RPQ[target->priority]); //*****not sure if need to put a '&' before convert_priority
             // set the target state to 'ready'
@@ -579,11 +579,6 @@ msg_env *k_receive_message() { //Doesn't take the PCB as a parameter. Dealt with
     
         msg_env* env = env_DEQ(curr_process->receive_msg_Q);           //create a pointer and point it to the dequeued envelope
          
-        receive_counter++;                                             //increment the counter
-        receive_end = (receive_end + 1) % 15;                          //traverse the end index
-        if(receive_counter > 15 || receive_start < 0)                  //if the counter is greater than 15 (when the array  is full) or start index is -1 (ie first send) 
-                        receive_start = (receive_start + 1) % 15;     //traverse the start index 
-        
         receive_trace[receive_end].sender_id = env->sender_id;               //set the sender_id
         receive_trace[receive_end].target_id = curr_process->pid;           //set the target_id
         receive_trace[receive_end].msg_type = env->msg_type;          //set the msg_type
@@ -591,6 +586,14 @@ msg_env *k_receive_message() { //Doesn't take the PCB as a parameter. Dealt with
         receive_trace[receive_end].timestamp.mm = systemclock->mm;
         receive_trace[receive_end].timestamp.ss = systemclock->ss;
         
+        receive_counter++;                                             //increment the counter
+        receive_end = (receive_end + 1) % 15;                          //traverse the end index
+        if(receive_counter > 15 || receive_start < 0)                  //if the counter is greater than 15 (when the array  is full) or start index is -1 (ie first send) 
+        {
+            receive_start = (receive_start + 1) % 15;     //traverse the start index 
+        }
+        
+       
         return env;
         
         //printf("in k_rec after proc switch pid %d, %s\n", curr_process->pid, curr_process->state);

@@ -145,7 +145,7 @@ void crt_iproc(int sigval) {
 }
 
 void timer_iproc(int sigval) {
-    /*
+
     //printf("You're in timer_iproc\n");
     atomic(ON); 
     PCB* interrupted_proc = curr_process;
@@ -185,7 +185,7 @@ void timer_iproc(int sigval) {
          sleeptime = atoi(sleeptraverse->msg_text);              //Convert the delay time text to an integer
          sleeptime = sleeptime - 100;                                //Decrement the sleeptime
          
-         *//*if(sleeptime <= 0)           //Check if the head env has finished sleeping
+         /*if(sleeptime <= 0)           //Check if the head env has finished sleeping
          {
               awakened = sleeptraverse;          //awakened now points to what sleeptraverse did before
 
@@ -205,7 +205,7 @@ void timer_iproc(int sigval) {
               else
                    sleeptraverse = NULL;
          }
-    }*//*
+    }*/
          while(sleeptraverse != NULL)    //If there are no others, sleeptraverse will be NULL and skip this. Otherwise, sleeptraverse
          {                       // will be the next, undecremented envelope, and will loop.
              removeid = sleeptraverse->sender_id;     //Extracting the id to use with env_remove to remove the envelope from the queue
@@ -241,5 +241,5 @@ void timer_iproc(int sigval) {
     
     curr_process = interrupted_proc;
     atomic(OFF);
-    */
+    
 }

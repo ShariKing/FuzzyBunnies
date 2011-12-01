@@ -26,30 +26,28 @@ void ProcessA(){
     R = get_console_chars(envA);
     if (R==0)
         release_processor();
-    printf("You're in ProcessA 2\n");
+
     // deallocate the message from Proc A's queue in its PCB
     envA= env_DEQ(pA_pcb->receive_msg_Q);
-    printf("You're in ProcessA 2\n");
-    while(1){
-        //printf("You're in ProcessA\n");
-    
-       // printf("You're in ProcessA 2\n");
+
+    while(1)
+    {
+        printf("A\n");
         // request an envelope
         msg_env* tempEnv  = request_msg_env();
         
         if(tempEnv)
         {
-            //printf("You're in ProcessA 3\n");
             // set the env type and text
             tempEnv->msg_type = 2;
-            tempEnv->msg_text[1] = num;
-            //printf("You're in ProcessA 4\n");
+            tempEnv->msg_text[0] = num;
+
             // send to ProcessB
             int result = send_message(4, tempEnv);
-//printf("You're in ProcessA 5\n");
+
             num++;
         }
-        //printf("You're in ProcessA 6\n");
+
         release_processor();        
     }    
 }
@@ -57,7 +55,9 @@ void ProcessA(){
 
 // *** PROCESS B *** PID 4
 void ProcessB(){
-    while(1){
+    while(1)
+    {
+        printf("A\n");
         //printf("You're in ProcessB\n");
     
         // receive the message from Process A
@@ -78,21 +78,24 @@ void ProcessC(){
     
     // init the local queue
     struct envQ* localQ = (struct envQ *) malloc (sizeof (struct envQ));
-    if (localQ==NULL) {
+    if (localQ==NULL)
+    {
         printf("localQ in Proc C not created properly");
         return;
     } // can we use the queue on the proc pcb instead?
 
     PCB* pC_pcb = convert_PID(5);
-    printf("You're in ProcessC 1\n");
+    
     msg_env* envC = request_msg_env();   
     // infinite loop of normal activity  
-    while (1){
-        printf("You're in ProcessC 2\n");
+    while (1)
+    {
+        printf("A\n");
+        int NUM =envC->msg_text[0];
         
-        int NUM =envC->msg_text[1];
         // if theres nothing the localQ, receive a message and enqueue it
-        if (localQ->head == NULL){
+        if (localQ->head == NULL)
+        {
             envC = receive_message();    
             int H = env_ENQ(envC,localQ);
             if (H ==0)
@@ -108,11 +111,13 @@ void ProcessC(){
         if (envC->msg_type == 2 && NUM % 20 == 0){
   
             // send the display message
-            strcpy(envC->msg_text, "Process C\0");
+            strcpy(envC->msg_text, "Process C\n\0");
             int W = send_console_chars(envC); // Returns confirmation of sending
-            if (W==1) {
+            
+            if (W==1)
+            {
                 // if it is the ack message request a delay of 10s, with wakeup code "wakeup10"
-                int R = request_delay(10000, 4, envC); // request_delay returns an int
+                int R = request_delay(10000, WAKEUP, envC); // request_delay returns an int
                 if (R==0)
                    printf("Error with request_delay");
                    
@@ -120,7 +125,8 @@ void ProcessC(){
                 envC = receive_message();
     
                 // if its not the wakeup message put it on the local Q
-                while (envC->msg_type != 4){
+                while (envC->msg_type != WAKEUP)
+                {
                     envC = receive_message();
                     int XX = env_ENQ(envC,localQ);
                     if (XX==0)
@@ -130,9 +136,9 @@ void ProcessC(){
             else
                printf("Error sending 'Process C' to screen in Proc C");
             
-        }  
+        } 
+        
         // deallocate envelopes
-        //envC= env_DEQ(pC_pcb->receive_msg_Q);
         int dun = release_msg_env(envC);
         if (dun==0)
            printf("ERROR IN DEALLOCATING ENVELOPE AT END OF Proc C");
