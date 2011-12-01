@@ -15,11 +15,21 @@
 
 void null_process() {
     //printf("You're in null_process\n");
-		while(1) {
-            usleep(100000);
-            //printf("IN NULLLLLLLLLL!");      
-			release_processor();
-		}
+    while(1) 
+    {
+        usleep(100000);
+        
+        while(pointer_2_PCB[7]->receive_msg_Q->head != NULL)
+        {
+            if ( release_msg_env( env_DEQ( pointer_2_PCB[7]->receive_msg_Q ) ) == 0) 
+            {
+                printf("Deallocating null_process's env failed\n");
+                terminate(0);
+            }
+        }
+        //printf("IN NULLLLLLLLLL!");      
+        release_processor();
+    }
 }
 
 void process_switch() {

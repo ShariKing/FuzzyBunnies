@@ -26,10 +26,10 @@ void ProcessA(){
     R = get_console_chars(envA);
     if (R==0)
         release_processor();
-    
+    printf("You're in ProcessA 2\n");
     // deallocate the message from Proc A's queue in its PCB
     envA= env_DEQ(pA_pcb->receive_msg_Q);
-    //printf("You're in ProcessA 1\n");
+    printf("You're in ProcessA 2\n");
     while(1){
         //printf("You're in ProcessA\n");
     
@@ -84,11 +84,11 @@ void ProcessC(){
     } // can we use the queue on the proc pcb instead?
 
     PCB* pC_pcb = convert_PID(5);
-    
+    printf("You're in ProcessC 1\n");
     msg_env* envC = request_msg_env();   
     // infinite loop of normal activity  
     while (1){
-        //printf("You're in ProcessC\n");
+        printf("You're in ProcessC 2\n");
         
         int NUM =envC->msg_text[1];
         // if theres nothing the localQ, receive a message and enqueue it

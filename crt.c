@@ -32,6 +32,7 @@ void c_child_die(int signal) {
 // ***CRT UART SIMULATION***
 int main(int argc, char * argv[]) {
     //printf("You're in crt main\n");
+    
     // if parent tells us to terminate, then clean up first
     sigset(SIGINT, c_child_die);
     
@@ -51,7 +52,8 @@ int main(int argc, char * argv[]) {
             (off_t) 0); // Offset in page frame
     
     // if the pointer to the memory sucks
-    if (c_mmap_ptr == MAP_FAILED) {
+    if (c_mmap_ptr == MAP_FAILED) 
+    {
         printf("Child memory map has failed, CRT is aborting!\n");
         c_child_die(0);
     }
@@ -60,64 +62,85 @@ int main(int argc, char * argv[]) {
     out_mem_p = (struct outbuf *) malloc(sizeof (struct outbuf));
      
     // ensuring the pointer is not NULL
-    if (out_mem_p){
- // initialize stuff
-        //out_mem_p->outdata = (char *) malloc(sizeof (c_bufsize+1));
+    if (out_mem_p)
+    {
+        // initialize stuff
+        
         out_mem_p->outdata = c_mmap_ptr;
-        c_buf_index = 0;
+        buf_index = 0;
         
         // link the flag to the end of the buffer and set it 
-        //out_mem_p->oc_flag = (char *) malloc(sizeof (char));
+        
         out_mem_p->oc_flag = &out_mem_p->outdata[c_bufsize];
         *out_mem_p->oc_flag = 0;
        
         //c is our temp character to read from the buffer
         char c;
-
+        usleep(100000);
+        
         // regular running, infinite loop - exit when parent signals us
-        do {
-            //printf("crt 1\n");
-            while(*out_mem_p->oc_flag == 0){    
+        while(1) 
+        {
+            //printf("crt 1, flag = %d\n", *out_mem_p->oc_flag);
+            while(*out_mem_p->oc_flag == 0)
+            {    
                 
                 //wait for the iprocess to load the buffer (if applicable)
                 usleep(100000);
-                
+                //printf("crt 2.5\n");
                 // signal the crt i-process periodically to start doing it's thing
                 kill(parent_pid,SIGUSR2);
 
             }
             //printf("crt 2\n");
             // reset the buffer index to read from the beginning
-            c_buf_index = 0;
+            buf_index = 0;
         
+/*
             // while there is something in the buffer
-            while(*out_mem_p->oc_flag != 0){
-               // printf("crt 3\n");
-                if (c_buf_index < MAXCHAR - 1) {
-                    c = out_mem_p->outdata[c_buf_index];
-//printf("crt 4\n");
+            while(*out_mem_p->oc_flag != 0)
+            {
+               //printf("crt 3\n");
+                if (buf_index < MAXCHAR - 1) 
+                {
+                    c = out_mem_p->outdata[buf_index];
+
                     // while we're not at the end of the output (NULL character)
                     if (c != '\0')
+                    {
                         printf("%c", c);
+                    }
 
                     // when we reach the null character
                     else {
-                        
                         // reset the flag and array start point
                         *out_mem_p->oc_flag = 0;
-                        c_buf_index = 0;
-                        //printf("crt 2\n");
+                        buf_index = 0;
+                        //printf("crt 5\n");
                         
                         //send a signal to parent to start handler to start crt_iproc
                         // kill(parent_pid, SIGUSR2);
                     }
 
                     // increment the buffer
-                    c_buf_index++;
+                    buf_index++;
                 }
             }
+*/
+// while there is something in the buffer
+            while(out_mem_p->outdata[buf_index] != '\0')
+            {
+                printf("%c", out_mem_p->outdata[buf_index]);
+                buf_index++;
+            }
 
-        } while (1);
+            // when we reach the null character reset the flag and array start point
+            *out_mem_p->oc_flag = 0;
+            buf_index = 0;
+
+         
+        }
+        
     }
     
     // if the shared pointer is initialized as NULL

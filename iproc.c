@@ -38,18 +38,18 @@ void kbd_iproc(int sigval) {
     if (*in_mem_p->ok_flag == 1) {
 
         // start at the beginning of the buffer
-        k_buf_index = 0;
+        buf_index = 0;
 
         //dequeue env from Keyboard env queue into temp
         //temp_k = env_DEQ(temp->receive_msg_Q);
                     
         // read buffer into the env, while we haven't reached the NULL
         do {
-            temp_k->msg_text[k_buf_index] = in_mem_p->indata[k_buf_index];
+            temp_k->msg_text[buf_index] = in_mem_p->indata[buf_index];
 
-            k_buf_index++;
+            buf_index++;
 
-        } while (in_mem_p->indata[k_buf_index - 1] != '\0');
+        } while (in_mem_p->indata[buf_index - 1] != '\0');
 
        // printf("Keyboard input was: %s\n",in_mem_p->indata); //used for debugging
 
@@ -83,66 +83,69 @@ void kbd_iproc(int sigval) {
 
 void crt_iproc(int sigval) {
 //printf("You're in crt_iproc\n");
-        // temporary env pointer
+
     atomic(ON);
-    //printf("c iproc 1\n");
-        PCB* interrupted_proc = curr_process;
-        curr_process = convert_PID (1);
+    PCB* interrupted_proc = curr_process;
+    curr_process = convert_PID (1);
 
-        msg_env *temp_c = receive_message();
+    msg_env *temp_c = receive_message();
 
-        // if the envelope is NULL don't continue
-        if (temp_c == NULL){
-           *out_mem_p->oc_flag = 0;
-           curr_process = interrupted_proc;
-           atomic(OFF);
-           return;
-        }
-
-        // put stuff in buffer only if the buffer is empty
-        if (*out_mem_p->oc_flag == 0) { 
-            c_buf_index = 0;
-            //printf("msg text: %s", temp_c->msg_text);
-             // read env into the buffer
-             do {
-                 out_mem_p->outdata[c_buf_index] = temp_c->msg_text[c_buf_index];
-//printf("c iproc 6 buf = %c\n", out_mem_p->outdata[c_buf_index]);
-
-                 c_buf_index++;
-
-             } while (out_mem_p->outdata[c_buf_index] != '\0'); 
-             out_mem_p->outdata[c_buf_index++] = '\0';
-//printf("c iproc 7 buf = %c\n", out_mem_p->outdata[c_buf_index]);
-
-            // set flag so UART will read memory
-            *out_mem_p->oc_flag = 1;
-            //printf("c iproc 8 flag = %d\n", *out_mem_p->oc_flag);
-
-            // set env message type to 'display ack'
-            temp_c->msg_type = DISPLAY_ACK;
-            //printf("c iproc 9 type = %d\n", temp_c->msg_type);
-
-            printf("sender id %d,env %p\n",temp_c->sender_id, temp_c);
-            // send env back to process
-            int Z = send_message(temp_c->sender_id, temp_c); //fix this later, sender_id is 31
-            //printf("c iproc 10 z = %d\n", Z);
-
-            // if sending is stupid
-            if (Z == 0)
-                printf("Error with sending\n");
+    // if the envelope is NULL don't continue
+    if (temp_c == NULL)
+    {
+       *out_mem_p->oc_flag = 0;
+       curr_process = interrupted_proc;
+       atomic(OFF);
+       return;
+    }
+    
+    //printf("c flag: %d\n", *out_mem_p->oc_flag);
+    
+    // put stuff in buffer only if the buffer is empty
+    if (*out_mem_p->oc_flag == 0)
+    { 
+        buf_index = 0;
+   
+        // read env into the buffer
+        do
+        {
+            out_mem_p->outdata[buf_index] = temp_c->msg_text[buf_index];
+            buf_index++;
+        } while (temp_c->msg_text[buf_index] != '\0');
         
+         //printf("c flag: %d\n", *out_mem_p->oc_flag);
+        out_mem_p->outdata[buf_index++] = '\0';
+         //printf("c flag: %d\n", *out_mem_p->oc_flag);
+        // set flag so UART will read memory
+        *out_mem_p->oc_flag = 1;
+       // printf("c flag: %d\n", *out_mem_p->oc_flag);
+        // set env message type to 'display ack'
+        temp_c->msg_type = DISPLAY_ACK;
+       // printf("c flag: %d\n", *out_mem_p->oc_flag);
+        // send env back to process
+        int Z = send_message(temp_c->sender_id, temp_c);
+
+        // if sending is stupid
+        if (Z == 0)
+        {
+            printf("Error with sending\n");
         }
+//printf("c flag: %d\n", *out_mem_p->oc_flag);
+    
+    }
+//printf("c flag: %d\n", *out_mem_p->oc_flag);
+    
+    curr_process = interrupted_proc;
+    atomic(OFF);
 
-        curr_process = interrupted_proc;
-        atomic(OFF);
-
-        /* if memory is full (ie. flag != 0)
-        else{
-            printf("fix the function!!!!\n"); */
+    /* if memory is full (ie. flag != 0)
+    else{
+        printf("fix the function!!!!\n"); */
         
 }
 
 void timer_iproc(int sigval) {
+    /*
     //printf("You're in timer_iproc\n");
     atomic(ON); 
     PCB* interrupted_proc = curr_process;
@@ -163,7 +166,7 @@ void timer_iproc(int sigval) {
 
             pulse_counter = 0;
     }
-		
+     	
 //==========CODE TO HANDLE REQUEST DELAY=============	
     
     msg_env *sleeptraverse;           //Dummy envelope pointer to traverse the Sleep Queue
@@ -182,7 +185,7 @@ void timer_iproc(int sigval) {
          sleeptime = atoi(sleeptraverse->msg_text);              //Convert the delay time text to an integer
          sleeptime = sleeptime - 100;                                //Decrement the sleeptime
          
-         /*if(sleeptime <= 0)           //Check if the head env has finished sleeping
+         *//*if(sleeptime <= 0)           //Check if the head env has finished sleeping
          {
               awakened = sleeptraverse;          //awakened now points to what sleeptraverse did before
 
@@ -202,7 +205,7 @@ void timer_iproc(int sigval) {
               else
                    sleeptraverse = NULL;
          }
-    }*/
+    }*//*
          while(sleeptraverse != NULL)    //If there are no others, sleeptraverse will be NULL and skip this. Otherwise, sleeptraverse
          {                       // will be the next, undecremented envelope, and will loop.
              removeid = sleeptraverse->sender_id;     //Extracting the id to use with env_remove to remove the envelope from the queue
@@ -238,4 +241,5 @@ void timer_iproc(int sigval) {
     
     curr_process = interrupted_proc;
     atomic(OFF);
+    */
 }

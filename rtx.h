@@ -85,9 +85,9 @@ typedef struct messageTrace msg_trace;
 struct init_table {
        int pid;
        int priority;
-       int stack_size;
+       //int stack_size;
        int process_type;
-       void* address;
+       //void* address;
 };
 typedef struct init_table init_table;
 

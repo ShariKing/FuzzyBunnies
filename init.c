@@ -100,8 +100,8 @@ env_Q* create_env_Q( )
       
       // if the pointer is not NULL
       if (bob){
-        bob->head = NULL;
-        bob->tail = NULL;
+            bob->head = NULL;
+            bob->tail = NULL;
       }
         return bob;
 }
@@ -113,7 +113,8 @@ int init_queues( )
      ready_q_priority0 = create_Q();
      
      if(ready_q_priority0){
-          printf("Priority Queue 0 Created\n");
+          //printf("Priority Queue 0 Created\n");
+          printf(".");
           pointer_2_RPQ[0] = ready_q_priority0;
      }
      
@@ -126,7 +127,8 @@ int init_queues( )
      ready_q_priority1 = create_Q();
      
      if(ready_q_priority1){
-          printf("Priority Queue 1 Created\n");
+          //printf("Priority Queue 1 Created\n");
+          printf(".");
           pointer_2_RPQ[1] = ready_q_priority1;
      }
      
@@ -139,7 +141,8 @@ int init_queues( )
      ready_q_priority2 = create_Q();
      
      if(ready_q_priority2){
-          printf("Priority Queue 2 Created\n");
+          //printf("Priority Queue 2 Created\n");
+          printf(".");
           pointer_2_RPQ[2] = ready_q_priority2;
      }
      
@@ -152,7 +155,8 @@ int init_queues( )
      ready_q_priority3 = create_Q();
      
      if(ready_q_priority3){
-          printf("Priority Queue 3 Created\n");
+          //printf("Priority Queue 3 Created\n");
+          printf(".");
           pointer_2_RPQ[3] = ready_q_priority3;
      }
      
@@ -165,7 +169,8 @@ int init_queues( )
      sleep_Q = create_env_Q();
      
      if(sleep_Q){
-          printf("Sleep Queue Created\n");
+          //printf("Sleep Queue Created\n");
+          printf(".");
      }
      
      else {
@@ -176,8 +181,11 @@ int init_queues( )
      // Blocked On Receive queue
      blocked_on_receive = create_Q(); //This is not necessary
      
-     if(blocked_on_receive)
-          printf("Blocked on Receive Queue Created\n");
+     if(blocked_on_receive){
+         printf(".");
+         //printf("Blocked on Receive Queue Created\n");
+     }
+          
      
      else {
           printf("Error Creating Blocked on Envelope Queue\n");
@@ -187,9 +195,10 @@ int init_queues( )
      // Blocked On Envelope Queue
      blocked_on_envelope = create_Q();
      
-     if(blocked_on_envelope)
-          printf("Blocked on Envelope Queue Created\n");
-     
+     if(blocked_on_envelope){
+          //printf("Blocked on Envelope Queue Created\n");
+          printf(".");
+     }
      else {
           printf("Error Creating Blocked on Envelope Queue\n");
           return 0;
@@ -198,8 +207,10 @@ int init_queues( )
      // Free Envelope Queue
      envelope_q = create_env_Q();
      
-     if(envelope_q)
-          printf("Free Envelope Queue Created\n");
+     if(envelope_q){
+        // printf("Free Envelope Queue Created\n");
+         printf(".");
+     }
      
      else {
           printf("Error Creating Envelope Queue\n");
@@ -240,7 +251,7 @@ int init_msg_trace(){
 int init_env()
 {
      int i;
-     for(i = 0; i < 128; i++)
+     for(i = 0; i < 1024; i++)
      {
         // create temp env to be enqueued
         struct msgenv* new_env = (struct msgenv *) malloc (sizeof (struct msgenv));
@@ -256,7 +267,7 @@ int init_env()
         new_env->msg_type = 3;
 
         
-        char* tempMsgText = (char *) malloc ((sizeof (SIZE))*4); //initialize the character array pointer
+        char* tempMsgText = (char *) malloc (SIZE); //initialize the character array pointer
 
         // if the msg_text pointer is not created properly
         if (tempMsgText==NULL)
@@ -279,33 +290,33 @@ int init_processes ( )
     //jmp_buf kernel_buf;
        itable[3].pid = 3;
        itable[3].priority = 2;
-       itable[3].stack_size =STACKSIZE;
+       //itable[3].stack_size =STACKSIZE;
        itable[3].process_type = 1; //user_process is type 1
-       itable[3].address = &ProcessA;//A
+       //itable[3].address = &ProcessA;//A
        
        itable[4].pid = 4;
        itable[4].priority = 2;
-       itable[4].stack_size =STACKSIZE;
+       //itable[4].stack_size =STACKSIZE;
        itable[4].process_type = 1;
-       itable[4].address = &ProcessB;//B
+      // itable[4].address = &ProcessB;//B
        
        itable[5].pid = 5;
        itable[5].priority = 1;
-       itable[5].stack_size =STACKSIZE;
+       //itable[5].stack_size =STACKSIZE;
        itable[5].process_type = 1;
-       itable[5].address = &ProcessC;//C
+       //itable[5].address = &ProcessC;//C
        
        itable[6].pid = 6;
        itable[6].priority = 0;
-       itable[6].stack_size =STACKSIZE;
+      // itable[6].stack_size =STACKSIZE;
        itable[6].process_type = 1;  
-       itable[6].address = &CCI;
+      // itable[6].address = &CCI;
        
        itable[7].pid = 7; 
        itable[7].priority = 3;
-       itable[7].stack_size =STACKSIZE;
+      // itable[7].stack_size =STACKSIZE;
        itable[7].process_type = 2; // null proc is type 2 
-       itable[7].address = &null_process;
+      // itable[7].address = &null_process;
        
        
     int j;
@@ -409,7 +420,7 @@ int init_processes ( )
     
     makecontext(&pointer_2_PCB[3]->uc, ProcessA, 0);
     makecontext(&pointer_2_PCB[4]->uc, ProcessB, 0);
-    makecontext(&pointer_2_PCB[5]->uc, ProcessC, 0);
+    makecontext(&pointer_2_PCB[5]->uc, null_process, 0);
     makecontext(&pointer_2_PCB[6]->uc, CCI, 0);
     makecontext(&pointer_2_PCB[7]->uc, null_process, 0);
     
@@ -424,21 +435,21 @@ int init_i_processes()
      
        itable[0].pid = 0;
        itable[0].priority = -1;
-       itable[0].stack_size =STACKSIZE;
+      // itable[0].stack_size =STACKSIZE;
        itable[0].process_type = 0; //i process type is 0
-       itable[0].address = &kbd_iproc;
+     //  itable[0].address = &kbd_iproc;
        
        itable[1].pid = 1;
        itable[1].priority = -1;
-       itable[1].stack_size =STACKSIZE;
+     //  itable[1].stack_size =STACKSIZE;
        itable[1].process_type = 0;
-       itable[1].address = &crt_iproc;
+     //  itable[1].address = &crt_iproc;
        
        itable[2].pid = 2;
        itable[2].priority = -1;
-       itable[2].stack_size =STACKSIZE;
+     //  itable[2].stack_size =STACKSIZE;
        itable[2].process_type = 0;
-       itable[2].address = &timer_iproc;
+      // itable[2].address = &timer_iproc;
        
      for (k = 0; k < TOTAL_NUM_IPROC; k++)
      {
@@ -578,7 +589,7 @@ void kb_crt_start(){
     if (in_mem_p){
         //in_mem_p->indata = (char *) malloc(sizeof (k_bufsize+1));
         in_mem_p->indata = k_mmap_ptr; // pointer to shared memory
-        k_buf_index = 0;
+        buf_index = 0;
         
         // we can now use 'in_mem_p' as a standard C pointer to access the created shared memory segment
 
@@ -661,7 +672,7 @@ void kb_crt_start(){
 
         //out_mem_p->outdata = (char *) malloc(sizeof (c_bufsize+1));
         out_mem_p->outdata = c_mmap_ptr;  // pointer to shared memory
-        c_buf_index = 0;
+        buf_index = 0;
           
     // we can now use 'in_mem_p' as a standard C pointer to access the created shared memory segment
 
@@ -713,9 +724,14 @@ int init_clocks(){
 // ***** THE MAIN MAIN MAIN RTOS FUNCTION *****
 int main ()
 {
+        printf("\nLoading RTOS");
+        
         // if init_clocks returns 1
-        if (init_clocks())
-             printf("Wall clock & System clock created successfully\n");
+        if (init_clocks()){
+            //printf("Wall clock & System clock created successfully\n");
+            printf(".");
+        }
+             
         // if init_clocks returns 0
          else {
              printf("Error, wallclock or systemclock initialization failed!!!\n");
@@ -723,8 +739,11 @@ int main ()
          }
         
         // if init_queues returned 1
-        if (init_queues())
-                printf("Initialized queues correctly\n");        
+        if (init_queues()){
+            //printf("Initialized queues correctly\n"); 
+            printf("."); 
+        }
+                       
         // if init_queues dropped the ball
         else {
                 printf("Error, queue initialization failed!!!\n");
@@ -732,8 +751,11 @@ int main ()
         }
         
         // if init_env returned 1
-        if (init_env())
-                printf("Initialized envelopes correctly\n");        
+        if (init_env()){
+            //printf("Initialized envelopes correctly\n"); 
+            printf("."); 
+        }
+                       
         // if init_env is dumb
         else {
                 printf("Error, envelope initialization failed!!!\n");
@@ -741,8 +763,10 @@ int main ()
         }
        
         // if init_i_processes returned 1
-        if (init_i_processes())
-                printf("Initialized I-processes correctly\n");
+        if (init_i_processes()){
+                //printf("Initialized I-processes correctly\n");
+                printf("."); 
+        }
         // if init_-_processes failed
         else {
                 printf("Error, i-process initialization failed!!!\n");
@@ -750,8 +774,10 @@ int main ()
         }
         
         // if init_processes returned 1
-        if (init_processes())
-                printf("Initialized processes correctly\n");
+        if (init_processes()){
+                //printf("Initialized processes correctly\n");
+                printf("."); 
+        }
         // if init_processes failed
         else {
                 printf("Error, process initialization failed!!!\n");
@@ -759,17 +785,13 @@ int main ()
         }
 
     
-        // set the current process to the NULL process
-        // ***** should be the first process in the first ready queue? does that mean we can just hardcode this since it will be the same every time?
-        curr_process = convert_PID(7);
-        PCB_DEQ(pointer_2_RPQ[curr_process->priority]);
-        curr_process->state = RUNNING;
-        
         Atom = 0;
         
         // if init_msg_trace returned 1
-        if (init_msg_trace())
-                printf("Initialized msg_trace correctly\n");
+        if (init_msg_trace()){
+                //printf("Initialized msg_trace correctly\n");
+                printf("."); 
+        }
         // if init_msg_trace failed
         else {
                 printf("Error, msg_trace initialization failed!!!\n");
@@ -792,7 +814,6 @@ int main ()
         sigset(SIGUSR1,kbd_iproc);
         sigset(SIGUSR2,crt_iproc);
         sigset(SIGALRM,timer_iproc); //Catch clock ticks
-
         
         // INITIALIZE KB AND CRT
         kb_crt_start();
@@ -803,31 +824,38 @@ int main ()
         if(alarmstatus != 0)
              printf("Error: Something is wrong with the system timer!\n");
         
+        printf("()\nReady\n");
+        
+        // set the current process to the NULL process
+        // ***** should be the first process in the first ready queue? does that mean we can just hardcode this since it will be the same every time?
+        curr_process = convert_PID(7);
+        
+        PCB_DEQ(pointer_2_RPQ[curr_process->priority]);
+        curr_process->state = RUNNING;
+        /*
         // send the welcome message
-        /*msg_env* first;
-        first = request_msg_env();
+        msg_env* first = request_msg_env();
+       
         if (first == NULL){
             terminate(1);
         }
-        strcpy(first->msg_text, "Enter input for the CCI to read [s ps c cd ct n t]:\n");
+        strcpy(first->msg_text, "Enter input for the CCI to read [s ps c cd ct n t]:\0");
+        
+        //printf("CRT queue head %p , tail %p\n", pointer_2_PCB[1]->receive_msg_Q->head, pointer_2_PCB[1]->receive_msg_Q->tail);
         int F = 0;
         F = send_console_chars(first);
+        //printf("CRT queue head %p , tail %p\n", pointer_2_PCB[1]->receive_msg_Q->head, pointer_2_PCB[1]->receive_msg_Q->tail);
+       
         if (F == 0){
             terminate(1);
         }
-        */
-        // switch to the null process
+         */ 
+         
+         // switch to the null process
         getcontext(&mainuc);
-        swapcontext(&mainuc, &pointer_2_PCB[7]->uc);
+        //printf("after get context of main\n");
+        swapcontext(&mainuc, &curr_process->uc);
         printf("should not be here\n");
-//printf("%p %p\n", c_mmap_ptr, k_mmap_ptr);
-        //*** BACK TO MAIN RTOS STUFF ***
-
-        // code to say we've started!!
-        //printf("Proc A Ready! Waiting to go!\n");
-        //longjmp(curr_process->pcb_buf,1);
-        //sleep(1000000);
-        //ClockTest(systemclock); // remove later?
         
         // should never reach here, but in case we do, clean up after ourselves
         terminate(0);

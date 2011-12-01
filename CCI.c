@@ -25,7 +25,8 @@ void CCI()
         int U = 0;
         int dun = 0;
         
-        while(1){
+        while(1)
+        {
             //printf("Welcome to the RTOS that works.\nPlease input something in our CCI:\n");
             //sleep (5); //note: sleep won't work cuz any interrupt will stop it.
             //getchar();
@@ -37,27 +38,48 @@ void CCI()
             // only do this if there was input
             if (U==1){
                       //printf("u second is %d\n", U);
-                env = receive_message(); //***STOPS HERE TO WAIT FOR INPUT
+                env = receive_message();
+                while (env->msg_type != CONSOLE_INPUT)
+                {                
+                        env = receive_message(); //***STOPS HERE TO WAIT FOR INPUT
+                }
+                
                 //printf("u third is %d\n", U);
                 char* input_txt = env->msg_text;
                 
                 // send envelope to Process A
                 if (strcmp(input_txt,"s")==0) { //if the text in the field is "s"
-                      msg_env *env2 = request_msg_env(); //request an envelope
+                   // printf("input was s\n");
+                      //msg_env *env2 = request_msg_env(); //request an envelope
+                      env = request_msg_env(); //request an envelope
                       int Z =0;
-                      Z = send_message(3,env2); // send message to Process A
+                      Z = send_message(3,env); // send message to Process A
                 }
                 
                 // display process status of all processes
                 else if (strcmp(input_txt,"ps")==0) { 
-                     msg_env* env_ps;
-                     int J=request_process_status(env_ps);
+                    // printf("input was ps\n");
+                     //msg_env* env_ps;
+                     env = request_msg_env(); //request an envelope
+                     int J=request_process_status(env);
                      if (J==0)
                         printf("Error with getting Process Status\n");                  
                 }
                 
+                // allows time to be displayed on console and halts if getting ct
+                else if (strcmp(input_txt,"cd")==0) { 
+                    // printf("input was cd\n");
+                     
+                    wallClockOut = 1;
+                }
+                else if (strcmp(input_txt,"ct")==0){
+                   // printf("input was ct\n");
+                     wallClockOut = 0;
+                }
+    
                 // set clock to any valid 24hr time
                 else if (strncmp(input_txt,"c", 1)==0) { 
+                    // printf("input was c\n");
                      int HH = atoi(input_txt+2);
                      int MM = atoi(input_txt+5);
                      int SS = atoi(input_txt+8);
@@ -66,18 +88,12 @@ void CCI()
                         printf("Error with setting clock in CCI\n");
                 }
                 
-                // allows time to be displayed on console and halts if getting ct
-                else if (strcmp(input_txt,"cd")==0) { 
-                     
-                    wallClockOut = 1;
-                }
-                else if (strcmp(input_txt,"ct")==0)
-                    wallClockOut = 0;
-    
                 // b displays past instances of send and receive messages
                 else if (strcmp(input_txt,"b")==0) { 
-                    msg_env* env1=request_msg_env();
-                    int U=get_trace_buffers(env1);
+                   // printf("input was b\n");
+                    //msg_env* env1=request_msg_env();
+                    env = request_msg_env(); //request an envelope
+                    int U=get_trace_buffers(env);
                     if (U==0)
                        printf("Error performing call on Trace Buffers\n");
                      }
@@ -88,6 +104,7 @@ void CCI()
                      }
                 // changes priority
                 else if (strcmp(input_txt,"n")==0) { 
+                   //  printf("input was n\n");
                      int new_pri = atoi(input_txt+2);
                      int ID = atoi(input_txt+4);
                      int R = change_priority(new_pri, ID);
@@ -97,7 +114,7 @@ void CCI()
                 
                 
                 else {
-                     printf("Invalid CCI input. Please try again.\n");                   
+                     printf(" '%s' is not valid CCI input. Please try again.\n", input_txt);                   
                 }
                 
             dun = release_msg_env(env);
