@@ -31,6 +31,7 @@ void CCI()
         while(1)
         {   
             // send the welcome message
+/*
             if (first == NULL){
                 terminate(1);
             }
@@ -43,6 +44,7 @@ void CCI()
                 terminate(1);
             }
           
+*/
          
             U = get_console_chars(env);   //keyboard input 
             //sleep(5);

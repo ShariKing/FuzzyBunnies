@@ -784,7 +784,7 @@ int k_get_trace_buffers(msg_env* env){
     }
     else
     {
-         for(i = send_start; i == send_end; i = (i+1)%16)
+         for(i = send_start; i != send_end; i = (i+1)%16)
          {
              sprintf(temp, "%d          %d              %d              %d:%d:%d    \n", j, send_trace[i].sender_id, send_trace[i].target_id, send_trace[i].msg_type, send_trace[i].timestamp.hh, send_trace[i].timestamp.mm, send_trace[i].timestamp.ss);
              strcat(env->msg_text, temp);
@@ -802,7 +802,7 @@ int k_get_trace_buffers(msg_env* env){
     }
     else
     {
-         for(i = receive_start; i == receive_end; i = (i+1)%16)
+         for(i = receive_start; i != receive_end; i = (i+1)%16)
          {
             sprintf(temp, "%d           %d              %d              %d:%d:%d    \n", j, receive_trace[i].sender_id, receive_trace[i].target_id, receive_trace[i].msg_type, receive_trace[i].timestamp.hh, receive_trace[i].timestamp.mm, receive_trace[i].timestamp.ss);
             strcat(env->msg_text, temp);

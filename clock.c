@@ -35,7 +35,7 @@ void clock_increment(clk* clock, int system_or_wall) {
                         
 			if(system_or_wall == 1)
                         {
-				if(clock->hh < 23 || clock->hh > 0)
+				if(clock->hh < 23)
                                 {
                                      clock->hh++;
                                 }
